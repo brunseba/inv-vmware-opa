@@ -64,7 +64,21 @@ def parse_float(value) -> Optional[float]:
         return None
 
 
-def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False) -> int:
+def get_sheet_names(excel_path: Path) -> list[str]:
+    """
+    Get list of sheet names from Excel file.
+    
+    Args:
+        excel_path: Path to Excel file
+        
+    Returns:
+        List of sheet names
+    """
+    excel_file = pd.ExcelFile(excel_path)
+    return excel_file.sheet_names
+
+
+def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False, sheet_name: str = "Sheet1") -> int:
     """
     Load VMware inventory from Excel file into database.
     
@@ -72,6 +86,7 @@ def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False
         excel_path: Path to Excel file
         db_url: SQLAlchemy database URL
         clear_existing: If True, clear existing data before loading
+        sheet_name: Name or index of sheet to load (default: "Sheet1")
         
     Returns:
         Number of records loaded
@@ -89,7 +104,7 @@ def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False
             session.commit()
         
         # Read Excel file
-        df = pd.read_excel(excel_path, sheet_name="Sheet1")
+        df = pd.read_excel(excel_path, sheet_name=sheet_name)
         
         # Normalize column names for easier mapping
         column_mapping = {col: normalize_column_name(col) for col in df.columns}

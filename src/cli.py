@@ -27,12 +27,39 @@ def cli():
     is_flag=True,
     help="Clear existing data before loading",
 )
-def load(excel_file: Path, db_url: str, clear: bool):
+@click.option(
+    "--sheet",
+    default="Sheet1",
+    help="Excel sheet name or index to load",
+    show_default=True,
+)
+@click.option(
+    "--list-sheets",
+    is_flag=True,
+    help="List available sheets and exit",
+)
+def load(excel_file: Path, db_url: str, clear: bool, sheet: str, list_sheets: bool):
     """Load VMware inventory from Excel file into database."""
+    from .loader import get_sheet_names
+    
+    # List sheets if requested
+    if list_sheets:
+        try:
+            sheets = get_sheet_names(excel_file)
+            click.echo(f"\n📊 Available sheets in {excel_file.name}:\n")
+            for idx, sheet_name in enumerate(sheets):
+                click.echo(f"  {idx}: {sheet_name}")
+            click.echo()
+            return
+        except Exception as e:
+            click.echo(f"✗ Error reading Excel file: {e}", err=True)
+            raise click.Abort()
+    
     click.echo(f"Loading data from {excel_file}...")
+    click.echo(f"Sheet: {sheet}")
     
     try:
-        records = load_excel_to_db(excel_file, db_url, clear_existing=clear)
+        records = load_excel_to_db(excel_file, db_url, clear_existing=clear, sheet_name=sheet)
         click.echo(f"✓ Successfully loaded {records} records into database")
         click.echo(f"Database: {db_url}")
     except Exception as e:
