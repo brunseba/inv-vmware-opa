@@ -105,6 +105,11 @@ with st.sidebar:
             st.session_state.current_page = page_name
             st.rerun()
     
+    st.markdown("**🚀 Planning**")
+    if st.button("Migration Planning", key="btn_Migration_Planning", use_container_width=True):
+        st.session_state.current_page = "Migration Planning"
+        st.rerun()
+    
     st.markdown("**📊 Export**")
     if st.button("📄 PDF Report", key="btn_PDF_Export", use_container_width=True):
         st.session_state.current_page = "PDF Export"
@@ -177,6 +182,10 @@ try:
     elif page == "Data Quality":
         from pages import data_quality
         data_quality.render(st.session_state.db_url)
+        
+    elif page == "Migration Planning":
+        from pages import migration_planning
+        migration_planning.render(st.session_state.db_url)
         
     elif page == "PDF Export":
         from pages import pdf_export
