@@ -54,3 +54,4 @@ docs/_build/
 # OS
 .DS_Store
 Thumbs.db
+inputs/vmware-inv.xlsx
