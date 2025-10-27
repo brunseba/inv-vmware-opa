@@ -18,8 +18,8 @@ def cli():
 @click.argument("excel_file", type=click.Path(exists=True, path_type=Path))
 @click.option(
     "--db-url",
-    default="sqlite:///vmware_inventory.db",
-    help="Database URL (default: sqlite:///vmware_inventory.db)",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL (default: sqlite:///data/vmware_inventory.db)",
     show_default=True,
 )
 @click.option(
@@ -43,7 +43,7 @@ def load(excel_file: Path, db_url: str, clear: bool):
 @cli.command()
 @click.option(
     "--db-url",
-    default="sqlite:///vmware_inventory.db",
+    default="sqlite:///data/vmware_inventory.db",
     help="Database URL",
     show_default=True,
 )
@@ -90,7 +90,7 @@ def stats(db_url: str):
 @cli.command()
 @click.option(
     "--db-url",
-    default="sqlite:///vmware_inventory.db",
+    default="sqlite:///data/vmware_inventory.db",
     help="Database URL",
     show_default=True,
 )
@@ -156,7 +156,7 @@ def list(db_url: str, datacenter: str, cluster: str, limit: int):
 @cli.command()
 @click.option(
     "--db-url",
-    default="sqlite:///vmware_inventory.db",
+    default="sqlite:///data/vmware_inventory.db",
     help="Database URL",
     show_default=True,
 )
@@ -300,7 +300,7 @@ def schema(db_url: str, filters: tuple, group_by: str):
 @cli.command()
 @click.option(
     "--db-url",
-    default="sqlite:///vmware_inventory.db",
+    default="sqlite:///data/vmware_inventory.db",
     help="Database URL",
     show_default=True,
 )
@@ -378,7 +378,7 @@ def optimize(db_url: str):
 )
 @click.option(
     "--db-url",
-    default="sqlite:///vmware_inventory.db",
+    default="sqlite:///data/vmware_inventory.db",
     help="Database URL (will be set as default in dashboard)",
     show_default=True,
 )

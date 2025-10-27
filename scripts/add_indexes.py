@@ -68,8 +68,8 @@ def main():
     parser = argparse.ArgumentParser(description="Add performance indexes to VMware inventory database")
     parser.add_argument(
         '--db-url',
-        default='sqlite:///vmware_inventory.db',
-        help='Database URL (default: sqlite:///vmware_inventory.db)'
+        default='sqlite:///data/vmware_inventory.db',
+        help='Database URL (default: sqlite:///data/vmware_inventory.db)'
     )
     
     args = parser.parse_args()

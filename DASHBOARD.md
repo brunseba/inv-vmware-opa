@@ -85,7 +85,7 @@ Then configure the database URL in the sidebar.
 
 1. **Load Data**: First, load your VMware inventory data into the database:
    ```bash
-   vmware-inv load input.xlsx --db-url sqlite:///vmware_inventory.db
+   vmware-inv load input.xlsx --db-url sqlite:///data/vmware_inventory.db
    ```
 
 2. **Launch Dashboard**: Start the web dashboard:
@@ -114,7 +114,7 @@ Use the sidebar radio buttons to switch between pages:
 ### Database Connection
 The dashboard supports any SQLAlchemy-compatible database URL:
 
-- SQLite: `sqlite:///vmware_inventory.db`
+- SQLite: `sqlite:///data/vmware_inventory.db`
 - PostgreSQL: `postgresql://user:pass@host:5432/db`
 - MySQL: `mysql://user:pass@host:3306/db`
 

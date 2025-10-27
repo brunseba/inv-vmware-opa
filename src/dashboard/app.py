@@ -37,7 +37,7 @@ st.markdown("""
 # Initialize session state
 if "db_url" not in st.session_state:
     # Use environment variable if set, otherwise default
-    st.session_state.db_url = os.environ.get('VMWARE_INV_DB_URL', 'sqlite:///vmware_inventory.db')
+    st.session_state.db_url = os.environ.get('VMWARE_INV_DB_URL', 'sqlite:///data/vmware_inventory.db')
 
 # Sidebar
 with st.sidebar:

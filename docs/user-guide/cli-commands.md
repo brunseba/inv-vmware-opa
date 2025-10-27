@@ -16,7 +16,7 @@ uv run python -m src.cli load <excel_file> [OPTIONS]
 
 ### Options
 
-- `--db-url TEXT`: Database URL (default: `sqlite:///vmware_inventory.db`)
+- `--db-url TEXT`: Database URL (default: `sqlite:///data/vmware_inventory.db`)
 - `--clear`: Clear existing data before loading
 - `--help`: Show help message
 
@@ -43,7 +43,7 @@ uv run python -m src.cli stats [OPTIONS]
 
 ### Options
 
-- `--db-url TEXT`: Database URL (default: `sqlite:///vmware_inventory.db`)
+- `--db-url TEXT`: Database URL (default: `sqlite:///data/vmware_inventory.db`)
 - `--help`: Show help message
 
 ### Examples
@@ -73,7 +73,7 @@ uv run python -m src.cli list [OPTIONS]
 
 ### Options
 
-- `--db-url TEXT`: Database URL (default: `sqlite:///vmware_inventory.db`)
+- `--db-url TEXT`: Database URL (default: `sqlite:///data/vmware_inventory.db`)
 - `--datacenter TEXT`: Filter by datacenter name
 - `--cluster TEXT`: Filter by cluster name
 - `--limit INTEGER`: Number of records to show (default: 10)

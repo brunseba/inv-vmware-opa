@@ -39,7 +39,7 @@ Expected output:
 ```
 Loading data from inputs/vmware-inv.xlsx...
 ✓ Successfully loaded 5 records into database
-Database: sqlite:///vmware_inventory.db
+Database: sqlite:///data/vmware_inventory.db
 ```
 
 ## Step 4: View Statistics
