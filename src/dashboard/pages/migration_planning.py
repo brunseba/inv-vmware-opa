@@ -393,6 +393,15 @@ def render(db_url: str):
         
         add_vertical_space(2)
         
+        # Add batch information to dataframe (needed for visualizations)
+        vm_to_batch = {}
+        for batch in migration_batches:
+            for vm in batch['vms']:
+                vm_to_batch[vm['VM']] = batch['batch']
+        
+        df['Batch'] = df['VM'].map(vm_to_batch)
+        df['Total_Days'] = df['Total_Hours'] / maintenance_window_hours
+        
         # Visualizations
         colored_header(
             label="Migration Analysis",
@@ -680,15 +689,6 @@ def render(db_url: str):
             description="Detailed VM-by-VM migration plan",
             color_name="red-70"
         )
-        
-        # Add batch information to dataframe
-        vm_to_batch = {}
-        for batch in migration_batches:
-            for vm in batch['vms']:
-                vm_to_batch[vm['VM']] = batch['batch']
-        
-        df['Batch'] = df['VM'].map(vm_to_batch)
-        df['Total_Days'] = df['Total_Hours'] / maintenance_window_hours
         
         # Display table (include Folder column if folder-based selection)
         if selection_strategy == "Folder-based":
