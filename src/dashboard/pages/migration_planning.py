@@ -144,49 +144,153 @@ def render(db_url: str):
             color_name="green-70"
         )
         
-        col1, col2, col3 = st.columns(3)
-        
-        # Filters
-        with col1:
-            datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
-            selected_dc = st.selectbox(
-                "Datacenter",
-                options=["All"] + datacenters,
-                index=0
-            )
-        
-        with col2:
-            clusters = [c[0] for c in session.query(VirtualMachine.cluster).distinct().all() if c[0]]
-            selected_cluster = st.selectbox(
-                "Cluster",
-                options=["All"] + clusters,
-                index=0
-            )
-        
-        with col3:
-            power_state = st.selectbox(
-                "Power State",
-                options=["All", "poweredOn", "poweredOff"],
-                index=0
-            )
-        
-        # Build query
-        query = session.query(VirtualMachine).filter(
-            VirtualMachine.in_use_mib.isnot(None)
+        # Selection strategy
+        selection_strategy = st.radio(
+            "Selection Strategy",
+            options=["Infrastructure-based", "Folder-based"],
+            horizontal=True,
+            help="Choose how to select VMs for migration"
         )
         
-        if selected_dc != "All":
-            query = query.filter(VirtualMachine.datacenter == selected_dc)
-        if selected_cluster != "All":
-            query = query.filter(VirtualMachine.cluster == selected_cluster)
-        if power_state != "All":
-            query = query.filter(VirtualMachine.powerstate == power_state)
+        add_vertical_space(1)
+        
+        if selection_strategy == "Infrastructure-based":
+            col1, col2, col3 = st.columns(3)
+            
+            # Filters
+            with col1:
+                datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
+                selected_dc = st.selectbox(
+                    "Datacenter",
+                    options=["All"] + datacenters,
+                    index=0
+                )
+            
+            with col2:
+                clusters = [c[0] for c in session.query(VirtualMachine.cluster).distinct().all() if c[0]]
+                selected_cluster = st.selectbox(
+                    "Cluster",
+                    options=["All"] + clusters,
+                    index=0
+                )
+            
+            with col3:
+                power_state = st.selectbox(
+                    "Power State",
+                    options=["All", "poweredOn", "poweredOff"],
+                    index=0
+                )
+            
+            # Build query
+            query = session.query(VirtualMachine).filter(
+                VirtualMachine.in_use_mib.isnot(None)
+            )
+            
+            if selected_dc != "All":
+                query = query.filter(VirtualMachine.datacenter == selected_dc)
+            if selected_cluster != "All":
+                query = query.filter(VirtualMachine.cluster == selected_cluster)
+            if power_state != "All":
+                query = query.filter(VirtualMachine.powerstate == power_state)
+        
+        else:  # Folder-based selection
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                # Get all folders
+                all_folders = [f[0] for f in session.query(VirtualMachine.folder).distinct().all() if f[0]]
+                
+                # Folder hierarchy level
+                folder_level = st.selectbox(
+                    "Folder Hierarchy Level",
+                    options=["Full Path", "Level 1", "Level 2", "Level 3", "Level 4", "Level 5"],
+                    help="Select folder aggregation level (Level 1 = root folders)"
+                )
+                
+                # Extract unique folders at selected level
+                if folder_level == "Full Path":
+                    available_folders = sorted(set(all_folders))
+                else:
+                    level = int(folder_level.split()[1])
+                    available_folders = sorted(set(
+                        '/'.join(f.split('/')[:level]) for f in all_folders if f.split('/')[:level]
+                    ))
+                
+                # Folder selection
+                selected_folders = st.multiselect(
+                    "Select Folders",
+                    options=available_folders,
+                    default=available_folders[:min(3, len(available_folders))],
+                    help="Select one or more folders to migrate"
+                )
+            
+            with col2:
+                # Include subfolders option
+                include_subfolders = st.checkbox(
+                    "Include Subfolders",
+                    value=True,
+                    help="Include all VMs in subfolders"
+                )
+                
+                power_state = st.selectbox(
+                    "Power State",
+                    options=["All", "poweredOn", "poweredOff"],
+                    index=0
+                )
+            
+            # Build folder-based query
+            query = session.query(VirtualMachine).filter(
+                VirtualMachine.in_use_mib.isnot(None),
+                VirtualMachine.folder.isnot(None)
+            )
+            
+            if selected_folders:
+                if include_subfolders:
+                    # Match folders that start with any selected folder
+                    folder_filters = [VirtualMachine.folder.like(f"{folder}%") for folder in selected_folders]
+                    from sqlalchemy import or_
+                    query = query.filter(or_(*folder_filters))
+                else:
+                    # Exact match only
+                    query = query.filter(VirtualMachine.folder.in_(selected_folders))
+            else:
+                # No folders selected, return empty
+                query = query.filter(VirtualMachine.id == -1)
+            
+            if power_state != "All":
+                query = query.filter(VirtualMachine.powerstate == power_state)
         
         vms = query.all()
         
         if not vms:
             st.warning("No VMs found matching the selected criteria.")
             return
+        
+        # Display selection summary
+        with st.expander("📋 Selection Summary", expanded=False):
+            if selection_strategy == "Infrastructure-based":
+                st.markdown(f"""
+                **Selection Criteria:**
+                - Datacenter: `{selected_dc}`
+                - Cluster: `{selected_cluster}`
+                - Power State: `{power_state}`
+                - Total VMs: **{len(vms):,}**
+                """)
+            else:
+                st.markdown(f"""
+                **Selection Criteria:**
+                - Folder Level: `{folder_level}`
+                - Selected Folders: `{len(selected_folders)}`
+                - Include Subfolders: `{include_subfolders}`
+                - Power State: `{power_state}`
+                - Total VMs: **{len(vms):,}**
+                
+                **Folders in scope:**
+                """)
+                for folder in selected_folders[:10]:
+                    st.markdown(f"  - `{folder}`")
+                if len(selected_folders) > 10:
+                    st.markdown(f"  - *... and {len(selected_folders) - 10} more*")
         
         # Calculate migration metrics
         vm_data = []
@@ -201,6 +305,7 @@ def render(db_url: str):
             
             vm_data.append({
                 'VM': vm.vm,
+                'Folder': vm.folder or 'N/A',
                 'Datacenter': vm.datacenter or 'Unknown',
                 'Cluster': vm.cluster or 'Unknown',
                 'PowerState': vm.powerstate or 'Unknown',
@@ -295,7 +400,10 @@ def render(db_url: str):
             color_name="violet-70"
         )
         
-        tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "📅 Timeline", "💾 Storage", "⚡ Performance"])
+        if selection_strategy == "Folder-based":
+            tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "📅 Timeline", "💾 Storage", "⚡ Performance", "📁 Folders"])
+        else:
+            tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "📅 Timeline", "💾 Storage", "⚡ Performance"])
         
         with tab1:
             col1, col2 = st.columns(2)
@@ -484,6 +592,86 @@ def render(db_url: str):
             with col3:
                 st.metric("Data Transferred", f"{total_storage:,.1f} GiB")
         
+        # Folder analysis tab (only for folder-based selection)
+        if selection_strategy == "Folder-based":
+            with tab5:
+                st.subheader("Migration by Folder")
+                
+                # Aggregate by folder
+                folder_summary = df.groupby('Folder').agg({
+                    'VM': 'count',
+                    'Storage_GiB': 'sum',
+                    'Total_Hours': 'sum',
+                    'Batch': lambda x: x.nunique()
+                }).reset_index()
+                folder_summary.columns = ['Folder', 'VM_Count', 'Total_Storage', 'Total_Time', 'Batches']
+                folder_summary = folder_summary.sort_values('VM_Count', ascending=False)
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # VMs per folder
+                    fig = px.bar(
+                        folder_summary.head(15),
+                        x='VM_Count',
+                        y='Folder',
+                        orientation='h',
+                        title='Top 15 Folders - VM Count',
+                        color='VM_Count',
+                        color_continuous_scale='Blues',
+                        text='VM_Count'
+                    )
+                    fig.update_traces(textposition='outside')
+                    fig.update_layout(
+                        showlegend=False,
+                        yaxis={'categoryorder':'total ascending'},
+                        height=500
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    # Migration time per folder
+                    fig = px.bar(
+                        folder_summary.head(15),
+                        x='Total_Time',
+                        y='Folder',
+                        orientation='h',
+                        title='Top 15 Folders - Migration Time (hours)',
+                        color='Total_Time',
+                        color_continuous_scale='Oranges',
+                        text='Total_Time'
+                    )
+                    fig.update_traces(texttemplate='%{text:.1f}h', textposition='outside')
+                    fig.update_layout(
+                        showlegend=False,
+                        yaxis={'categoryorder':'total ascending'},
+                        height=500
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                # Folder metrics table
+                st.subheader("Folder Migration Metrics")
+                st.dataframe(
+                    folder_summary.style.format({
+                        'VM_Count': '{:,.0f}',
+                        'Total_Storage': '{:,.1f}',
+                        'Total_Time': '{:.2f}',
+                        'Batches': '{:.0f}'
+                    }),
+                    height=300,
+                    use_container_width=True
+                )
+                
+                # Export folder summary
+                csv_folder = folder_summary.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="⬇️ Export Folder Summary (CSV)",
+                    data=csv_folder,
+                    file_name=f"migration_folder_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    use_container_width=False
+                )
+        
         add_vertical_space(2)
         
         # Detailed VM list with export
@@ -502,11 +690,17 @@ def render(db_url: str):
         df['Batch'] = df['VM'].map(vm_to_batch)
         df['Total_Days'] = df['Total_Hours'] / maintenance_window_hours
         
-        # Display table
-        display_df = df[[
-            'Batch', 'VM', 'Datacenter', 'Cluster', 'Storage_GiB',
-            'Replication_Hours', 'Fixed_Hours', 'Total_Hours', 'Total_Days'
-        ]].copy()
+        # Display table (include Folder column if folder-based selection)
+        if selection_strategy == "Folder-based":
+            display_df = df[[
+                'Batch', 'VM', 'Folder', 'Datacenter', 'Cluster', 'Storage_GiB',
+                'Replication_Hours', 'Fixed_Hours', 'Total_Hours', 'Total_Days'
+            ]].copy()
+        else:
+            display_df = df[[
+                'Batch', 'VM', 'Datacenter', 'Cluster', 'Storage_GiB',
+                'Replication_Hours', 'Fixed_Hours', 'Total_Hours', 'Total_Days'
+            ]].copy()
         
         display_df = display_df.sort_values(['Batch', 'Total_Hours'], ascending=[True, False])
         
