@@ -64,10 +64,13 @@ def render(db_url: str):
         
         # Fixed time per VM
         st.sidebar.markdown("#### Time per VM")
+        
+        # Check for quick override
+        default_fixed_time = st.session_state.get('quick_fixed_time_override', 2)
         fixed_time_hours = st.sidebar.selectbox(
             "Fixed Setup Time",
             options=[1, 2, 4, 8],
-            index=1,  # Default 2 hours
+            index=[1, 2, 4, 8].index(default_fixed_time) if default_fixed_time in [1, 2, 4, 8] else 1,
             help="Time for VM configuration, validation, and testing"
         )
         
@@ -109,11 +112,14 @@ def render(db_url: str):
         
         # Parallel migrations
         st.sidebar.markdown("#### Migration Strategy")
+        
+        # Check for quick override
+        default_parallel = st.session_state.get('quick_parallel_override', 5)
         parallel_vms = st.sidebar.number_input(
             "Parallel VM Migrations",
             min_value=1,
             max_value=50,
-            value=5,
+            value=default_parallel,
             help="Number of VMs that can migrate simultaneously"
         )
         
@@ -127,13 +133,166 @@ def render(db_url: str):
         
         # Downtime window
         st.sidebar.markdown("#### Scheduling")
+        
+        # Check for quick override
+        default_window = st.session_state.get('quick_window_override', 8)
         maintenance_window_hours = st.sidebar.number_input(
             "Maintenance Window (hours/day)",
             min_value=1,
             max_value=24,
-            value=8,
+            value=default_window,
             help="Available hours per day for migration"
         )
+        
+        add_vertical_space(1)
+        
+        # Migration Strategy Synthesis
+        with st.expander("📋 Migration Strategy Synthesis", expanded=True):
+            st.markdown("### Current Configuration")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Time & Performance**")
+                # Create editable configuration table
+                config_data = {
+                    'Parameter': [
+                        'Fixed Time per VM',
+                        'Network Bandwidth',
+                        'Network Efficiency',
+                        'Parallel Migrations'
+                    ],
+                    'Current Value': [
+                        f"{fixed_time_hours} hours",
+                        f"{bandwidth_mbps:,} Mbps",
+                        f"{network_efficiency*100:.0f}%",
+                        f"{parallel_vms} VMs"
+                    ],
+                    'Impact': [
+                        'Per-VM setup duration',
+                        'Replication speed',
+                        'Actual throughput',
+                        'Concurrent streams'
+                    ]
+                }
+                df_config = pd.DataFrame(config_data)
+                st.dataframe(df_config, hide_index=True, use_container_width=True)
+            
+            with col2:
+                st.markdown("**Strategy & Scheduling**")
+                strategy_data = {
+                    'Parameter': [
+                        'Migration Method',
+                        'Maintenance Window',
+                        'Selection Strategy'
+                    ],
+                    'Current Value': [
+                        migration_method,
+                        f"{maintenance_window_hours} hours/day",
+                        st.session_state.get('current_selection_strategy', 'Infrastructure-based')
+                    ],
+                    'Impact': [
+                        'Downtime & duration',
+                        'Daily capacity',
+                        'VM grouping approach'
+                    ]
+                }
+                df_strategy = pd.DataFrame(strategy_data)
+                st.dataframe(df_strategy, hide_index=True, use_container_width=True)
+            
+            # Quick edit options
+            st.markdown("---")
+            st.markdown("**⚡ Quick Adjustments**")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                # Use session state to persist quick changes
+                if 'quick_fixed_time_override' not in st.session_state:
+                    st.session_state.quick_fixed_time_override = None
+                
+                quick_fixed_time = st.selectbox(
+                    "Adjust Fixed Time",
+                    options=[1, 2, 4, 8],
+                    index=[1, 2, 4, 8].index(fixed_time_hours),
+                    key="quick_fixed_time",
+                    help="Quick change to fixed time per VM"
+                )
+                if quick_fixed_time != fixed_time_hours:
+                    if st.button("✔️ Apply", key="apply_fixed_time"):
+                        st.session_state.quick_fixed_time_override = quick_fixed_time
+                        st.rerun()
+                    else:
+                        st.info("👆 Click Apply to use")
+            
+            with col2:
+                quick_bandwidth = st.selectbox(
+                    "Adjust Bandwidth",
+                    options=["100 Mbps", "1 Gbps", "10 Gbps", "25 Gbps"],
+                    index=["100 Mbps", "1 Gbps", "10 Gbps", "25 Gbps"].index(bandwidth_preset) if bandwidth_preset != "Custom" else 1,
+                    key="quick_bandwidth",
+                    help="Quick change to network bandwidth"
+                )
+            
+            with col3:
+                if 'quick_parallel_override' not in st.session_state:
+                    st.session_state.quick_parallel_override = None
+                    
+                quick_parallel = st.number_input(
+                    "Adjust Parallel VMs",
+                    min_value=1,
+                    max_value=50,
+                    value=parallel_vms,
+                    key="quick_parallel",
+                    help="Quick change to parallel migrations"
+                )
+                if quick_parallel != parallel_vms:
+                    if st.button("✔️ Apply", key="apply_parallel"):
+                        st.session_state.quick_parallel_override = quick_parallel
+                        st.rerun()
+                    else:
+                        st.info("👆 Click Apply to use")
+            
+            with col4:
+                if 'quick_window_override' not in st.session_state:
+                    st.session_state.quick_window_override = None
+                    
+                quick_window = st.number_input(
+                    "Adjust Window (h/day)",
+                    min_value=1,
+                    max_value=24,
+                    value=maintenance_window_hours,
+                    key="quick_window",
+                    help="Quick change to maintenance window"
+                )
+                if quick_window != maintenance_window_hours:
+                    if st.button("✔️ Apply", key="apply_window"):
+                        st.session_state.quick_window_override = quick_window
+                        st.rerun()
+                    else:
+                        st.info("👆 Click Apply to use")
+            
+            # Estimation impact
+            st.markdown("---")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric(
+                    "Estimated Total Time",
+                    "Calculated below",
+                    help="Based on current configuration"
+                )
+            with col2:
+                st.metric(
+                    "Throughput Required",
+                    f"{bandwidth_mbps * network_efficiency:.0f} Mbps",
+                    help="Effective bandwidth after efficiency factor"
+                )
+            with col3:
+                st.metric(
+                    "Max Concurrent Load",
+                    f"{parallel_vms * fixed_time_hours:.0f}h",
+                    help="Time if all parallel VMs take max duration"
+                )
         
         add_vertical_space(1)
         
@@ -151,6 +310,9 @@ def render(db_url: str):
             horizontal=True,
             help="Choose how to select VMs for migration"
         )
+        
+        # Store selection strategy in session state for synthesis table
+        st.session_state.current_selection_strategy = selection_strategy
         
         add_vertical_space(1)
         
