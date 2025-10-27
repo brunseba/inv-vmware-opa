@@ -19,8 +19,8 @@ class VirtualMachine(Base):
     
     # Basic VM information
     vm: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    powerstate: Mapped[str | None] = mapped_column(String(50))
-    template: Mapped[bool | None] = mapped_column(Boolean)
+    powerstate: Mapped[str | None] = mapped_column(String(50), index=True)  # Frequently filtered
+    template: Mapped[bool | None] = mapped_column(Boolean, index=True)  # Frequently filtered
     srm_placeholder: Mapped[str | None] = mapped_column(String(50))
     config_status: Mapped[str | None] = mapped_column(String(50))
     dns_name: Mapped[str | None] = mapped_column(String(255))
@@ -32,7 +32,7 @@ class VirtualMachine(Base):
     # Power and timing
     poweron: Mapped[datetime | None] = mapped_column(DateTime)
     suspend_time: Mapped[datetime | None] = mapped_column(DateTime)
-    creation_date: Mapped[datetime | None] = mapped_column(DateTime)
+    creation_date: Mapped[datetime | None] = mapped_column(DateTime, index=True)  # Used in filters and trends
     change_version: Mapped[str | None] = mapped_column(String(50))
     
     # Resources
@@ -63,8 +63,8 @@ class VirtualMachine(Base):
     video_ram_kib: Mapped[int | None] = mapped_column(Integer)
     
     # Organization
-    resource_pool: Mapped[str | None] = mapped_column(String(255))
-    folder: Mapped[str | None] = mapped_column(String(500))
+    resource_pool: Mapped[str | None] = mapped_column(String(255), index=True)  # Frequently grouped
+    folder: Mapped[str | None] = mapped_column(String(500), index=True)  # Frequently grouped/filtered
     vapp: Mapped[str | None] = mapped_column(String(255))
     
     # HA/FT
@@ -116,7 +116,7 @@ class VirtualMachine(Base):
     host: Mapped[str | None] = mapped_column(String(255), index=True)
     
     # OS
-    os_config: Mapped[str | None] = mapped_column(String(255))
+    os_config: Mapped[str | None] = mapped_column(String(255), index=True)  # Frequently grouped
     os_vmware_tools: Mapped[str | None] = mapped_column(String(255))
     
     # Identifiers
