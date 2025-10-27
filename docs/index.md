@@ -4,11 +4,26 @@ A Python CLI tool for managing VMware inventory data from Excel exports into a s
 
 ## Features
 
-- **Excel Import**: Load VMware inventory data from Excel files
-- **Database Storage**: Store inventory in SQLite or other SQL databases
-- **CLI Interface**: Simple command-line interface for data management
-- **Statistics**: Query and analyze inventory data
-- **Filtering**: Filter VMs by datacenter, cluster, and other attributes
+### Core Functionality
+- **📥 Excel Import**: Load VMware inventory data from Excel files
+- **💾 Database Storage**: Store inventory in SQLite, PostgreSQL, or MySQL
+- **⚡ CLI Interface**: Simple command-line interface for data management
+- **📊 Statistics**: Query and analyze inventory data
+- **🔍 Filtering**: Filter VMs by datacenter, cluster, and other attributes
+
+### Interactive Dashboard
+- **🖥️ Web Interface**: Rich Streamlit-based dashboard with multiple views
+- **📈 Advanced Analytics**: CPU vs Memory patterns, OS distribution, cluster efficiency
+- **⚖️ Comparison Tools**: Side-by-side datacenter, cluster, and host comparisons
+- **📁 Folder Analysis**: Comprehensive folder-level resource and storage analytics
+- **🔎 VM Explorer**: Advanced search and detailed VM inspection
+- **📊 Data Quality**: Field completeness analysis and recommendations
+
+### PDF Export
+- **📄 Professional Reports**: Generate comprehensive PDF reports with 20+ visualizations
+- **🎨 Multiple Formats**: Standard, Extended (all charts), or Summary (tables only)
+- **⚙️ Customizable**: Configurable page size, chart quality (DPI), color schemes
+- **📑 Rich Content**: Executive summaries, infrastructure analysis, resource metrics, storage efficiency
 
 ## Architecture
 

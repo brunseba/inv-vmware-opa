@@ -63,8 +63,17 @@ nav:
       - Quick Start: getting-started/quickstart.md
   - User Guide:
       - CLI Commands: user-guide/cli-commands.md
+      - Dashboard: user-guide/dashboard.md
+      - PDF Export: user-guide/pdf-export.md
       - Database Schema: user-guide/database-schema.md
+  - Features:
+      - Dashboard Overview: DASHBOARD.md
+      - UI Enhancements: UI_ENHANCEMENTS.md
+      - PDF Export Features: PDF_EXPORT.md
+      - PDF Charts Guide: PDF_CHARTS_GUIDE.md
+      - PDF Enhanced Features: PDF_ENHANCED_FEATURES.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
+      - Fixes Applied: FIXES_APPLIED.md
   - Changelog: changelog.md
