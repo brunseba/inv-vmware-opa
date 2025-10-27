@@ -55,4 +55,5 @@ docs/_build/
 .DS_Store
 Thumbs.db
 inputs/vmware-inv.xlsx
+inputs/IAAS.xlsx
 /data/

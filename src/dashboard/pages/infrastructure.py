@@ -88,7 +88,7 @@ def render(db_url: str):
                     'CPUs': '{:,.0f}',
                     'Memory_GB': '{:,.1f}'
                 }),
-                use_container_width=True,
+                width="stretch",
                 hide_index=True
             )
         

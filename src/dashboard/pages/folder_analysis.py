@@ -6,6 +6,10 @@ import plotly.graph_objects as go
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+from streamlit_extras.metric_cards import style_metric_cards
+from streamlit_extras.colored_header import colored_header
+from streamlit_extras.add_vertical_space import add_vertical_space
+from streamlit_extras.dataframe_explorer import dataframe_explorer
 from src.models import VirtualMachine
 
 
@@ -38,7 +42,11 @@ def _aggregate_folder_path(folder_path: str, level: int) -> str:
 
 def render(db_url: str):
     """Render the folder analysis page."""
-    st.markdown('<h1 class="main-header">📁 Folder Analysis</h1>', unsafe_allow_html=True)
+    colored_header(
+        label="📁 Folder Analysis",
+        description="Comprehensive folder-level resource and storage analysis",
+        color_name="blue-70"
+    )
     
     try:
         engine = create_engine(db_url, echo=False)
@@ -58,6 +66,9 @@ def render(db_url: str):
             func.count(VirtualMachine.id).label('vm_count'),
             func.sum(VirtualMachine.cpus).label('total_cpus'),
             func.sum(VirtualMachine.memory).label('total_memory'),
+            func.sum(VirtualMachine.provisioned_mib).label('total_provisioned'),
+            func.sum(VirtualMachine.in_use_mib).label('total_in_use'),
+            func.sum(VirtualMachine.unshared_mib).label('total_unshared'),
             func.count(func.distinct(VirtualMachine.datacenter)).label('datacenters'),
             func.count(func.distinct(VirtualMachine.cluster)).label('clusters'),
             func.count(func.distinct(VirtualMachine.host)).label('hosts')
@@ -71,11 +82,18 @@ def render(db_url: str):
         
         # Convert to DataFrame
         df_folders = pd.DataFrame(folder_stats, columns=[
-            'Folder', 'VMs', 'Total_CPUs', 'Total_Memory_MB', 'Datacenters', 'Clusters', 'Hosts'
+            'Folder', 'VMs', 'Total_CPUs', 'Total_Memory_MB', 
+            'Total_Provisioned_MiB', 'Total_In_Use_MiB', 'Total_Unshared_MiB',
+            'Datacenters', 'Clusters', 'Hosts'
         ])
         df_folders['Total_Memory_GB'] = (df_folders['Total_Memory_MB'] / 1024).round(1)
+        df_folders['Total_Provisioned_GB'] = (df_folders['Total_Provisioned_MiB'] / 1024).round(1)
+        df_folders['Total_In_Use_GB'] = (df_folders['Total_In_Use_MiB'] / 1024).round(1)
+        df_folders['Total_Unshared_GB'] = (df_folders['Total_Unshared_MiB'] / 1024).round(1)
         df_folders['Avg_CPUs'] = (df_folders['Total_CPUs'] / df_folders['VMs']).round(1)
         df_folders['Avg_Memory_GB'] = (df_folders['Total_Memory_GB'] / df_folders['VMs']).round(1)
+        df_folders['Avg_Provisioned_GB'] = (df_folders['Total_Provisioned_GB'] / df_folders['VMs']).round(1)
+        df_folders['Avg_In_Use_GB'] = (df_folders['Total_In_Use_GB'] / df_folders['VMs']).round(1)
         
         # Fill NaN values
         df_folders = df_folders.fillna(0)
@@ -84,7 +102,12 @@ def render(db_url: str):
         df_folders = df_folders.sort_values('VMs', ascending=False)
         
         # Aggregation options (must be before summary metrics)
-        st.subheader("Aggregation Settings")
+        add_vertical_space(1)
+        colored_header(
+            label="Aggregation Settings",
+            description="Configure folder hierarchy and filtering options",
+            color_name="green-70"
+        )
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -98,7 +121,7 @@ def render(db_url: str):
             min_vms = st.number_input("Min VMs", min_value=0, value=0, help="Show folders with at least this many VMs")
         
         with col3:
-            sort_by = st.selectbox("Sort by", ["VMs", "Total_CPUs", "Total_Memory_GB", "Folder"])
+            sort_by = st.selectbox("Sort by", ["VMs", "Total_CPUs", "Total_Memory_GB", "Total_Provisioned_GB", "Total_In_Use_GB", "Folder"])
         
         # Apply folder aggregation
         if aggregate_level != "Full Path":
@@ -113,6 +136,12 @@ def render(db_url: str):
                 'Total_CPUs': 'sum',
                 'Total_Memory_MB': 'sum',
                 'Total_Memory_GB': 'sum',
+                'Total_Provisioned_MiB': 'sum',
+                'Total_In_Use_MiB': 'sum',
+                'Total_Unshared_MiB': 'sum',
+                'Total_Provisioned_GB': 'sum',
+                'Total_In_Use_GB': 'sum',
+                'Total_Unshared_GB': 'sum',
                 'Datacenters': 'sum',  # This will over-count but gives an idea
                 'Clusters': 'sum',
                 'Hosts': 'sum'
@@ -122,14 +151,20 @@ def render(db_url: str):
             # Recalculate averages
             df_folders['Avg_CPUs'] = (df_folders['Total_CPUs'] / df_folders['VMs']).round(1)
             df_folders['Avg_Memory_GB'] = (df_folders['Total_Memory_GB'] / df_folders['VMs']).round(1)
+            df_folders['Avg_Provisioned_GB'] = (df_folders['Total_Provisioned_GB'] / df_folders['VMs']).round(1)
+            df_folders['Avg_In_Use_GB'] = (df_folders['Total_In_Use_GB'] / df_folders['VMs']).round(1)
             df_folders = df_folders.sort_values('VMs', ascending=False)
             
             st.info(f"📂 Viewing folders aggregated at **{aggregate_level}** (folders grouped by first {aggregate_level.split()[1]} level(s))")
         
-        st.divider()
+        add_vertical_space(2)
         
         # Summary metrics
-        st.subheader("Folder Summary")
+        colored_header(
+            label="Folder Summary",
+            description="Key folder metrics and statistics",
+            color_name="orange-70"
+        )
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
@@ -146,14 +181,20 @@ def render(db_url: str):
             ).scalar() or 0
             st.metric("VMs w/o Folder", folders_with_null)
         
-        st.divider()
+        # Style metric cards
+        style_metric_cards(
+            background_color="#1f1f1f",
+            border_left_color="#ff8c00",
+            border_color="#2e2e2e",
+            box_shadow="#1f1f1f"
+        )
+        
+        add_vertical_space(2)
         
         # Apply filters
         df_filtered = df_folders[df_folders['VMs'] >= min_vms]
         if sort_by != "VMs":
             df_filtered = df_filtered.sort_values(sort_by, ascending=False)
-        
-        st.divider()
         
         # Export button
         csv_data = df_filtered.to_csv(index=False).encode('utf-8')
@@ -165,12 +206,18 @@ def render(db_url: str):
         )
         
         # Display detailed table
-        st.subheader(f"Folder Details ({len(df_filtered)} folders)")
+        colored_header(
+            label=f"Folder Details ({len(df_filtered)} folders)",
+            description="Detailed folder metrics with sorting and filtering",
+            color_name="violet-70"
+        )
         
         # Select columns to display
         display_df = df_filtered[[
             'Folder', 'VMs', 'Total_CPUs', 'Total_Memory_GB', 
-            'Avg_CPUs', 'Avg_Memory_GB', 'Datacenters', 'Clusters', 'Hosts'
+            'Total_Provisioned_GB', 'Total_In_Use_GB', 'Total_Unshared_GB',
+            'Avg_CPUs', 'Avg_Memory_GB', 'Avg_Provisioned_GB', 'Avg_In_Use_GB',
+            'Datacenters', 'Clusters', 'Hosts'
         ]].copy()
         
         st.dataframe(
@@ -178,22 +225,31 @@ def render(db_url: str):
                 'VMs': '{:,.0f}',
                 'Total_CPUs': '{:,.0f}',
                 'Total_Memory_GB': '{:,.1f}',
+                'Total_Provisioned_GB': '{:,.1f}',
+                'Total_In_Use_GB': '{:,.1f}',
+                'Total_Unshared_GB': '{:,.1f}',
                 'Avg_CPUs': '{:.1f}',
                 'Avg_Memory_GB': '{:.1f}',
+                'Avg_Provisioned_GB': '{:.1f}',
+                'Avg_In_Use_GB': '{:.1f}',
                 'Datacenters': '{:.0f}',
                 'Clusters': '{:.0f}',
                 'Hosts': '{:.0f}'
             }),
-            use_container_width=True,
+            width="stretch",
             hide_index=True
         )
         
-        st.divider()
+        add_vertical_space(2)
         
         # Visualizations
-        st.subheader("Folder Visualizations")
+        colored_header(
+            label="Folder Visualizations",
+            description="Interactive charts and analytics",
+            color_name="blue-70"
+        )
         
-        viz_tab1, viz_tab2, viz_tab3 = st.tabs(["📊 Distribution", "🎯 Resources", "🗂️ Hierarchy"])
+        viz_tab1, viz_tab2, viz_tab3, viz_tab4 = st.tabs(["📊 Distribution", "🎯 Resources", "💾 Storage", "🗂️ Hierarchy"])
         
         with viz_tab1:
             col1, col2 = st.columns(2)
@@ -288,6 +344,106 @@ def render(db_url: str):
                 st.plotly_chart(fig, use_container_width=True)
         
         with viz_tab3:
+            st.subheader("Storage Consumption by Folder")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Top folders by provisioned storage
+                df_top = df_filtered.head(15)
+                
+                fig = px.bar(
+                    df_top,
+                    x='Total_Provisioned_GB',
+                    y='Folder',
+                    orientation='h',
+                    title='Top 15 Folders by Provisioned Storage',
+                    color='Total_Provisioned_GB',
+                    color_continuous_scale='Oranges',
+                    text='Total_Provisioned_GB'
+                )
+                fig.update_traces(texttemplate='%{text:.0f} GB', textposition='outside')
+                fig.update_layout(
+                    showlegend=False,
+                    yaxis={'categoryorder':'total ascending'},
+                    height=500
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                # Storage utilization (In Use vs Provisioned)
+                df_top = df_filtered.head(15)
+                
+                fig = go.Figure()
+                fig.add_trace(go.Bar(
+                    name='Provisioned',
+                    x=df_top['Folder'],
+                    y=df_top['Total_Provisioned_GB'],
+                    marker_color='lightsalmon'
+                ))
+                fig.add_trace(go.Bar(
+                    name='In Use',
+                    x=df_top['Folder'],
+                    y=df_top['Total_In_Use_GB'],
+                    marker_color='lightseagreen'
+                ))
+                
+                fig.update_layout(
+                    title='Top 15 Folders - Storage Utilization',
+                    barmode='group',
+                    xaxis_tickangle=-45,
+                    height=500,
+                    yaxis_title='Storage (GB)'
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            
+            # Storage efficiency metrics
+            st.divider()
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Storage efficiency scatter
+                df_top = df_filtered.head(20).copy()
+                df_top['Storage_Efficiency_%'] = (df_top['Total_In_Use_GB'] / df_top['Total_Provisioned_GB'] * 100).round(1)
+                
+                fig = px.scatter(
+                    df_top,
+                    x='Total_Provisioned_GB',
+                    y='Storage_Efficiency_%',
+                    size='VMs',
+                    hover_data=['Folder', 'Total_In_Use_GB'],
+                    title='Storage Efficiency by Folder',
+                    color='VMs',
+                    color_continuous_scale='Viridis',
+                    labels={'Storage_Efficiency_%': 'Efficiency (%)', 'Total_Provisioned_GB': 'Provisioned Storage (GB)'}
+                )
+                fig.add_hline(y=100, line_dash="dash", line_color="red", annotation_text="100% Efficiency")
+                fig.update_layout(height=450)
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                # Avg storage per VM
+                df_top = df_filtered.head(15)
+                
+                fig = px.bar(
+                    df_top,
+                    x='Avg_Provisioned_GB',
+                    y='Folder',
+                    orientation='h',
+                    title='Top 15 Folders - Avg Provisioned Storage per VM',
+                    color='Avg_Provisioned_GB',
+                    color_continuous_scale='Purples',
+                    text='Avg_Provisioned_GB'
+                )
+                fig.update_traces(texttemplate='%{text:.1f} GB', textposition='outside')
+                fig.update_layout(
+                    showlegend=False,
+                    yaxis={'categoryorder':'total ascending'},
+                    height=450
+                )
+                st.plotly_chart(fig, use_container_width=True)
+        
+        with viz_tab4:
             # Treemap of folder hierarchy
             fig = px.treemap(
                 df_filtered.head(20),
@@ -313,10 +469,14 @@ def render(db_url: str):
             fig.update_layout(height=600)
             st.plotly_chart(fig, use_container_width=True)
         
-        st.divider()
+        add_vertical_space(2)
         
         # Detailed folder inspection
-        st.subheader("🔍 Folder Details")
+        colored_header(
+            label="🔍 Folder Details",
+            description="Drill down into specific folder contents",
+            color_name="red-70"
+        )
         
         selected_folder = st.selectbox(
             "Select a folder to inspect:",
@@ -343,6 +503,28 @@ def render(db_url: str):
                 total_mem = sum(vm.memory or 0 for vm in folder_vms) / 1024
                 st.metric("Total Memory", f"{total_mem:.0f} GB")
             
+            # Style metrics
+            style_metric_cards(
+                background_color="#1f1f1f",
+                border_left_color="#dc143c",
+                border_color="#2e2e2e",
+                box_shadow="#1f1f1f"
+            )
+            
+            add_vertical_space(1)
+            
+            # Storage metrics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                total_prov = sum(vm.provisioned_mib or 0 for vm in folder_vms) / 1024
+                st.metric("Provisioned Storage", f"{total_prov:.0f} GB")
+            with col2:
+                total_used = sum(vm.in_use_mib or 0 for vm in folder_vms) / 1024
+                st.metric("In Use Storage", f"{total_used:.0f} GB")
+            with col3:
+                efficiency = (total_used / total_prov * 100) if total_prov > 0 else 0
+                st.metric("Storage Efficiency", f"{efficiency:.1f}%")
+            
             # VMs in folder
             with st.expander(f"View VMs in '{selected_folder}' ({len(folder_vms)} VMs)"):
                 vm_data = []
@@ -358,7 +540,7 @@ def render(db_url: str):
                     })
                 
                 df_vms = pd.DataFrame(vm_data)
-                st.dataframe(df_vms, use_container_width=True, hide_index=True)
+                st.dataframe(df_vms, width="stretch", hide_index=True)
                 
                 # Export VMs in folder
                 csv_vms = df_vms.to_csv(index=False).encode('utf-8')

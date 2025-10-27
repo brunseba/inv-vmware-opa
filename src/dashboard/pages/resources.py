@@ -6,12 +6,19 @@ import plotly.graph_objects as go
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+from streamlit_extras.metric_cards import style_metric_cards
+from streamlit_extras.colored_header import colored_header
+from streamlit_extras.add_vertical_space import add_vertical_space
 from src.models import VirtualMachine
 
 
 def render(db_url: str):
     """Render the resources page."""
-    st.markdown('<h1 class="main-header">💾 Resource Analysis</h1>', unsafe_allow_html=True)
+    colored_header(
+        label="💾 Resource Analysis",
+        description="CPU, Memory, and Storage consumption metrics",
+        color_name="blue-70"
+    )
     
     try:
         engine = create_engine(db_url, echo=False)
@@ -48,9 +55,14 @@ def render(db_url: str):
             st.warning("No VMs found with selected filters")
             return
         
-        st.divider()
+        add_vertical_space(2)
         
         # Summary metrics
+        colored_header(
+            label="Resource Summary",
+            description=f"Analyzing {len(vms):,} virtual machines",
+            color_name="green-70"
+        )
         col1, col2, col3, col4 = st.columns(4)
         
         total_cpus = sum(vm.cpus or 0 for vm in vms)
@@ -67,13 +79,27 @@ def render(db_url: str):
         with col4:
             st.metric("Avg Memory per VM", f"{avg_memory_gb:.1f} GB")
         
-        st.divider()
+        # Style metric cards
+        style_metric_cards(
+            background_color="#1f1f1f",
+            border_left_color="#2e8b57",
+            border_color="#2e2e2e",
+            box_shadow="#1f1f1f"
+        )
+        
+        add_vertical_space(2)
         
         # CPU Distribution
+        colored_header(
+            label="Resource Distribution",
+            description="CPU and memory allocation across VMs",
+            color_name="orange-70"
+        )
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("vCPU Distribution")
+            st.markdown("#### 📦 vCPU Distribution")
             cpu_data = [vm.cpus for vm in vms if vm.cpus]
             if cpu_data:
                 df_cpu = pd.DataFrame({'vCPUs': cpu_data})
@@ -91,7 +117,7 @@ def render(db_url: str):
                 st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            st.subheader("Memory Distribution (GB)")
+            st.markdown("#### 💾 Memory Distribution (GB)")
             memory_data = [vm.memory / 1024 for vm in vms if vm.memory]
             if memory_data:
                 df_mem = pd.DataFrame({'Memory_GB': memory_data})
@@ -108,13 +134,19 @@ def render(db_url: str):
                 )
                 st.plotly_chart(fig, use_container_width=True)
         
-        st.divider()
+        add_vertical_space(2)
         
         # Top resource consumers
+        colored_header(
+            label="Top Resource Consumers",
+            description="Virtual machines with highest resource allocation",
+            color_name="red-70"
+        )
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Top 10 VMs by vCPU")
+            st.markdown("#### 🔺 Top 10 VMs by vCPU")
             top_cpu_vms = sorted(vms, key=lambda x: x.cpus or 0, reverse=True)[:10]
             df_top_cpu = pd.DataFrame([
                 {'VM': vm.vm[:30], 'vCPUs': vm.cpus} 
@@ -133,7 +165,7 @@ def render(db_url: str):
                 st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            st.subheader("Top 10 VMs by Memory")
+            st.markdown("#### 🔺 Top 10 VMs by Memory")
             top_mem_vms = sorted(vms, key=lambda x: x.memory or 0, reverse=True)[:10]
             df_top_mem = pd.DataFrame([
                 {'VM': vm.vm[:30], 'Memory_GB': vm.memory / 1024} 
@@ -151,10 +183,14 @@ def render(db_url: str):
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
                 st.plotly_chart(fig, use_container_width=True)
         
-        st.divider()
+        add_vertical_space(2)
         
         # Storage Analysis
-        st.subheader("Storage Analysis")
+        colored_header(
+            label="Storage Analysis",
+            description="Storage provisioning and utilization metrics",
+            color_name="violet-70"
+        )
         col1, col2, col3 = st.columns(3)
         
         total_provisioned = sum(vm.provisioned_mib or 0 for vm in vms) / 1024  # Convert to GB
@@ -169,6 +205,16 @@ def render(db_url: str):
             if total_provisioned > 0:
                 utilization = (total_in_use / total_provisioned) * 100
                 st.metric("Storage Utilization", f"{utilization:.1f}%")
+        
+        # Style storage metrics
+        style_metric_cards(
+            background_color="#1f1f1f",
+            border_left_color="#9370db",
+            border_color="#2e2e2e",
+            box_shadow="#1f1f1f"
+        )
+        
+        add_vertical_space(1)
         
         # Storage chart
         storage_df = pd.DataFrame({

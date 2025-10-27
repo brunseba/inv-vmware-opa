@@ -160,7 +160,7 @@ def _render_summary_report(session, columns, total_vms, show_charts):
         subset=['Completeness (%)']
     )
     
-    st.dataframe(styled_df, use_container_width=True, hide_index=True)
+    st.dataframe(styled_df, width="stretch", hide_index=True)
     
     if show_charts:
         st.divider()
@@ -280,7 +280,7 @@ def _render_detailed_report(session, columns, total_vms):
                 'Count': '{:,}',
                 'Percentage': '{:.2f}%'
             }),
-            use_container_width=True,
+            width="stretch",
             hide_index=True
         )
         

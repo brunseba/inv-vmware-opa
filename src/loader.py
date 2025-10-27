@@ -104,7 +104,12 @@ def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False
             session.commit()
         
         # Read Excel file
+        # Try to detect header row automatically
         df = pd.read_excel(excel_path, sheet_name=sheet_name)
+        
+        # If first row is all NaN, skip it and use second row as header
+        if df.iloc[0].isna().all():
+            df = pd.read_excel(excel_path, sheet_name=sheet_name, header=1)
         
         # Normalize column names for easier mapping
         column_mapping = {col: normalize_column_name(col) for col in df.columns}

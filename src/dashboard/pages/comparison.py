@@ -88,7 +88,7 @@ def _compare_datacenters(session):
     df_comparison = pd.DataFrame(dc_data)
     
     # Display comparison table
-    st.dataframe(df_comparison, use_container_width=True, hide_index=True)
+    st.dataframe(df_comparison, width="stretch", hide_index=True)
     
     st.divider()
     
@@ -195,7 +195,7 @@ def _compare_clusters(session):
         })
     
     df_comparison = pd.DataFrame(cluster_data)
-    st.dataframe(df_comparison, use_container_width=True, hide_index=True)
+    st.dataframe(df_comparison, width="stretch", hide_index=True)
     
     st.divider()
     
@@ -269,7 +269,7 @@ def _compare_hosts(session):
         })
     
     df_comparison = pd.DataFrame(host_data)
-    st.dataframe(df_comparison, use_container_width=True, hide_index=True)
+    st.dataframe(df_comparison, width="stretch", hide_index=True)
     
     st.divider()
     

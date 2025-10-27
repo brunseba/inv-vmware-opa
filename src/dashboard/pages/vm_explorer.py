@@ -139,7 +139,7 @@ def render(db_url: str):
             df_vms.style.format({
                 'Memory_GB': '{:.1f}'
             }),
-            use_container_width=True,
+            width="stretch",
             hide_index=True
         )
         

@@ -6,12 +6,19 @@ import plotly.graph_objects as go
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+from streamlit_extras.metric_cards import style_metric_cards
+from streamlit_extras.colored_header import colored_header
+from streamlit_extras.add_vertical_space import add_vertical_space
 from src.models import VirtualMachine
 
 
 def render(db_url: str):
     """Render the overview page."""
-    st.markdown('<h1 class="main-header">📊 VMware Inventory Overview</h1>', unsafe_allow_html=True)
+    colored_header(
+        label="📊 VMware Inventory Overview",
+        description="Comprehensive view of your virtual infrastructure",
+        color_name="blue-70"
+    )
     
     try:
         engine = create_engine(db_url, echo=False)
@@ -66,13 +73,17 @@ def render(db_url: str):
                 value=f"{total_memory_gb:,.0f} GB"
             )
         
-        st.divider()
-        
         # Charts row 1
+        colored_header(
+            label="Power and Distribution Analysis",
+            description="VM power states and datacenter distribution",
+            color_name="green-70"
+        )
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Power State Distribution")
+            st.markdown("#### 🔋 Power State Distribution")
             power_states = session.query(
                 VirtualMachine.powerstate,
                 func.count(VirtualMachine.id).label('count')
@@ -90,7 +101,7 @@ def render(db_url: str):
                 st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            st.subheader("VMs by Datacenter")
+            st.markdown("#### 🏢 VMs by Datacenter")
             datacenters = session.query(
                 VirtualMachine.datacenter,
                 func.count(VirtualMachine.id).label('count')
@@ -109,13 +120,19 @@ def render(db_url: str):
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
                 st.plotly_chart(fig, use_container_width=True)
         
-        st.divider()
+        add_vertical_space(2)
         
         # Charts row 2
+        colored_header(
+            label="Cluster and Operating System Insights",
+            description="Top clusters and OS distribution",
+            color_name="orange-70"
+        )
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Top 10 Clusters by VM Count")
+            st.markdown("#### 📦 Top 10 Clusters by VM Count")
             clusters = session.query(
                 VirtualMachine.cluster,
                 func.count(VirtualMachine.id).label('count')
@@ -134,7 +151,7 @@ def render(db_url: str):
                 st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            st.subheader("OS Configuration Distribution")
+            st.markdown("#### 💻 OS Configuration Distribution")
             os_config = session.query(
                 VirtualMachine.os_config,
                 func.count(VirtualMachine.id).label('count')
@@ -155,10 +172,15 @@ def render(db_url: str):
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
                 st.plotly_chart(fig, use_container_width=True)
         
-        st.divider()
+        add_vertical_space(2)
         
         # Infrastructure summary
-        st.subheader("Infrastructure Summary")
+        colored_header(
+            label="Infrastructure Summary",
+            description="Overall infrastructure resource distribution",
+            color_name="violet-70"
+        )
+        
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -172,6 +194,14 @@ def render(db_url: str):
         with col3:
             host_count = session.query(func.count(func.distinct(VirtualMachine.host))).scalar()
             st.metric("Hosts", host_count)
+        
+        # Apply styling to infrastructure metrics
+        style_metric_cards(
+            background_color="#1f1f1f",
+            border_left_color="#9370db",
+            border_color="#2e2e2e",
+            box_shadow="#1f1f1f"
+        )
         
     except Exception as e:
         st.error(f"❌ Error loading data: {str(e)}")

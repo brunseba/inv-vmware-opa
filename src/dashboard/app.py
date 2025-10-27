@@ -4,6 +4,7 @@ import os
 import sys
 import streamlit as st
 from pathlib import Path
+from streamlit_extras.add_vertical_space import add_vertical_space
 
 # Add parent directory to path to import from src
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -41,8 +42,22 @@ if "db_url" not in st.session_state:
 
 # Sidebar
 with st.sidebar:
-    st.image("https://via.placeholder.com/200x80/607078/ffffff?text=VMware", width=200)
-    st.title("🖥️ VMware Inventory")
+    # Display logo using HTML/SVG for better reliability
+    st.markdown("""
+    <div style="text-align: center; padding: 1rem 0;">
+        <svg width="180" height="60" xmlns="http://www.w3.org/2000/svg">
+            <rect width="180" height="60" rx="8" fill="#607078"/>
+            <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="20" 
+                  font-weight="bold" fill="white" text-anchor="middle" 
+                  dominant-baseline="middle">VMware</text>
+            <text x="50%" y="75%" font-family="Arial, sans-serif" font-size="10" 
+                  fill="#cccccc" text-anchor="middle" 
+                  dominant-baseline="middle">Inventory</text>
+        </svg>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    add_vertical_space(1)
     
     # Database configuration (collapsible)
     with st.expander("⚙️ Configuration", expanded=False):
@@ -64,40 +79,41 @@ with st.sidebar:
             st.error(f"✗ Connection failed")
             st.caption(str(e)[:50])
     
-    st.divider()
+    add_vertical_space(1)
     
     # Navigation with better grouping
     st.subheader("Navigation")
     
+    # Initialize current page
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = "Overview"
+    
     # Main dashboards
     st.markdown("**📊 Dashboards**")
     dashboard_pages = ["Overview", "Resources", "Infrastructure", "Folder Analysis"]
-    selected_dashboard = st.radio(
-        "Dashboards",
-        dashboard_pages,
-        label_visibility="collapsed",
-        key="dashboards"
-    )
+    
+    for page_name in dashboard_pages:
+        if st.button(page_name, key=f"btn_{page_name}", use_container_width=True):
+            st.session_state.current_page = page_name
+            st.rerun()
     
     st.markdown("**🔍 Analysis Tools**")
     analysis_pages = ["VM Explorer", "Analytics", "Comparison", "Data Quality"]
-    selected_analysis = st.radio(
-        "Analysis",
-        analysis_pages,
-        label_visibility="collapsed",
-        key="analysis"
-    )
     
-    # Determine which page is selected
-    if selected_dashboard:
-        page = selected_dashboard
-        # Clear other selection
-        st.session_state.selected_page_type = "dashboard"
-    else:
-        page = selected_analysis
-        st.session_state.selected_page_type = "analysis"
+    for page_name in analysis_pages:
+        if st.button(page_name, key=f"btn_{page_name}", use_container_width=True):
+            st.session_state.current_page = page_name
+            st.rerun()
     
-    st.divider()
+    st.markdown("**📊 Export**")
+    if st.button("📄 PDF Report", key="btn_PDF_Export", use_container_width=True):
+        st.session_state.current_page = "PDF Export"
+        st.rerun()
+    
+    # Get the active page
+    page = st.session_state.current_page
+    
+    add_vertical_space(1)
     
     # Quick stats
     with st.expander("📈 Quick Stats", expanded=False):
@@ -122,7 +138,7 @@ with st.sidebar:
         except:
             st.caption("Load data to see stats")
     
-    st.divider()
+    add_vertical_space(1)
     
     # Info section
     st.caption("VMware vSphere Inventory")
@@ -161,6 +177,11 @@ try:
     elif page == "Data Quality":
         from pages import data_quality
         data_quality.render(st.session_state.db_url)
+        
+    elif page == "PDF Export":
+        from pages import pdf_export
+        pdf_export.render(st.session_state.db_url)
+        
 except Exception as e:
     st.error(f"❌ Error loading page: {str(e)}")
     import traceback
