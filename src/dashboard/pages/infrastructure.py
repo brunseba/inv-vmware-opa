@@ -67,7 +67,7 @@ def render(db_url: str):
                     color_continuous_scale='Blues'
                 )
                 fig.update_layout(showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 fig = px.bar(
@@ -79,7 +79,7 @@ def render(db_url: str):
                     color_continuous_scale='Greens'
                 )
                 fig.update_layout(showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             # Detailed table
             st.dataframe(
@@ -137,7 +137,7 @@ def render(db_url: str):
                     color_continuous_scale='Viridis'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 fig = px.scatter(
@@ -154,7 +154,7 @@ def render(db_url: str):
                     xaxis_title='Total vCPUs',
                     yaxis_title='Total Memory (GB)'
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         st.divider()
         
@@ -183,7 +183,7 @@ def render(db_url: str):
                 color_discrete_sequence=px.colors.qualitative.Set3
             )
             fig.update_layout(yaxis={'categoryorder':'total ascending'})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             # Host distribution stats
             col1, col2, col3 = st.columns(3)

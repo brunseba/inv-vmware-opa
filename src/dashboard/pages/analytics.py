@@ -55,7 +55,7 @@ def render(db_url: str):
                     xaxis_title='vCPUs',
                     yaxis_title='Memory (GB)'
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # Resource configuration distribution
@@ -72,7 +72,7 @@ def render(db_url: str):
                     color_continuous_scale='Teal'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         st.divider()
         
@@ -106,7 +106,7 @@ def render(db_url: str):
                 xaxis_title='Month',
                 yaxis_title='VMs Created'
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("No creation date information available")
         
@@ -140,7 +140,7 @@ def render(db_url: str):
                     color='Count',
                     color_continuous_scale='Viridis'
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 fig = px.sunburst(
@@ -151,7 +151,7 @@ def render(db_url: str):
                     color='CPUs',
                     color_continuous_scale='Plasma'
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         st.divider()
         
@@ -194,7 +194,7 @@ def render(db_url: str):
                     xaxis_tickangle=-45,
                     yaxis_title='VMs per Host'
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # Bubble chart
@@ -212,7 +212,7 @@ def render(db_url: str):
                     xaxis_title='Total vCPUs',
                     yaxis_title='Total Memory (GB)'
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         st.divider()
         
@@ -239,7 +239,7 @@ def render(db_url: str):
                     title='VMs by Environment',
                     color_discrete_sequence=px.colors.qualitative.Pastel
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # Environment metrics

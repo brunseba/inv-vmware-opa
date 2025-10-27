@@ -114,7 +114,7 @@ def render(db_url: str):
                     yaxis_title="VM Count",
                     showlegend=False
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with col2:
             st.markdown("#### 💾 Memory Distribution (GB)")
@@ -132,7 +132,7 @@ def render(db_url: str):
                     yaxis_title="VM Count",
                     showlegend=False
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
         
@@ -162,7 +162,7 @@ def render(db_url: str):
                     color_continuous_scale='Blues'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with col2:
             st.markdown("#### 🔺 Top 10 VMs by Memory")
@@ -181,7 +181,7 @@ def render(db_url: str):
                     color_continuous_scale='Reds'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
         
@@ -229,7 +229,7 @@ def render(db_url: str):
             color_discrete_sequence=px.colors.qualitative.Set2
         )
         fig.update_layout(showlegend=False, yaxis_title="Storage (GB)")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
         
     except Exception as e:
         st.error(f"❌ Error loading data: {str(e)}")

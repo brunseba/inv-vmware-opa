@@ -98,7 +98,7 @@ def render(db_url: str):
                     color_discrete_sequence=px.colors.qualitative.Set3
                 )
                 fig.update_traces(textposition='inside', textinfo='percent+label')
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with col2:
             st.markdown("#### 🏢 VMs by Datacenter")
@@ -118,7 +118,7 @@ def render(db_url: str):
                     color_continuous_scale='Blues'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
         
@@ -148,7 +148,7 @@ def render(db_url: str):
                     color_continuous_scale='Viridis'
                 )
                 fig.update_layout(showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with col2:
             st.markdown("#### 💻 OS Configuration Distribution")
@@ -170,7 +170,7 @@ def render(db_url: str):
                     color_continuous_scale='Oranges'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
         

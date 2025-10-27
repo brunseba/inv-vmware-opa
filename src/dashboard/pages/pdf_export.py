@@ -187,7 +187,7 @@ def render(db_url: str):
                 xaxis_title="",
                 yaxis_title="VM Count"
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
         
@@ -245,7 +245,7 @@ def render(db_url: str):
                 'include_nulls': include_nulls
             }
             
-            if st.button("🎯 Generate PDF Report", use_container_width=True, type="primary"):
+            if st.button("🎯 Generate PDF Report", width='stretch', type="primary"):
                 with st.spinner("Generating PDF report... This may take a moment."):
                     try:
                         # Generate report with configuration
@@ -271,7 +271,7 @@ def render(db_url: str):
                             data=pdf_buffer,
                             file_name=filename,
                             mime="application/pdf",
-                            use_container_width=True
+                            width='stretch'
                         )
                         
                         # Show file info with nice formatting
@@ -367,11 +367,11 @@ def render(db_url: str):
             col1, col2 = st.columns(2)
             
             with col1:
-                if st.button("📧 Email Report Settings", use_container_width=True):
+                if st.button("📧 Email Report Settings", width='stretch'):
                     st.info("Configure email settings in the main configuration")
             
             with col2:
-                if st.button("📅 Schedule Reports", use_container_width=True):
+                if st.button("📅 Schedule Reports", width='stretch'):
                     st.info("Report scheduling feature coming soon!")
             
             st.markdown("---")
@@ -381,7 +381,7 @@ def render(db_url: str):
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("🔥 Extended Report\n(ALL Charts)", use_container_width=True):
+                if st.button("🔥 Extended Report\n(ALL Charts)", width='stretch'):
                     st.session_state.pdf_config = {
                         'report_type': 'Extended (All Charts)',
                         'include_charts': True,
@@ -393,7 +393,7 @@ def render(db_url: str):
                     st.rerun()
             
             with col2:
-                if st.button("📋 Quick Summary\n(Tables Only)", use_container_width=True):
+                if st.button("📋 Quick Summary\n(Tables Only)", width='stretch'):
                     st.session_state.pdf_config = {
                         'include_charts': False,
                         'detailed_tables': False,
@@ -402,7 +402,7 @@ def render(db_url: str):
                     st.success("Quick summary preset loaded!")
             
             with col3:
-                if st.button("🖨️ Print Quality\n(High DPI)", use_container_width=True):
+                if st.button("🖨️ Print Quality\n(High DPI)", width='stretch'):
                     st.session_state.pdf_config = {
                         'include_charts': True,
                         'detailed_tables': True,

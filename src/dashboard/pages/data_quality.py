@@ -180,7 +180,7 @@ def _render_summary_report(session, columns, total_vms, show_charts):
                 range_color=[0, 100]
             )
             fig.update_layout(yaxis={'categoryorder':'total ascending'})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         with col2:
             # Unique values distribution
@@ -198,7 +198,7 @@ def _render_summary_report(session, columns, total_vms, show_charts):
                 xaxis_type='log',
                 xaxis_title='Unique Values (log scale)'
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
 
 def _render_detailed_report(session, columns, total_vms):
@@ -302,7 +302,7 @@ def _render_detailed_report(session, columns, total_vms):
             )
             fig.update_traces(textposition='outside')
             fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
         elif viz_type == "Pie Chart":
             fig = px.pie(
@@ -312,7 +312,7 @@ def _render_detailed_report(session, columns, total_vms):
                 title=f'Top {limit} Values Distribution'
             )
             fig.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
         else:  # Treemap
             fig = px.treemap(
@@ -323,7 +323,7 @@ def _render_detailed_report(session, columns, total_vms):
                 color='Count',
                 color_continuous_scale='Viridis'
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         # Show null values if any
         if null_count > 0:

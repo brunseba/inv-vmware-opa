@@ -93,7 +93,7 @@ with st.sidebar:
     dashboard_pages = ["Overview", "Resources", "Infrastructure", "Folder Analysis"]
     
     for page_name in dashboard_pages:
-        if st.button(page_name, key=f"btn_{page_name}", use_container_width=True):
+        if st.button(page_name, key=f"btn_{page_name}", width='stretch'):
             st.session_state.current_page = page_name
             st.rerun()
     
@@ -101,17 +101,17 @@ with st.sidebar:
     analysis_pages = ["VM Explorer", "Analytics", "Comparison", "Data Quality"]
     
     for page_name in analysis_pages:
-        if st.button(page_name, key=f"btn_{page_name}", use_container_width=True):
+        if st.button(page_name, key=f"btn_{page_name}", width='stretch'):
             st.session_state.current_page = page_name
             st.rerun()
     
     st.markdown("**🚀 Planning**")
-    if st.button("Migration Planning", key="btn_Migration_Planning", use_container_width=True):
+    if st.button("Migration Planning", key="btn_Migration_Planning", width='stretch'):
         st.session_state.current_page = "Migration Planning"
         st.rerun()
     
     st.markdown("**📊 Export**")
-    if st.button("📄 PDF Report", key="btn_PDF_Export", use_container_width=True):
+    if st.button("📄 PDF Report", key="btn_PDF_Export", width='stretch'):
         st.session_state.current_page = "PDF Export"
         st.rerun()
     

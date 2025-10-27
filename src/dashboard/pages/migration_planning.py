@@ -11,6 +11,7 @@ from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
 from src.models import VirtualMachine
+from io import BytesIO
 
 
 def calculate_replication_time(storage_gib: float, bandwidth_mbps: float, efficiency: float = 0.8) -> float:
@@ -66,7 +67,9 @@ def render(db_url: str):
         st.sidebar.markdown("#### Time per VM")
         
         # Check for quick override
-        default_fixed_time = st.session_state.get('quick_fixed_time_override', 2)
+        default_fixed_time = st.session_state.get('quick_fixed_time_override')
+        if default_fixed_time is None:
+            default_fixed_time = 2
         fixed_time_hours = st.sidebar.selectbox(
             "Fixed Setup Time",
             options=[1, 2, 4, 8],
@@ -76,19 +79,27 @@ def render(db_url: str):
         
         # Network bandwidth
         st.sidebar.markdown("#### Network Configuration")
+        
+        # Check for quick bandwidth override
+        default_bandwidth_preset = st.session_state.get('quick_bandwidth_override')
+        if default_bandwidth_preset is None:
+            default_bandwidth_preset = "1 Gbps"
+        
+        bandwidth_presets = ["100 Mbps", "1 Gbps", "10 Gbps", "25 Gbps", "Custom"]
         bandwidth_preset = st.sidebar.selectbox(
             "Network Bandwidth",
-            options=["100 Mbps", "1 Gbps", "10 Gbps", "25 Gbps", "Custom"],
-            index=1,  # Default 1 Gbps
+            options=bandwidth_presets,
+            index=bandwidth_presets.index(default_bandwidth_preset) if default_bandwidth_preset in bandwidth_presets else 1,
             help="Available network bandwidth for migration"
         )
         
         if bandwidth_preset == "Custom":
+            default_custom_bandwidth = st.session_state.get('quick_custom_bandwidth_override', 1000)
             bandwidth_mbps = st.sidebar.number_input(
                 "Custom Bandwidth (Mbps)",
                 min_value=1,
                 max_value=100000,
-                value=1000,
+                value=default_custom_bandwidth,
                 step=100
             )
         else:
@@ -114,7 +125,9 @@ def render(db_url: str):
         st.sidebar.markdown("#### Migration Strategy")
         
         # Check for quick override
-        default_parallel = st.session_state.get('quick_parallel_override', 5)
+        default_parallel = st.session_state.get('quick_parallel_override')
+        if default_parallel is None:
+            default_parallel = 5
         parallel_vms = st.sidebar.number_input(
             "Parallel VM Migrations",
             min_value=1,
@@ -135,7 +148,9 @@ def render(db_url: str):
         st.sidebar.markdown("#### Scheduling")
         
         # Check for quick override
-        default_window = st.session_state.get('quick_window_override', 8)
+        default_window = st.session_state.get('quick_window_override')
+        if default_window is None:
+            default_window = 8
         maintenance_window_hours = st.sidebar.number_input(
             "Maintenance Window (hours/day)",
             min_value=1,
@@ -146,152 +161,145 @@ def render(db_url: str):
         
         add_vertical_space(1)
         
-        # Migration Strategy Synthesis
-        with st.expander("📋 Migration Strategy Synthesis", expanded=True):
+        # Configuration Summary with Quick Adjustments
+        with st.expander("⚡ Configuration & Quick Adjustments", expanded=True):
+            # Current configuration display
             st.markdown("### Current Configuration")
-            
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.markdown("**Time & Performance**")
-                # Create editable configuration table
-                config_data = {
-                    'Parameter': [
-                        'Fixed Time per VM',
-                        'Network Bandwidth',
-                        'Network Efficiency',
-                        'Parallel Migrations'
-                    ],
-                    'Current Value': [
-                        f"{fixed_time_hours} hours",
-                        f"{bandwidth_mbps:,} Mbps",
-                        f"{network_efficiency*100:.0f}%",
-                        f"{parallel_vms} VMs"
-                    ],
-                    'Impact': [
-                        'Per-VM setup duration',
-                        'Replication speed',
-                        'Actual throughput',
-                        'Concurrent streams'
-                    ]
-                }
-                df_config = pd.DataFrame(config_data)
-                st.dataframe(df_config, hide_index=True, use_container_width=True)
+                st.markdown("**⚙️ Parameters**")
+                st.markdown(f"""
+                - Fixed Time: **{fixed_time_hours}h** per VM
+                - Parallel VMs: **{parallel_vms}**
+                - Window: **{maintenance_window_hours}h/day**
+                """)
             
             with col2:
-                st.markdown("**Strategy & Scheduling**")
-                strategy_data = {
-                    'Parameter': [
-                        'Migration Method',
-                        'Maintenance Window',
-                        'Selection Strategy'
-                    ],
-                    'Current Value': [
-                        migration_method,
-                        f"{maintenance_window_hours} hours/day",
-                        st.session_state.get('current_selection_strategy', 'Infrastructure-based')
-                    ],
-                    'Impact': [
-                        'Downtime & duration',
-                        'Daily capacity',
-                        'VM grouping approach'
-                    ]
-                }
-                df_strategy = pd.DataFrame(strategy_data)
-                st.dataframe(df_strategy, hide_index=True, use_container_width=True)
+                st.markdown("**🌐 Network**")
+                st.markdown(f"""
+                - Bandwidth: **{bandwidth_mbps:,} Mbps**
+                - Efficiency: **{network_efficiency*100:.0f}%**
+                - Effective: **{bandwidth_mbps * network_efficiency:.0f} Mbps**
+                """)
             
-            # Quick edit options
+            with col3:
+                st.markdown("**📋 Strategy**")
+                st.markdown(f"""
+                - Method: **{migration_method}**
+                - Selection: **{st.session_state.get('current_selection_strategy', 'Not selected')}**
+                """)
+            
+            # Quick adjustment controls
             st.markdown("---")
-            st.markdown("**⚡ Quick Adjustments**")
+            st.markdown("### ⚡ Quick Parameter Adjustments")
+            st.caption("💡 Change parameters here without using the sidebar")
             
+            # First row - 4 parameters
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
-                # Use session state to persist quick changes
-                if 'quick_fixed_time_override' not in st.session_state:
-                    st.session_state.quick_fixed_time_override = None
-                
+                st.markdown("**Fixed Time per VM**")
                 quick_fixed_time = st.selectbox(
-                    "Adjust Fixed Time",
+                    "hours",
                     options=[1, 2, 4, 8],
-                    index=[1, 2, 4, 8].index(fixed_time_hours),
-                    key="quick_fixed_time",
-                    help="Quick change to fixed time per VM"
+                    index=[1, 2, 4, 8].index(fixed_time_hours) if fixed_time_hours in [1, 2, 4, 8] else 1,
+                    key="quick_fixed_time_select",
+                    label_visibility="collapsed"
                 )
                 if quick_fixed_time != fixed_time_hours:
-                    if st.button("✔️ Apply", key="apply_fixed_time"):
+                    if st.button("✔️ Apply Fixed Time", key="apply_fixed_time"):
                         st.session_state.quick_fixed_time_override = quick_fixed_time
                         st.rerun()
-                    else:
-                        st.info("👆 Click Apply to use")
             
             with col2:
-                quick_bandwidth = st.selectbox(
-                    "Adjust Bandwidth",
-                    options=["100 Mbps", "1 Gbps", "10 Gbps", "25 Gbps"],
-                    index=["100 Mbps", "1 Gbps", "10 Gbps", "25 Gbps"].index(bandwidth_preset) if bandwidth_preset != "Custom" else 1,
-                    key="quick_bandwidth",
-                    help="Quick change to network bandwidth"
-                )
-            
-            with col3:
-                if 'quick_parallel_override' not in st.session_state:
-                    st.session_state.quick_parallel_override = None
-                    
+                st.markdown("**Parallel Migrations**")
                 quick_parallel = st.number_input(
-                    "Adjust Parallel VMs",
+                    "VMs",
                     min_value=1,
                     max_value=50,
                     value=parallel_vms,
-                    key="quick_parallel",
-                    help="Quick change to parallel migrations"
+                    step=1,
+                    key="quick_parallel_input",
+                    label_visibility="collapsed"
                 )
                 if quick_parallel != parallel_vms:
-                    if st.button("✔️ Apply", key="apply_parallel"):
+                    if st.button("✔️ Apply Parallel", key="apply_parallel"):
                         st.session_state.quick_parallel_override = quick_parallel
                         st.rerun()
-                    else:
-                        st.info("👆 Click Apply to use")
             
-            with col4:
-                if 'quick_window_override' not in st.session_state:
-                    st.session_state.quick_window_override = None
-                    
+            with col3:
+                st.markdown("**Maintenance Window**")
                 quick_window = st.number_input(
-                    "Adjust Window (h/day)",
+                    "hours/day",
                     min_value=1,
                     max_value=24,
                     value=maintenance_window_hours,
-                    key="quick_window",
-                    help="Quick change to maintenance window"
+                    step=1,
+                    key="quick_window_input",
+                    label_visibility="collapsed"
                 )
                 if quick_window != maintenance_window_hours:
-                    if st.button("✔️ Apply", key="apply_window"):
+                    if st.button("✔️ Apply Window", key="apply_window"):
                         st.session_state.quick_window_override = quick_window
                         st.rerun()
-                    else:
-                        st.info("👆 Click Apply to use")
             
-            # Estimation impact
+            with col4:
+                st.markdown("**Network Bandwidth**")
+                bandwidth_options = ["100 Mbps", "1 Gbps", "10 Gbps", "25 Gbps"]
+                current_bandwidth_str = f"{bandwidth_mbps} Mbps" if bandwidth_mbps not in [100, 1000, 10000, 25000] else bandwidth_preset
+                
+                # Find current index
+                if bandwidth_preset in bandwidth_options:
+                    current_idx = bandwidth_options.index(bandwidth_preset)
+                else:
+                    current_idx = 1  # Default to 1 Gbps
+                
+                quick_bandwidth = st.selectbox(
+                    "bandwidth",
+                    options=bandwidth_options,
+                    index=current_idx,
+                    key="quick_bandwidth_select",
+                    label_visibility="collapsed"
+                )
+                if quick_bandwidth != bandwidth_preset:
+                    if st.button("✔️ Apply Bandwidth", key="apply_bandwidth"):
+                        st.session_state.quick_bandwidth_override = quick_bandwidth
+                        st.rerun()
+            
+            # Second row - Reset button
+            st.markdown("")
+            col1, col2, col3, col4 = st.columns(4)
+            with col4:
+                if st.button("🔄 Reset All to Sidebar", key="reset_all_overrides"):
+                    st.session_state.quick_fixed_time_override = None
+                    st.session_state.quick_parallel_override = None
+                    st.session_state.quick_window_override = None
+                    st.session_state.quick_bandwidth_override = None
+                    st.session_state.quick_custom_bandwidth_override = None
+                    st.rerun()
+            
+            # Show impact estimation
             st.markdown("---")
+            st.markdown("### 📊 Impact Estimation")
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric(
-                    "Estimated Total Time",
-                    "Calculated below",
-                    help="Based on current configuration"
+                    "Effective Bandwidth",
+                    f"{bandwidth_mbps * network_efficiency:.0f} Mbps",
+                    help="Available bandwidth after efficiency factor"
                 )
             with col2:
                 st.metric(
-                    "Throughput Required",
-                    f"{bandwidth_mbps * network_efficiency:.0f} Mbps",
-                    help="Effective bandwidth after efficiency factor"
+                    "Per-VM Bandwidth",
+                    f"{(bandwidth_mbps * network_efficiency) / parallel_vms:.1f} Mbps",
+                    help="Bandwidth allocated per VM when running in parallel"
                 )
             with col3:
                 st.metric(
-                    "Max Concurrent Load",
-                    f"{parallel_vms * fixed_time_hours:.0f}h",
-                    help="Time if all parallel VMs take max duration"
+                    "Daily Capacity",
+                    f"{maintenance_window_hours}h",
+                    help="Available migration hours per day"
                 )
         
         add_vertical_space(1)
@@ -602,7 +610,7 @@ def render(db_url: str):
                     yaxis_title='Hours',
                     height=400
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # VM distribution by migration batch
@@ -618,7 +626,7 @@ def render(db_url: str):
                     color_continuous_scale='Blues'
                 )
                 fig.update_layout(showlegend=False, height=400)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with tab2:
             # Gantt chart for migration timeline
@@ -657,7 +665,7 @@ def render(db_url: str):
                 )
                 fig.update_yaxes(categoryorder='total ascending')
                 fig.update_layout(height=600)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 
                 if len(gantt_data) > 50:
                     st.info(f"Showing first 50 of {len(gantt_data)} VMs. Download full migration plan for complete timeline.")
@@ -681,7 +689,7 @@ def render(db_url: str):
                     labels={'Storage_GiB': 'Storage (GiB)'}
                 )
                 fig.update_layout(showlegend=False, height=500)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # Storage vs Replication Time
@@ -699,7 +707,7 @@ def render(db_url: str):
                     }
                 )
                 fig.update_layout(height=500)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with tab4:
             # Network utilization
@@ -709,6 +717,9 @@ def render(db_url: str):
             timeline_hours = []
             bandwidth_usage = []
             
+            # Calculate effective bandwidth (max available considering efficiency)
+            effective_bandwidth_mbps = bandwidth_mbps * network_efficiency
+            
             cumulative = 0
             for batch in migration_batches:
                 # Assume bandwidth ramps up at start of batch
@@ -717,10 +728,12 @@ def render(db_url: str):
                 
                 timeline_hours.append(cumulative + 0.1)
                 vms_in_batch = len(batch['vms'])
-                bandwidth_usage.append(min(bandwidth_mbps, (bandwidth_mbps / parallel_vms) * vms_in_batch))
+                # Cap at effective bandwidth, considering parallel VMs
+                batch_bandwidth = min(effective_bandwidth_mbps, (bandwidth_mbps / parallel_vms) * vms_in_batch)
+                bandwidth_usage.append(batch_bandwidth)
                 
                 timeline_hours.append(cumulative + batch['duration'] - 0.1)
-                bandwidth_usage.append(min(bandwidth_mbps, (bandwidth_mbps / parallel_vms) * vms_in_batch))
+                bandwidth_usage.append(batch_bandwidth)
                 
                 timeline_hours.append(cumulative + batch['duration'])
                 bandwidth_usage.append(0)
@@ -737,11 +750,20 @@ def render(db_url: str):
                 line=dict(color='lightblue', width=2)
             ))
             
+            # Add line for effective bandwidth
+            fig.add_hline(
+                y=effective_bandwidth_mbps,
+                line_dash="dash",
+                line_color="orange",
+                annotation_text="Effective Bandwidth"
+            )
+            
+            # Add line for total bandwidth
             fig.add_hline(
                 y=bandwidth_mbps,
-                line_dash="dash",
+                line_dash="dot",
                 line_color="red",
-                annotation_text="Max Bandwidth"
+                annotation_text="Total Bandwidth"
             )
             
             fig.update_layout(
@@ -750,18 +772,30 @@ def render(db_url: str):
                 yaxis_title='Bandwidth (Mbps)',
                 height=400
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             # Performance metrics
             col1, col2, col3 = st.columns(3)
             with col1:
                 peak_bandwidth = max(bandwidth_usage) if bandwidth_usage else 0
-                st.metric("Peak Bandwidth", f"{peak_bandwidth:.0f} Mbps")
+                st.metric(
+                    "Peak Bandwidth", 
+                    f"{peak_bandwidth:.0f} Mbps",
+                    help=f"Maximum bandwidth used (capped at effective: {effective_bandwidth_mbps:.0f} Mbps)"
+                )
             with col2:
-                avg_util = (sum(bandwidth_usage) / len(bandwidth_usage) / bandwidth_mbps * 100) if bandwidth_usage else 0
-                st.metric("Avg Utilization", f"{avg_util:.1f}%")
+                avg_util = (sum(bandwidth_usage) / len(bandwidth_usage) / effective_bandwidth_mbps * 100) if bandwidth_usage and effective_bandwidth_mbps > 0 else 0
+                st.metric(
+                    "Avg Utilization", 
+                    f"{avg_util:.1f}%",
+                    help="Average utilization of effective bandwidth"
+                )
             with col3:
-                st.metric("Data Transferred", f"{total_storage:,.1f} GiB")
+                st.metric(
+                    "Data Transferred", 
+                    f"{total_storage:,.1f} GiB",
+                    help="Total storage to be migrated"
+                )
         
         # Folder analysis tab (only for folder-based selection)
         if selection_strategy == "Folder-based":
@@ -798,7 +832,7 @@ def render(db_url: str):
                         yaxis={'categoryorder':'total ascending'},
                         height=500
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 with col2:
                     # Migration time per folder
@@ -818,7 +852,7 @@ def render(db_url: str):
                         yaxis={'categoryorder':'total ascending'},
                         height=500
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 # Folder metrics table
                 st.subheader("Folder Migration Metrics")
@@ -830,7 +864,7 @@ def render(db_url: str):
                         'Batches': '{:.0f}'
                     }),
                     height=300,
-                    use_container_width=True
+                    width='stretch'
                 )
                 
                 # Export folder summary
@@ -876,20 +910,377 @@ def render(db_url: str):
                 'Batch': '{:.0f}'
             }),
             height=400,
-            use_container_width=True
+            width='stretch'
         )
         
         # Export options
-        col1, col2 = st.columns([1, 3])
+        col1, col2, col3 = st.columns([1, 1, 2])
         
         with col1:
             csv_data = display_df.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="⬇️ Export Migration Plan (CSV)",
+                label="⬇️ Export CSV",
                 data=csv_data,
                 file_name=f"migration_plan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
-                use_container_width=True
+                width='stretch'
+            )
+        
+        with col2:
+            # Generate Excel with multiple sheets
+            excel_buffer = BytesIO()
+            
+            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                # Sheet 1: Overview Summary
+                overview_data = {
+                    'Metric': [
+                        'Total VMs',
+                        'Total Storage (GiB)',
+                        'Migration Time (hours)',
+                        'Calendar Days',
+                        'Parallel Batches',
+                        'Time Saved (hours)',
+                        'Time Saved (%)',
+                        'Avg Bandwidth Used (Mbps)',
+                        'Configuration',
+                        'Fixed Time per VM (h)',
+                        'Parallel VMs',
+                        'Maintenance Window (h/day)',
+                        'Network Bandwidth (Mbps)',
+                        'Network Efficiency (%)',
+                        'Effective Bandwidth (Mbps)',
+                        'Migration Method',
+                        'Selection Strategy'
+                    ],
+                    'Value': [
+                        len(vms),
+                        f"{total_storage:.1f}",
+                        f"{total_parallel_time:.1f}",
+                        f"{actual_days:.1f}",
+                        len(migration_batches),
+                        f"{time_saved:.1f}",
+                        f"{(time_saved/total_sequential_time*100):.1f}",
+                        f"{avg_bandwidth:.0f}",
+                        '',
+                        fixed_time_hours,
+                        parallel_vms,
+                        maintenance_window_hours,
+                        bandwidth_mbps,
+                        f"{network_efficiency*100:.0f}",
+                        f"{bandwidth_mbps * network_efficiency:.0f}",
+                        migration_method,
+                        selection_strategy
+                    ]
+                }
+                df_overview = pd.DataFrame(overview_data)
+                df_overview.to_excel(writer, sheet_name='Overview', index=False)
+                
+                # Sheet 2: VM Details - Rename columns for better readability
+                vm_details_export = display_df.copy()
+                
+                # Build column names based on whether Folder is present
+                if 'Folder' in display_df.columns:
+                    # Folder-based selection (9 columns)
+                    vm_details_export.columns = [
+                        'Batch #',
+                        'VM Name',
+                        'Folder',
+                        'Datacenter',
+                        'Cluster',
+                        'Storage (GiB)',
+                        'Replication Time (hours)',
+                        'Setup Time (hours)',
+                        'Total Time (hours)',
+                        'Calendar Days'
+                    ]
+                else:
+                    # Infrastructure-based selection (8 columns)
+                    vm_details_export.columns = [
+                        'Batch #',
+                        'VM Name',
+                        'Datacenter',
+                        'Cluster',
+                        'Storage (GiB)',
+                        'Replication Time (hours)',
+                        'Setup Time (hours)',
+                        'Total Time (hours)',
+                        'Calendar Days'
+                    ]
+                
+                vm_details_export.to_excel(writer, sheet_name='VM Details', index=False)
+                
+                # Sheet 3: Batch Summary
+                batch_summary = []
+                for batch in migration_batches:
+                    batch_summary.append({
+                        'Batch #': batch['batch'],
+                        'VM Count': len(batch['vms']),
+                        'Duration (hours)': f"{batch['duration']:.2f}",
+                        'Total Storage (GiB)': f"{sum(vm['Storage_GiB'] for vm in batch['vms']):.1f}",
+                        'Avg Time per VM (hours)': f"{sum(vm['Total_Hours'] for vm in batch['vms'])/len(batch['vms']):.2f}"
+                    })
+                df_batches = pd.DataFrame(batch_summary)
+                df_batches.to_excel(writer, sheet_name='Batches', index=False)
+                
+                # Sheet 4: Storage Analysis (Top VMs)
+                df_top_storage = df.nlargest(50, 'Storage_GiB')[[
+                    'VM', 'Storage_GiB', 'Replication_Hours', 'Datacenter', 'Cluster'
+                ]].copy()
+                df_top_storage.columns = [
+                    'VM Name',
+                    'Storage (GiB)',
+                    'Replication Time (hours)',
+                    'Datacenter',
+                    'Cluster'
+                ]
+                df_top_storage.to_excel(writer, sheet_name='Storage Analysis', index=False)
+                
+                # Sheet 5: Timeline (first 100 VMs)
+                timeline_data = []
+                cumulative_time = 0
+                for batch in migration_batches:
+                    for vm in batch['vms'][:100]:  # Limit to avoid huge files
+                        timeline_data.append({
+                            'Batch #': batch['batch'],
+                            'VM Name': vm['VM'],
+                            'Start (hour)': f"{cumulative_time:.2f}",
+                            'End (hour)': f"{cumulative_time + batch['duration']:.2f}",
+                            'Duration (hours)': f"{batch['duration']:.2f}",
+                            'Storage (GiB)': f"{vm['Storage_GiB']:.1f}"
+                        })
+                    cumulative_time += batch['duration']
+                    if len(timeline_data) >= 100:
+                        break
+                
+                df_timeline = pd.DataFrame(timeline_data)
+                df_timeline.to_excel(writer, sheet_name='Timeline', index=False)
+                
+                # Sheet 6: Folder Analysis (if folder-based)
+                if selection_strategy == "Folder-based":
+                    folder_summary.to_excel(writer, sheet_name='Folder Analysis', index=False)
+                
+                # Sheet 7: Charts
+                df_charts_placeholder = pd.DataFrame({'Info': ['Charts are displayed below']})
+                df_charts_placeholder.to_excel(writer, sheet_name='Charts', index=False)
+                
+                # Format the workbook
+                workbook = writer.book
+                
+                # Add formats
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#4472C4',
+                    'font_color': 'white',
+                    'border': 1,
+                    'align': 'center',
+                    'valign': 'vcenter'
+                })
+                
+                cell_format = workbook.add_format({
+                    'border': 1
+                })
+                
+                # Apply formatting to each sheet
+                for sheet_name in writer.sheets:
+                    worksheet = writer.sheets[sheet_name]
+                    
+                    # Set column widths based on content
+                    worksheet.set_column('A:A', 25)  # First column wider
+                    worksheet.set_column('B:Z', 18)  # Other columns
+                    
+                    # Get the dataframe for this sheet to format headers
+                    if sheet_name == 'Overview':
+                        df_to_format = df_overview
+                    elif sheet_name == 'VM Details':
+                        df_to_format = vm_details_export
+                    elif sheet_name == 'Batches':
+                        df_to_format = df_batches
+                    elif sheet_name == 'Storage Analysis':
+                        df_to_format = df_top_storage
+                    elif sheet_name == 'Timeline':
+                        df_to_format = df_timeline
+                    elif sheet_name == 'Folder Analysis' and selection_strategy == "Folder-based":
+                        df_to_format = folder_summary
+                    else:
+                        continue
+                    
+                    # Write headers with formatting
+                    for col_num, value in enumerate(df_to_format.columns.values):
+                        worksheet.write(0, col_num, value, header_format)
+                    
+                    # Freeze the header row
+                    worksheet.freeze_panes(1, 0)
+                
+                # Add charts to the Charts sheet
+                chart_sheet = writer.sheets['Charts']
+                title_format = workbook.add_format({'bold': True, 'size': 14, 'color': '#4472C4'})
+                section_format = workbook.add_format({'bold': True, 'size': 12, 'color': '#70AD47'})
+                
+                # Title
+                chart_sheet.write('A1', 'Migration Analysis - Visual Dashboard', title_format)
+                note_format = workbook.add_format({'italic': True, 'size': 10, 'color': '#666666'})
+                chart_sheet.write('A2', 'Charts from web interface tabs | Timeline data available in Timeline sheet', note_format)
+                
+                # === OVERVIEW SECTION (matching Overview tab - 2 charts) ===
+                chart_sheet.write('A4', '📊 Overview (2 charts)', section_format)
+                
+                # Chart 1: VMs per Batch (matching Overview tab)
+                chart1 = workbook.add_chart({'type': 'column'})
+                num_batches = len(df_batches)
+                chart1.add_series({
+                    'name': 'VMs per Batch',
+                    'categories': f"=Batches!$A$2:$A${num_batches+1}",
+                    'values': f"=Batches!$B$2:$B${num_batches+1}",
+                    'fill': {'color': '#4472C4'}
+                })
+                chart1.set_title({'name': f'VMs per Migration Batch (Max {parallel_vms} parallel)'})
+                chart1.set_x_axis({'name': 'Batch'})
+                chart1.set_y_axis({'name': 'Number of VMs'})
+                chart1.set_size({'width': 560, 'height': 350})
+                chart_sheet.insert_chart('A6', chart1)
+                
+                # Chart 2: Migration Time Comparison Sequential vs Parallel
+                chart2 = workbook.add_chart({'type': 'column', 'subtype': 'stacked'})
+                # Create temporary data for this comparison
+                comparison_sheet = workbook.add_worksheet('_temp_comparison')
+                comparison_sheet.write_row('A1', ['Type', 'Replication', 'Setup'])
+                comparison_sheet.write_row('A2', ['Sequential', df['Replication_Hours'].sum(), df['Fixed_Hours'].sum()])
+                replication_parallel = sum(batch['duration'] - fixed_time_hours for batch in migration_batches)
+                comparison_sheet.write_row('A3', ['Parallel', replication_parallel, len(migration_batches) * fixed_time_hours])
+                comparison_sheet.hide()
+                
+                chart2.add_series({
+                    'name': 'Replication Time',
+                    'categories': "='_temp_comparison'!$A$2:$A$3",
+                    'values': "='_temp_comparison'!$B$2:$B$3",
+                    'fill': {'color': '#ADD8E6'}
+                })
+                chart2.add_series({
+                    'name': 'Fixed Setup Time',
+                    'categories': "='_temp_comparison'!$A$2:$A$3",
+                    'values': "='_temp_comparison'!$C$2:$C$3",
+                    'fill': {'color': '#F08080'}
+                })
+                chart2.set_title({'name': 'Migration Time Comparison'})
+                chart2.set_x_axis({'name': ''})
+                chart2.set_y_axis({'name': 'Hours'})
+                chart2.set_size({'width': 560, 'height': 350})
+                chart_sheet.insert_chart('K6', chart2)
+                
+                # === TIMELINE SECTION ===
+                chart_sheet.write('A25', '📅 Timeline', section_format)
+                chart_sheet.write('A26', 'Timeline data with Start/End times available in Timeline sheet tab', note_format)
+                chart_sheet.write('A27', '(Gantt charts are not supported in native Excel format)', note_format)
+                
+                # === STORAGE SECTION (matching Storage tab - 2 charts) ===
+                chart_sheet.write('A29', '💾 Storage Analysis (2 charts)', section_format)
+                
+                # Chart 3: Top 15 VMs by Storage (matching Storage tab)
+                chart3 = workbook.add_chart({'type': 'bar'})
+                top_rows = min(15, len(df_top_storage))
+                chart3.add_series({
+                    'name': 'Storage (GiB)',
+                    'categories': f"='Storage Analysis'!$A$2:$A${top_rows+1}",
+                    'values': f"='Storage Analysis'!$B$2:$B${top_rows+1}",
+                    'fill': {'color': '#FFA500'},
+                    'data_labels': {'value': True, 'num_format': '#,##0.0'}
+                })
+                chart3.set_title({'name': 'Top 15 VMs by Storage Size'})
+                chart3.set_x_axis({'name': 'Storage (GiB)'})
+                chart3.set_y_axis({'name': 'VM Name', 'reverse': True})
+                chart3.set_size({'width': 560, 'height': 400})
+                chart_sheet.insert_chart('A31', chart3)
+                
+                # Chart 4: Storage Distribution by Batch
+                chart4 = workbook.add_chart({'type': 'pie'})
+                chart4.add_series({
+                    'name': 'Storage per Batch',
+                    'categories': f"=Batches!$A$2:$A${num_batches+1}",
+                    'values': f"=Batches!$D$2:$D${num_batches+1}",
+                    'data_labels': {'percentage': True, 'category': True}
+                })
+                chart4.set_title({'name': 'Storage Distribution by Batch'})
+                chart4.set_size({'width': 560, 'height': 400})
+                chart_sheet.insert_chart('K31', chart4)
+                
+                chart_sheet.write('A52', 'Note: Storage vs Replication Time scatter plot data available in Storage Analysis sheet', note_format)
+                
+                # === PERFORMANCE SECTION (matching Performance tab - 1 chart) ===
+                chart_sheet.write('A54', '⚡ Performance (1 chart)', section_format)
+                
+                # Chart 5: Duration per Batch
+                chart5 = workbook.add_chart({'type': 'column'})
+                chart5.add_series({
+                    'name': 'Duration (hours)',
+                    'categories': f"=Batches!$A$2:$A${num_batches+1}",
+                    'values': f"=Batches!$C$2:$C${num_batches+1}",
+                    'fill': {'color': '#70AD47'}
+                })
+                chart5.set_title({'name': 'Migration Duration per Batch'})
+                chart5.set_x_axis({'name': 'Batch Number'})
+                chart5.set_y_axis({'name': 'Hours'})
+                chart5.set_size({'width': 1120, 'height': 350})
+                chart5.set_legend({'position': 'none'})
+                chart_sheet.insert_chart('A56', chart5)
+                
+                # Chart 6: Average Time per VM by Batch
+                chart6 = workbook.add_chart({'type': 'line'})
+                chart6.add_series({
+                    'name': 'Avg Time per VM',
+                    'categories': f"=Batches!$A$2:$A${num_batches+1}",
+                    'values': f"=Batches!$E$2:$E${num_batches+1}",
+                    'line': {'color': '#C55A11', 'width': 2.5},
+                    'marker': {'type': 'circle', 'size': 7, 'fill': {'color': '#C55A11'}}
+                })
+                chart6.set_title({'name': 'Average Time per VM by Batch'})
+                chart6.set_x_axis({'name': 'Batch Number'})
+                chart6.set_y_axis({'name': 'Hours'})
+                chart6.set_size({'width': 560, 'height': 350})
+                chart_sheet.insert_chart('K56', chart6)
+                
+                chart_sheet.write('A76', 'Note: Bandwidth utilization line chart represents network usage over time', note_format)
+                
+                # === FOLDER SECTION (if folder-based - 2 charts) ===
+                if selection_strategy == "Folder-based":
+                    chart_sheet.write('A78', '📁 Folder Analysis (2 charts)', section_format)
+                    
+                    # Chart 7: Top Folders by VM Count
+                    chart7 = workbook.add_chart({'type': 'bar'})
+                    top_folders = min(15, len(folder_summary))
+                    chart7.add_series({
+                        'name': 'VM Count',
+                        'categories': f"='Folder Analysis'!$A$2:$A${top_folders+1}",
+                        'values': f"='Folder Analysis'!$B$2:$B${top_folders+1}",
+                        'fill': {'color': '#4472C4'}
+                    })
+                    chart7.set_title({'name': 'Top 15 Folders - VM Count'})
+                    chart7.set_x_axis({'name': 'VM Count'})
+                    chart7.set_y_axis({'name': 'Folder', 'reverse': True})
+                    chart7.set_size({'width': 560, 'height': 400})
+                    chart_sheet.insert_chart('A80', chart7)
+                    
+                    # Chart 8: Top Folders by Migration Time
+                    chart8 = workbook.add_chart({'type': 'bar'})
+                    chart8.add_series({
+                        'name': 'Migration Time (hours)',
+                        'categories': f"='Folder Analysis'!$A$2:$A${top_folders+1}",
+                        'values': f"='Folder Analysis'!$D$2:$D${top_folders+1}",
+                        'fill': {'color': '#FFA500'}
+                    })
+                    chart8.set_title({'name': 'Top 15 Folders - Migration Time'})
+                    chart8.set_x_axis({'name': 'Hours'})
+                    chart8.set_y_axis({'name': 'Folder', 'reverse': True})
+                    chart8.set_size({'width': 560, 'height': 400})
+                    chart_sheet.insert_chart('K80', chart8)
+            
+            excel_buffer.seek(0)
+            
+            st.download_button(
+                label="📄 Export Excel",
+                data=excel_buffer,
+                file_name=f"migration_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                width='stretch'
             )
         
         # Migration recommendations

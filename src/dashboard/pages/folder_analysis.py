@@ -275,7 +275,7 @@ def render(db_url: str):
                     yaxis={'categoryorder':'total ascending'},
                     height=500
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # Folder size distribution
@@ -291,7 +291,7 @@ def render(db_url: str):
                     showlegend=False,
                     height=500
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with viz_tab2:
             col1, col2 = st.columns(2)
@@ -320,7 +320,7 @@ def render(db_url: str):
                     xaxis_tickangle=-45,
                     height=500
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # Average resources per VM by folder
@@ -341,7 +341,7 @@ def render(db_url: str):
                     yaxis_title='Avg Memory (GB) per VM',
                     height=500
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with viz_tab3:
             st.subheader("Storage Consumption by Folder")
@@ -368,7 +368,7 @@ def render(db_url: str):
                     yaxis={'categoryorder':'total ascending'},
                     height=500
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # Storage utilization (In Use vs Provisioned)
@@ -395,7 +395,7 @@ def render(db_url: str):
                     height=500,
                     yaxis_title='Storage (GB)'
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             # Storage efficiency metrics
             st.divider()
@@ -419,7 +419,7 @@ def render(db_url: str):
                 )
                 fig.add_hline(y=100, line_dash="dash", line_color="red", annotation_text="100% Efficiency")
                 fig.update_layout(height=450)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             
             with col2:
                 # Avg storage per VM
@@ -441,7 +441,7 @@ def render(db_url: str):
                     yaxis={'categoryorder':'total ascending'},
                     height=450
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
         
         with viz_tab4:
             # Treemap of folder hierarchy
@@ -455,7 +455,7 @@ def render(db_url: str):
                 hover_data=['Total_CPUs', 'Total_Memory_GB']
             )
             fig.update_layout(height=600)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             # Sunburst alternative view
             fig = px.sunburst(
@@ -467,7 +467,7 @@ def render(db_url: str):
                 color_continuous_scale='Oranges'
             )
             fig.update_layout(height=600)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
         

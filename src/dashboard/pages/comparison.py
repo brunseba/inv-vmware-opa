@@ -105,7 +105,7 @@ def _compare_datacenters(session):
             text='Total VMs'
         )
         fig.update_traces(textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     with col2:
         fig = px.bar(
@@ -115,7 +115,7 @@ def _compare_datacenters(session):
             title='Resource Comparison',
             barmode='group'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     # Radar chart for overall comparison
     st.subheader("Overall Comparison (Normalized)")
@@ -146,7 +146,7 @@ def _compare_datacenters(session):
         title='Datacenter Profile Comparison (% of max)'
     )
     fig.update_traces(fill='toself')
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def _compare_clusters(session):
@@ -211,7 +211,7 @@ def _compare_clusters(session):
             barmode='group',
             color_discrete_sequence=['#1f77b4', '#2ca02c']
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     with col2:
         fig = px.scatter(
@@ -223,7 +223,7 @@ def _compare_clusters(session):
             hover_data=['Hosts'],
             title='Resource Allocation Profile'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
 
 def _compare_hosts(session):
@@ -296,4 +296,4 @@ def _compare_hosts(session):
         xaxis_tickangle=-45
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
