@@ -304,6 +304,75 @@ def schema(db_url: str, filters: tuple, group_by: str):
     help="Database URL",
     show_default=True,
 )
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Skip confirmation prompt",
+)
+def clean(db_url: str, force: bool):
+    """Remove all data from the database."""
+    from sqlalchemy import create_engine, text
+    from .models import Base
+    
+    click.echo(f"\n🗑️  Database Clean")
+    click.echo(f"Database: {db_url}\n")
+    
+    try:
+        engine = create_engine(db_url, echo=False)
+        
+        # Check if database exists and has data
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(text("SELECT COUNT(*) FROM virtual_machines"))
+                count = result.scalar()
+                
+                if count == 0:
+                    click.echo("ℹ️  Database is already empty.")
+                    return
+                
+                click.echo(f"⚠️  This will delete {count:,} records from the database.")
+        except Exception:
+            click.echo("ℹ️  Database table does not exist or is empty.")
+            return
+        
+        # Confirmation
+        if not force:
+            click.echo("\nThis action cannot be undone!")
+            if not click.confirm("Are you sure you want to continue?"):
+                click.echo("Aborted.")
+                return
+        
+        # Delete all records
+        click.echo("\n🗑️  Deleting all records...", nl=False)
+        with engine.begin() as conn:
+            conn.execute(text("DELETE FROM virtual_machines"))
+        click.echo(" ✓")
+        
+        # Vacuum database to reclaim space
+        if db_url.startswith('sqlite'):
+            click.echo("📊 Optimizing database...", nl=False)
+            with engine.connect() as conn:
+                conn.execution_options(isolation_level="AUTOCOMMIT")
+                conn.execute(text("VACUUM"))
+            click.echo(" ✓")
+        
+        click.echo(f"\n✅ Database cleaned successfully!")
+        click.echo("\n📊 Next steps:")
+        click.echo("   - Load new data: vmware-inv load <excel_file>")
+        click.echo("   - Check status: vmware-inv stats")
+        
+    except Exception as e:
+        click.echo(f"\n✗ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@cli.command()
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
 def optimize(db_url: str):
     """Optimize database by adding performance indexes."""
     from sqlalchemy import create_engine, text, inspect
