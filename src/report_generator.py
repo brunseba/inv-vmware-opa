@@ -848,6 +848,7 @@ class VMwareInventoryReport:
         elements.append(Spacer(1, 0.2*inch))
         
         # Datacenter Comparison
+        from sqlalchemy import case
         dc_data = self.session.query(
             VirtualMachine.datacenter,
             func.count(VirtualMachine.id).label('total_vms'),
