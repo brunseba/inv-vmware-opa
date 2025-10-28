@@ -71,11 +71,15 @@ def render(db_url: str):
         if default_fixed_time is None:
             default_fixed_time = 2
         fixed_time_hours = st.sidebar.selectbox(
-            "Fixed Setup Time",
+            "Fixed Setup Time (hours)",
             options=[1, 2, 4, 8],
             index=[1, 2, 4, 8].index(default_fixed_time) if default_fixed_time in [1, 2, 4, 8] else 1,
-            help="Time for VM configuration, validation, and testing"
+            help="Fixed time per VM for setup, configuration, validation, and testing after migration completes",
+            key="sidebar_fixed_time"
         )
+        # Clear override if sidebar value changed
+        if st.session_state.get('quick_fixed_time_override') and fixed_time_hours != st.session_state.get('quick_fixed_time_override'):
+            st.session_state.quick_fixed_time_override = None
         
         # Network bandwidth
         st.sidebar.markdown("#### Network Configuration")
@@ -90,8 +94,12 @@ def render(db_url: str):
             "Network Bandwidth",
             options=bandwidth_presets,
             index=bandwidth_presets.index(default_bandwidth_preset) if default_bandwidth_preset in bandwidth_presets else 1,
-            help="Available network bandwidth for migration"
+            help="Total available network bandwidth dedicated to migration traffic",
+            key="sidebar_bandwidth"
         )
+        # Clear override if sidebar value changed
+        if st.session_state.get('quick_bandwidth_override') and bandwidth_preset != st.session_state.get('quick_bandwidth_override'):
+            st.session_state.quick_bandwidth_override = None
         
         if bandwidth_preset == "Custom":
             default_custom_bandwidth = st.session_state.get('quick_custom_bandwidth_override', 1000)
@@ -113,12 +121,12 @@ def render(db_url: str):
         
         # Network efficiency
         network_efficiency = st.sidebar.slider(
-            "Network Efficiency",
+            "Network Efficiency (%)",
             min_value=0.5,
             max_value=1.0,
             value=0.8,
             step=0.05,
-            help="Accounts for network overhead, protocol efficiency, etc."
+            help="Real-world efficiency factor accounting for network overhead, protocol efficiency, and congestion (typically 70-80%)"
         )
         
         # Parallel migrations
@@ -133,15 +141,19 @@ def render(db_url: str):
             min_value=1,
             max_value=50,
             value=default_parallel,
-            help="Number of VMs that can migrate simultaneously"
+            help="Maximum number of VMs that can migrate simultaneously. Limited by network, storage, and compute resources.",
+            key="sidebar_parallel"
         )
+        # Clear override if sidebar value changed
+        if st.session_state.get('quick_parallel_override') and parallel_vms != st.session_state.get('quick_parallel_override'):
+            st.session_state.quick_parallel_override = None
         
         # Migration method
         migration_method = st.sidebar.selectbox(
             "Migration Method",
             options=["vMotion (Live)", "Cold Migration", "Replication + Cutover", "Hybrid"],
             index=0,
-            help="Migration technique affects downtime and duration"
+            help="vMotion: Zero downtime live migration | Cold: VM powered off | Replication: Pre-copy data then cutover | Hybrid: Mix of methods"
         )
         
         # Downtime window
@@ -156,12 +168,36 @@ def render(db_url: str):
             min_value=1,
             max_value=24,
             value=default_window,
-            help="Available hours per day for migration"
+            help="Number of hours available per day for migration activities during maintenance windows",
+            key="sidebar_window"
         )
+        # Clear override if sidebar value changed
+        if st.session_state.get('quick_window_override') and maintenance_window_hours != st.session_state.get('quick_window_override'):
+            st.session_state.quick_window_override = None
         
         add_vertical_space(1)
         
-        # Configuration Summary with Quick Adjustments
+        # Main content - VM Selection (moved before config summary)
+        colored_header(
+            label="VM Selection",
+            description="Select VMs to include in migration planning",
+            color_name="green-70"
+        )
+        
+        # Selection strategy
+        selection_strategy = st.radio(
+            "Selection Strategy",
+            options=["Infrastructure-based", "Folder-based"],
+            horizontal=True,
+            help="Infrastructure-based: Select by datacenter/cluster/host | Folder-based: Select by VM folder organization"
+        )
+        
+        # Store selection strategy in session state for synthesis table
+        st.session_state.current_selection_strategy = selection_strategy
+        
+        add_vertical_space(1)
+        
+        # Configuration Summary with Quick Adjustments (moved after selection strategy)
         with st.expander("⚡ Configuration & Quick Adjustments", expanded=True):
             # Current configuration display
             st.markdown("### Current Configuration")
@@ -187,33 +223,43 @@ def render(db_url: str):
                 st.markdown("**📋 Strategy**")
                 st.markdown(f"""
                 - Method: **{migration_method}**
-                - Selection: **{st.session_state.get('current_selection_strategy', 'Not selected')}**
+                - Selection: **{selection_strategy}**
                 """)
             
             # Quick adjustment controls
             st.markdown("---")
             st.markdown("### ⚡ Quick Parameter Adjustments")
-            st.caption("💡 Change parameters here without using the sidebar")
+            st.caption("💡 Quickly adjust migration parameters without scrolling to the sidebar. Changes apply immediately when you click Apply.")
+            st.info("""
+            **How to use:**
+            - Modify any parameter value below
+            - Click the **✔️ Apply** button for that parameter
+            - The sidebar and configuration summary will update automatically
+            - Use **🔄 Reset All** to revert to sidebar values
+            """)
             
             # First row - 4 parameters
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.markdown("**Fixed Time per VM**")
+                st.caption("Setup/validation time per VM")
                 quick_fixed_time = st.selectbox(
                     "hours",
                     options=[1, 2, 4, 8],
                     index=[1, 2, 4, 8].index(fixed_time_hours) if fixed_time_hours in [1, 2, 4, 8] else 1,
                     key="quick_fixed_time_select",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    help="Time for post-migration setup and testing"
                 )
                 if quick_fixed_time != fixed_time_hours:
-                    if st.button("✔️ Apply Fixed Time", key="apply_fixed_time"):
+                    if st.button("✔️ Apply Fixed Time", key="apply_fixed_time", help="Apply this fixed time value"):
                         st.session_state.quick_fixed_time_override = quick_fixed_time
                         st.rerun()
             
             with col2:
                 st.markdown("**Parallel Migrations**")
+                st.caption("Concurrent VM migrations")
                 quick_parallel = st.number_input(
                     "VMs",
                     min_value=1,
@@ -221,15 +267,17 @@ def render(db_url: str):
                     value=parallel_vms,
                     step=1,
                     key="quick_parallel_input",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    help="Number of VMs migrating at the same time"
                 )
                 if quick_parallel != parallel_vms:
-                    if st.button("✔️ Apply Parallel", key="apply_parallel"):
+                    if st.button("✔️ Apply Parallel", key="apply_parallel", help="Apply this parallel VM count"):
                         st.session_state.quick_parallel_override = quick_parallel
                         st.rerun()
             
             with col3:
                 st.markdown("**Maintenance Window**")
+                st.caption("Available hours per day")
                 quick_window = st.number_input(
                     "hours/day",
                     min_value=1,
@@ -237,15 +285,17 @@ def render(db_url: str):
                     value=maintenance_window_hours,
                     step=1,
                     key="quick_window_input",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    help="Daily time window for migrations"
                 )
                 if quick_window != maintenance_window_hours:
-                    if st.button("✔️ Apply Window", key="apply_window"):
+                    if st.button("✔️ Apply Window", key="apply_window", help="Apply this maintenance window"):
                         st.session_state.quick_window_override = quick_window
                         st.rerun()
             
             with col4:
                 st.markdown("**Network Bandwidth**")
+                st.caption("Available network speed")
                 bandwidth_options = ["100 Mbps", "1 Gbps", "10 Gbps", "25 Gbps"]
                 current_bandwidth_str = f"{bandwidth_mbps} Mbps" if bandwidth_mbps not in [100, 1000, 10000, 25000] else bandwidth_preset
                 
@@ -260,10 +310,11 @@ def render(db_url: str):
                     options=bandwidth_options,
                     index=current_idx,
                     key="quick_bandwidth_select",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    help="Network bandwidth for migrations"
                 )
                 if quick_bandwidth != bandwidth_preset:
-                    if st.button("✔️ Apply Bandwidth", key="apply_bandwidth"):
+                    if st.button("✔️ Apply Bandwidth", key="apply_bandwidth", help="Apply this bandwidth setting"):
                         st.session_state.quick_bandwidth_override = quick_bandwidth
                         st.rerun()
             
@@ -304,25 +355,8 @@ def render(db_url: str):
         
         add_vertical_space(1)
         
-        # Main content - VM Selection
-        colored_header(
-            label="VM Selection",
-            description="Select VMs to include in migration planning",
-            color_name="green-70"
-        )
-        
-        # Selection strategy
-        selection_strategy = st.radio(
-            "Selection Strategy",
-            options=["Infrastructure-based", "Folder-based"],
-            horizontal=True,
-            help="Choose how to select VMs for migration"
-        )
-        
-        # Store selection strategy in session state for synthesis table
-        st.session_state.current_selection_strategy = selection_strategy
-        
-        add_vertical_space(1)
+        # VM Selection filters section header
+        st.markdown("### 🔍 Filter VMs")
         
         if selection_strategy == "Infrastructure-based":
             col1, col2, col3 = st.columns(3)
@@ -629,8 +663,55 @@ def render(db_url: str):
                 st.plotly_chart(fig, width='stretch')
         
         with tab2:
-            # Gantt chart for migration timeline
-            st.subheader("Migration Schedule")
+            # Batch Overview Timeline
+            st.subheader("Batch Overview Timeline")
+            
+            # Build batch timeline data
+            batch_timeline_data = []
+            start_time = datetime.now()
+            cumulative_time = 0
+            
+            for batch in migration_batches:
+                batch_start = start_time + timedelta(hours=cumulative_time)
+                batch_end = batch_start + timedelta(hours=batch['duration'])
+                
+                batch_timeline_data.append({
+                    'Batch': f"Batch {batch['batch']}",
+                    'BatchNumber': batch['batch'],  # Add numeric field for sorting
+                    'Start': batch_start,
+                    'Finish': batch_end,
+                    'VMs': len(batch['vms']),
+                    'Storage': f"{sum(vm['Storage_GiB'] for vm in batch['vms']):.1f} GiB",
+                    'Duration': f"{batch['duration']:.1f}h"
+                })
+                
+                cumulative_time += batch['duration']
+            
+            df_batch_timeline = pd.DataFrame(batch_timeline_data)
+            
+            # Sort by batch number for correct display order
+            df_batch_timeline = df_batch_timeline.sort_values('BatchNumber')
+            
+            if not df_batch_timeline.empty:
+                fig = px.timeline(
+                    df_batch_timeline,
+                    x_start='Start',
+                    x_end='Finish',
+                    y='Batch',
+                    color='VMs',
+                    hover_data=['VMs', 'Storage', 'Duration'],
+                    title=f'All {len(migration_batches)} Migration Batches',
+                    color_continuous_scale='Blues'
+                )
+                # Use array order for y-axis (already sorted by BatchNumber)
+                fig.update_yaxes(categoryorder='array', categoryarray=df_batch_timeline['Batch'].tolist())
+                fig.update_layout(height=max(300, len(migration_batches) * 40))
+                st.plotly_chart(fig, width='stretch')
+            
+            add_vertical_space(1)
+            
+            # Detailed VM Gantt chart
+            st.subheader("Detailed VM Migration Schedule")
             
             gantt_data = []
             start_time = datetime.now()
@@ -661,7 +742,7 @@ def render(db_url: str):
                     y='Task',
                     color='Batch',
                     hover_data=['Storage'],
-                    title=f'Migration Timeline (First 50 VMs shown)'
+                    title=f'VM Migration Timeline (First 50 VMs shown)'
                 )
                 fig.update_yaxes(categoryorder='total ascending')
                 fig.update_layout(height=600)
@@ -672,6 +753,104 @@ def render(db_url: str):
         
         with tab3:
             # Storage analysis
+            st.subheader("Storage Resource Analysis")
+            
+            # First row - Storage distribution by batch
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Storage distribution by batch (pie chart)
+                batch_storage_data = []
+                for batch in migration_batches:
+                    batch_storage = sum(vm['Storage_GiB'] for vm in batch['vms'])
+                    batch_storage_data.append({
+                        'Batch': f"Batch {batch['batch']}",
+                        'Storage_GiB': batch_storage
+                    })
+                
+                df_batch_storage = pd.DataFrame(batch_storage_data)
+                
+                fig = px.pie(
+                    df_batch_storage,
+                    values='Storage_GiB',
+                    names='Batch',
+                    title='Storage Distribution by Batch',
+                    color_discrete_sequence=px.colors.sequential.Blues_r
+                )
+                fig.update_traces(
+                    textposition='inside',
+                    textinfo='percent+label',
+                    hovertemplate='<b>%{label}</b><br>Storage: %{value:.1f} GiB<br>Percent: %{percent}<extra></extra>'
+                )
+                fig.update_layout(height=450)
+                st.plotly_chart(fig, width='stretch')
+            
+            with col2:
+                # Storage distribution by batch (bar chart)
+                fig = px.bar(
+                    df_batch_storage,
+                    x='Batch',
+                    y='Storage_GiB',
+                    title='Storage per Batch',
+                    color='Storage_GiB',
+                    color_continuous_scale='Teal',
+                    labels={'Storage_GiB': 'Storage (GiB)'}
+                )
+                fig.update_layout(showlegend=False, height=450)
+                st.plotly_chart(fig, width='stretch')
+            
+            add_vertical_space(1)
+            
+            # Second row - VM storage distribution histogram
+            st.markdown("#### VM Storage Distribution")
+            st.caption("Distribution of storage sizes across all VMs - helps identify VM sizing patterns")
+            
+            fig = px.histogram(
+                df,
+                x='Storage_GiB',
+                nbins=30,
+                title='VM Count by Storage Size',
+                labels={'Storage_GiB': 'Storage (GiB)', 'count': 'Number of VMs'},
+                color_discrete_sequence=['#636EFA']
+            )
+            fig.update_layout(
+                xaxis_title='Storage Size (GiB)',
+                yaxis_title='Number of VMs',
+                showlegend=False,
+                height=350
+            )
+            st.plotly_chart(fig, width='stretch')
+            
+            # Show storage statistics
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric(
+                    "Median VM Size",
+                    f"{df['Storage_GiB'].median():.1f} GiB",
+                    help="50% of VMs are smaller than this size"
+                )
+            with col2:
+                st.metric(
+                    "Average VM Size",
+                    f"{df['Storage_GiB'].mean():.1f} GiB",
+                    help="Mean storage size across all VMs"
+                )
+            with col3:
+                st.metric(
+                    "Smallest VM",
+                    f"{df['Storage_GiB'].min():.1f} GiB",
+                    help="Smallest VM by storage size"
+                )
+            with col4:
+                st.metric(
+                    "Largest VM",
+                    f"{df['Storage_GiB'].max():.1f} GiB",
+                    help="Largest VM by storage size"
+                )
+            
+            add_vertical_space(1)
+            
+            # Third row - VM-level analysis
             col1, col2 = st.columns(2)
             
             with col1:

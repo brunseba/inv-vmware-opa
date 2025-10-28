@@ -45,7 +45,8 @@ def render(db_url: str):
             st.metric(
                 label="Total VMs",
                 value=f"{total_vms:,}",
-                delta=None
+                delta=None,
+                help="Total count of all virtual machines in the inventory"
             )
         
         with col2:
@@ -55,14 +56,16 @@ def render(db_url: str):
             st.metric(
                 label="Powered On",
                 value=f"{powered_on:,}",
-                delta=f"{(powered_on/total_vms*100):.1f}%" if total_vms > 0 else "0%"
+                delta=f"{(powered_on/total_vms*100):.1f}%" if total_vms > 0 else "0%",
+                help="Number and percentage of VMs currently in powered-on state"
             )
         
         with col3:
             total_cpus = session.query(func.sum(VirtualMachine.cpus)).scalar() or 0
             st.metric(
                 label="Total vCPUs",
-                value=f"{int(total_cpus):,}"
+                value=f"{int(total_cpus):,}",
+                help="Total number of virtual CPUs allocated across all VMs"
             )
         
         with col4:
@@ -70,7 +73,8 @@ def render(db_url: str):
             total_memory_gb = total_memory_mb / 1024
             st.metric(
                 label="Total Memory",
-                value=f"{total_memory_gb:,.0f} GB"
+                value=f"{total_memory_gb:,.0f} GB",
+                help="Total memory allocated across all VMs (in gigabytes)"
             )
         
         # Charts row 1
@@ -84,6 +88,7 @@ def render(db_url: str):
         
         with col1:
             st.markdown("#### 🔋 Power State Distribution")
+            st.caption("Shows the distribution of VMs by power state (powered on, off, suspended)")
             power_states = session.query(
                 VirtualMachine.powerstate,
                 func.count(VirtualMachine.id).label('count')
@@ -102,6 +107,7 @@ def render(db_url: str):
         
         with col2:
             st.markdown("#### 🏢 VMs by Datacenter")
+            st.caption("Top 10 datacenters by VM count - useful for capacity planning")
             datacenters = session.query(
                 VirtualMachine.datacenter,
                 func.count(VirtualMachine.id).label('count')
@@ -133,6 +139,7 @@ def render(db_url: str):
         
         with col1:
             st.markdown("#### 📦 Top 10 Clusters by VM Count")
+            st.caption("Clusters with the highest VM density - helps identify resource concentration")
             clusters = session.query(
                 VirtualMachine.cluster,
                 func.count(VirtualMachine.id).label('count')
@@ -152,6 +159,7 @@ def render(db_url: str):
         
         with col2:
             st.markdown("#### 💻 OS Configuration Distribution")
+            st.caption("Top 10 operating systems - useful for license planning and security updates")
             os_config = session.query(
                 VirtualMachine.os_config,
                 func.count(VirtualMachine.id).label('count')
@@ -185,15 +193,27 @@ def render(db_url: str):
         
         with col1:
             dc_count = session.query(func.count(func.distinct(VirtualMachine.datacenter))).scalar()
-            st.metric("Datacenters", dc_count)
+            st.metric(
+                "Datacenters", 
+                dc_count,
+                help="Number of unique datacenters in your infrastructure"
+            )
         
         with col2:
             cluster_count = session.query(func.count(func.distinct(VirtualMachine.cluster))).scalar()
-            st.metric("Clusters", cluster_count)
+            st.metric(
+                "Clusters", 
+                cluster_count,
+                help="Number of unique clusters across all datacenters"
+            )
         
         with col3:
             host_count = session.query(func.count(func.distinct(VirtualMachine.host))).scalar()
-            st.metric("Hosts", host_count)
+            st.metric(
+                "Hosts", 
+                host_count,
+                help="Number of unique ESXi hosts running your VMs"
+            )
         
         # Apply styling to infrastructure metrics
         style_metric_cards(

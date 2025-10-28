@@ -115,6 +115,11 @@ with st.sidebar:
         st.session_state.current_page = "PDF Export"
         st.rerun()
     
+    st.markdown("**❓ Help**")
+    if st.button("📚 Documentation", key="btn_Help", width='stretch'):
+        st.session_state.current_page = "Help"
+        st.rerun()
+    
     # Get the active page
     page = st.session_state.current_page
     
@@ -190,6 +195,10 @@ try:
     elif page == "PDF Export":
         from pages import pdf_export
         pdf_export.render(st.session_state.db_url)
+        
+    elif page == "Help":
+        from pages import help
+        help.render(st.session_state.db_url)
         
 except Exception as e:
     st.error(f"❌ Error loading page: {str(e)}")
