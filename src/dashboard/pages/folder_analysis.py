@@ -11,6 +11,7 @@ from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.dataframe_explorer import dataframe_explorer
 from src.models import VirtualMachine
+from src.services.label_service import LabelService
 
 
 def _aggregate_folder_path(folder_path: str, level: int) -> str:
@@ -52,6 +53,7 @@ def render(db_url: str):
         engine = create_engine(db_url, echo=False)
         SessionLocal = sessionmaker(bind=engine)
         session = SessionLocal()
+        label_service = LabelService(session)
         
         # Check if data exists
         total_vms = session.query(func.count(VirtualMachine.id)).scalar()
@@ -484,6 +486,21 @@ def render(db_url: str):
         )
         
         if selected_folder:
+            # Show folder labels if any
+            try:
+                folder_labels = label_service.get_folder_labels(selected_folder)
+                if folder_labels:
+                    st.write("**🏷️ Folder Labels:**")
+                    label_badges = []
+                    for lbl in folder_labels:
+                        color = lbl.get('color', '#607078') or '#607078'
+                        badge = f'<span style="background-color: {color}; color: white; padding: 4px 8px; border-radius: 4px; margin: 2px; display: inline-block; font-size: 12px;">{lbl["key"]}={lbl["value"]}</span>'
+                        label_badges.append(badge)
+                    st.markdown(' '.join(label_badges), unsafe_allow_html=True)
+                    add_vertical_space(1)
+            except Exception:
+                pass  # Labels feature may not be available
+            
             # Get VMs in this folder
             folder_vms = session.query(VirtualMachine).filter(
                 VirtualMachine.folder == selected_folder

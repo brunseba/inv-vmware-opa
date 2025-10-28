@@ -1,6 +1,7 @@
 """VM Explorer page - Detailed VM search and information."""
 
 import streamlit as st
+import re
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
@@ -17,10 +18,13 @@ def render(db_url: str):
         session = SessionLocal()
         
         # Search and filters
-        col1, col2, col3 = st.columns([2, 1, 1])
+        col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
         
         with col1:
             search_term = st.text_input("🔎 Search VMs", placeholder="Enter VM name, IP, or hostname...")
+        
+        with col4:
+            use_regex = st.checkbox("Use Regex", value=False, help="Enable regex pattern matching")
         
         with col2:
             datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
@@ -40,7 +44,11 @@ def render(db_url: str):
         # Build query
         query = session.query(VirtualMachine)
         
-        if search_term:
+        # Handle regex vs normal search
+        if search_term and use_regex:
+            # For regex, get all VMs and filter in Python
+            pass  # We'll filter after fetching
+        elif search_term:
             query = query.filter(
                 or_(
                     VirtualMachine.vm.ilike(f"%{search_term}%"),
@@ -77,15 +85,33 @@ def render(db_url: str):
                         import datetime
                         query = query.filter(VirtualMachine.creation_date < (datetime.datetime.combine(end_date, datetime.time.max)))
         
+        # Apply regex filter if needed
+        all_vms = query.all()
+        
+        if search_term and use_regex:
+            try:
+                regex = re.compile(search_term, re.IGNORECASE)
+                all_vms = [
+                    vm for vm in all_vms 
+                    if any([
+                        vm.vm and regex.search(vm.vm),
+                        vm.dns_name and regex.search(vm.dns_name),
+                        vm.primary_ip_address and regex.search(vm.primary_ip_address)
+                    ])
+                ]
+            except re.error as e:
+                st.error(f"❌ Invalid regex pattern: {e}")
+                return
+        
         # Pagination
-        total_results = query.count()
-        st.info(f"Found {total_results:,} VMs")
+        total_results = len(all_vms)
+        st.info(f"Found {total_results:,} VMs" + (" (regex filter applied)" if use_regex and search_term else ""))
         
         page_size = st.selectbox("Results per page", [10, 25, 50, 100], index=1)
         page = st.number_input("Page", min_value=1, max_value=max(1, (total_results // page_size) + 1), value=1)
         
         offset = (page - 1) * page_size
-        vms = query.limit(page_size).offset(offset).all()
+        vms = all_vms[offset:offset + page_size]
         
         if not vms:
             st.warning("No VMs found matching your criteria")
