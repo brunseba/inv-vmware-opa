@@ -1,7 +1,7 @@
 """Database models for VMware inventory."""
 
 from datetime import datetime
-from sqlalchemy import String, Integer, Float, DateTime, Boolean, Text
+from sqlalchemy import String, Integer, Float, DateTime, Boolean, Text, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -139,3 +139,81 @@ class VirtualMachine(Base):
     
     def __repr__(self) -> str:
         return f"<VirtualMachine(vm='{self.vm}', datacenter='{self.datacenter}', cluster='{self.cluster}')>"
+
+
+class Label(Base):
+    """Label definitions - master list of available labels."""
+    
+    __tablename__ = "labels"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    value: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    description: Mapped[str | None] = mapped_column(String(500))
+    color: Mapped[str | None] = mapped_column(String(7))  # Hex color: #RRGGBB
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        UniqueConstraint('key', 'value', name='_label_key_value_uc'),
+    )
+    
+    def __repr__(self) -> str:
+        return f"<Label(key='{self.key}', value='{self.value}')>"
+
+
+class VMLabel(Base):
+    """VM to Label assignment (many-to-many relationship)."""
+    
+    __tablename__ = "vm_labels"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    vm_id: Mapped[int] = mapped_column(
+        Integer, 
+        ForeignKey('virtual_machines.id', ondelete='CASCADE'), 
+        nullable=False, 
+        index=True
+    )
+    label_id: Mapped[int] = mapped_column(
+        Integer, 
+        ForeignKey('labels.id', ondelete='CASCADE'), 
+        nullable=False, 
+        index=True
+    )
+    assigned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    assigned_by: Mapped[str | None] = mapped_column(String(100))
+    inherited_from_folder: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    source_folder_path: Mapped[str | None] = mapped_column(String(500))
+    
+    __table_args__ = (
+        UniqueConstraint('vm_id', 'label_id', name='_vm_label_uc'),
+    )
+    
+    def __repr__(self) -> str:
+        return f"<VMLabel(vm_id={self.vm_id}, label_id={self.label_id}, inherited={self.inherited_from_folder})>"
+
+
+class FolderLabel(Base):
+    """Folder path to Label assignment."""
+    
+    __tablename__ = "folder_labels"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    folder_path: Mapped[str] = mapped_column(String(500), nullable=False, index=True)
+    label_id: Mapped[int] = mapped_column(
+        Integer, 
+        ForeignKey('labels.id', ondelete='CASCADE'), 
+        nullable=False, 
+        index=True
+    )
+    assigned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    assigned_by: Mapped[str | None] = mapped_column(String(100))
+    inherit_to_vms: Mapped[bool] = mapped_column(Boolean, default=True)
+    inherit_to_subfolders: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    __table_args__ = (
+        UniqueConstraint('folder_path', 'label_id', name='_folder_label_uc'),
+    )
+    
+    def __repr__(self) -> str:
+        return f"<FolderLabel(folder_path='{self.folder_path}', label_id={self.label_id})>"
