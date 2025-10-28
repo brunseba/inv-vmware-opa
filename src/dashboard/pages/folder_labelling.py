@@ -128,18 +128,68 @@ def render(db_url: str):
             )
             
             # Get all folders
-            folders = label_service.get_all_folders()
+            all_folders = label_service.get_all_folders()
             
-            if not folders:
+            if not all_folders:
                 st.warning("No folders found in the inventory.")
                 return
+            
+            # Add cluster filter
+            st.write("**Filter Options:**")
+            filter_col1, filter_col2 = st.columns(2)
+            
+            with filter_col1:
+                # Get unique clusters
+                clusters = session.query(VirtualMachine.cluster).filter(
+                    VirtualMachine.cluster.isnot(None)
+                ).distinct().order_by(VirtualMachine.cluster).all()
+                cluster_list = [c[0] for c in clusters]
+                selected_cluster_filter = st.selectbox(
+                    "Filter by Cluster",
+                    ["All Clusters"] + cluster_list,
+                    key="cluster_filter"
+                )
+            
+            with filter_col2:
+                # Get unique datacenters
+                datacenters = session.query(VirtualMachine.datacenter).filter(
+                    VirtualMachine.datacenter.isnot(None)
+                ).distinct().order_by(VirtualMachine.datacenter).all()
+                datacenter_list = [d[0] for d in datacenters]
+                selected_dc_filter = st.selectbox(
+                    "Filter by Datacenter",
+                    ["All Datacenters"] + datacenter_list,
+                    key="dc_filter"
+                )
+            
+            # Filter folders based on cluster/datacenter
+            if selected_cluster_filter != "All Clusters" or selected_dc_filter != "All Datacenters":
+                # Get VMs that match the filter
+                vm_query = session.query(VirtualMachine.folder).filter(
+                    VirtualMachine.folder.isnot(None)
+                )
+                
+                if selected_cluster_filter != "All Clusters":
+                    vm_query = vm_query.filter(VirtualMachine.cluster == selected_cluster_filter)
+                
+                if selected_dc_filter != "All Datacenters":
+                    vm_query = vm_query.filter(VirtualMachine.datacenter == selected_dc_filter)
+                
+                filtered_folder_results = vm_query.distinct().all()
+                folders = [f[0] for f in filtered_folder_results]
+                
+                st.info(f"📊 Showing {len(folders)} folder(s) matching filter")
+            else:
+                folders = all_folders
+            
+            add_vertical_space(1)
             
             # Assign label to folder
             with st.expander("➕ Assign Label to Folder", expanded=False):
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    selected_folder = st.selectbox("Select Folder", folders, key="folder_assign")
+                    selected_folder = st.selectbox("Select Folder", folders if folders else ["No folders match filter"], key="folder_assign")
                     
                     # Show folder stats
                     if selected_folder:
@@ -196,11 +246,18 @@ def render(db_url: str):
             # List folders with labels
             st.write("**Folders with Labels:**")
             
-            folder_filter = st.text_input("🔍 Filter folders", placeholder="Type to filter...")
+            folder_search = st.text_input("🔍 Search folders by name", placeholder="Type to search...", key="folder_search")
             
-            filtered_folders = [f for f in folders if not folder_filter or folder_filter.lower() in f.lower()]
+            # Apply search filter
+            display_folders = folders
+            if folder_search:
+                display_folders = [f for f in folders if folder_search.lower() in f.lower()]
             
-            for folder in filtered_folders[:50]:  # Limit display
+            # Show folder count
+            if len(display_folders) != len(folders):
+                st.caption(f"Showing {len(display_folders)} of {len(folders)} folders")
+            
+            for folder in display_folders[:50]:  # Limit display
                 folder_labels = label_service.get_folder_labels(folder)
                 
                 if folder_labels:
@@ -231,8 +288,8 @@ def render(db_url: str):
                                     except Exception as e:
                                         st.error(f"Error: {e}")
             
-            if len(filtered_folders) > 50:
-                st.info(f"Showing 50 of {len(filtered_folders)} folders. Use filter to narrow results.")
+            if len(display_folders) > 50:
+                st.info(f"Showing first 50 of {len(display_folders)} folders. Use search to narrow results.")
         
         # =====================================================================
         # Tab 3: VM Labels
