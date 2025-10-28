@@ -329,13 +329,18 @@ class LabelService:
         
         # Assign label to each VM (if not already assigned)
         for vm in vms:
-            self.assign_vm_label(
-                vm_id=vm.id,
-                label_id=label_id,
-                assigned_by='system',
-                inherited=True,
-                source_folder=folder_path
-            )
+            try:
+                self.assign_vm_label(
+                    vm_id=vm.id,
+                    label_id=label_id,
+                    assigned_by='system',
+                    inherited=True,
+                    source_folder=folder_path
+                )
+            except Exception:
+                # Skip if already assigned (UNIQUE constraint)
+                self.session.rollback()
+                continue
     
     def _remove_inherited_labels_from_vms(self, folder_path: str, label_id: int,
                                          include_subfolders: bool):

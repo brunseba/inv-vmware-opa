@@ -182,7 +182,12 @@ def render(db_url: str):
                                 st.success(f"✅ Label assigned to {selected_folder}")
                                 st.rerun()
                         except Exception as e:
-                            st.error(f"❌ Error: {e}")
+                            session.rollback()
+                            error_msg = str(e)
+                            if "UNIQUE constraint failed" in error_msg:
+                                st.warning("⚠️ Some VMs already have this label assigned (skipped duplicates)")
+                            else:
+                                st.error(f"❌ Error: {e}")
                     else:
                         st.warning("Please select folder and label")
             
@@ -243,9 +248,15 @@ def render(db_url: str):
             vm_search = st.text_input("🔍 Search VM by name", placeholder="Enter VM name...")
             
             if vm_search and len(vm_search) >= 2:
-                vms = session.query(VirtualMachine).filter(
-                    VirtualMachine.vm.ilike(f"%{vm_search}%")
-                ).limit(20).all()
+                try:
+                    vms = session.query(VirtualMachine).filter(
+                        VirtualMachine.vm.ilike(f"%{vm_search}%")
+                    ).limit(20).all()
+                except Exception as e:
+                    # Rollback session if there was a previous error
+                    session.rollback()
+                    st.error(f"Database error: {str(e)}")
+                    vms = []
                 
                 if vms:
                     st.write(f"Found {len(vms)} VM(s):")
@@ -323,7 +334,12 @@ def render(db_url: str):
                                                 st.success("Label assigned")
                                                 st.rerun()
                                         except Exception as e:
-                                            st.error(f"Error: {e}")
+                                            session.rollback()
+                                            error_msg = str(e)
+                                            if "UNIQUE constraint failed" in error_msg or "already assigned" in error_msg.lower():
+                                                st.info("ℹ️ This label is already assigned to this VM")
+                                            else:
+                                                st.error(f"Error: {e}")
                 else:
                     st.warning("No VMs found matching your search")
         
