@@ -398,12 +398,12 @@ def render(db_url: str):
                 query = query.filter(VirtualMachine.powerstate == power_state)
         
         else:  # Folder-based selection
+            # Get all folders
+            all_folders = [f[0] for f in session.query(VirtualMachine.folder).distinct().all() if f[0]]
+            
             col1, col2 = st.columns([2, 1])
             
             with col1:
-                # Get all folders
-                all_folders = [f[0] for f in session.query(VirtualMachine.folder).distinct().all() if f[0]]
-                
                 # Folder hierarchy level
                 folder_level = st.selectbox(
                     "Folder Hierarchy Level",
@@ -419,23 +419,64 @@ def render(db_url: str):
                     available_folders = sorted(set(
                         '/'.join(f.split('/')[:level]) for f in all_folders if f.split('/')[:level]
                     ))
-                
-                # Folder selection
-                selected_folders = st.multiselect(
-                    "Select Folders",
-                    options=available_folders,
-                    default=available_folders[:min(3, len(available_folders))],
-                    help="Select one or more folders to migrate"
-                )
             
             with col2:
+                # Regex filter option
+                use_regex = st.checkbox(
+                    "Use Regex Filter",
+                    value=False,
+                    help="Enable regex pattern matching for folder names"
+                )
+            
+            # Regex filter input (if enabled)
+            if use_regex:
+                import re
+                regex_pattern = st.text_input(
+                    "Regex Pattern",
+                    value="",
+                    placeholder="e.g., ^prod.*|.*backup$",
+                    help="Enter a regex pattern to filter folders. Examples: ^prod.* (starts with prod), .*test.* (contains test), ^(dev|test).* (starts with dev or test)"
+                )
+                
+                if regex_pattern:
+                    try:
+                        # Compile regex and filter folders
+                        regex_compiled = re.compile(regex_pattern, re.IGNORECASE)
+                        filtered_folders = [f for f in available_folders if regex_compiled.search(f)]
+                        
+                        if filtered_folders:
+                            st.success(f"✓ Regex matched {len(filtered_folders)} folder(s)")
+                            available_folders_display = filtered_folders
+                        else:
+                            st.warning("⚠️ No folders match the regex pattern")
+                            available_folders_display = available_folders
+                    except re.error as e:
+                        st.error(f"❌ Invalid regex pattern: {str(e)}")
+                        available_folders_display = available_folders
+                else:
+                    available_folders_display = available_folders
+            else:
+                available_folders_display = available_folders
+            
+            # Folder selection
+            selected_folders = st.multiselect(
+                "Select Folders",
+                options=available_folders_display,
+                default=available_folders_display[:min(3, len(available_folders_display))] if not use_regex or not regex_pattern else [],
+                help="Select one or more folders to migrate"
+            )
+            
+            # Additional options row
+            col1, col2 = st.columns(2)
+            with col1:
                 # Include subfolders option
                 include_subfolders = st.checkbox(
                     "Include Subfolders",
                     value=True,
                     help="Include all VMs in subfolders"
                 )
-                
+            
+            with col2:
                 power_state = st.selectbox(
                     "Power State",
                     options=["All", "poweredOn", "poweredOff"],
@@ -481,9 +522,10 @@ def render(db_url: str):
                 - Total VMs: **{len(vms):,}**
                 """)
             else:
+                regex_info = f"\n                - Regex Filter: `{regex_pattern}`" if use_regex and regex_pattern else ""
                 st.markdown(f"""
                 **Selection Criteria:**
-                - Folder Level: `{folder_level}`
+                - Folder Level: `{folder_level}`{regex_info}
                 - Selected Folders: `{len(selected_folders)}`
                 - Include Subfolders: `{include_subfolders}`
                 - Power State: `{power_state}`
