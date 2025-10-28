@@ -152,7 +152,7 @@ with st.sidebar:
     
     # Info section
     st.caption("VMware vSphere Inventory")
-    st.caption("Version 0.3.0")
+    st.caption("Version 0.4.0")
 
 # Main content area
 try:
