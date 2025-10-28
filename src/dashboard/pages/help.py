@@ -333,5 +333,5 @@ def render(db_url: str):
     
     # Version and info
     st.markdown("---")
-    st.caption("VMware vSphere Inventory Dashboard v0.2.1")
+    st.caption("VMware vSphere Inventory Dashboard v0.3.0")
     st.caption("For technical support, contact your system administrator")
