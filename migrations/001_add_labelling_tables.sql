@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS labels (
     key VARCHAR(100) NOT NULL,
     value VARCHAR(255) NOT NULL,
     description VARCHAR(500),
-    color VARCHAR(7),  -- Hex color format: #RRGGBB
+    color VARCHAR(7),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT _label_key_value_uc UNIQUE (key, value)
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS vm_labels (
     label_id INTEGER NOT NULL,
     assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     assigned_by VARCHAR(100),
-    inherited_from_folder BOOLEAN DEFAULT 0,  -- 0=direct, 1=inherited
+    inherited_from_folder BOOLEAN DEFAULT 0,
     source_folder_path VARCHAR(500),
     CONSTRAINT _vm_label_uc UNIQUE (vm_id, label_id),
     FOREIGN KEY (vm_id) REFERENCES virtual_machines(id) ON DELETE CASCADE,
@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS folder_labels (
     label_id INTEGER NOT NULL,
     assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     assigned_by VARCHAR(100),
-    inherit_to_vms BOOLEAN DEFAULT 1,         -- Auto-apply to VMs in folder
-    inherit_to_subfolders BOOLEAN DEFAULT 0,  -- Auto-apply to child folders
+    inherit_to_vms BOOLEAN DEFAULT 1,
+    inherit_to_subfolders BOOLEAN DEFAULT 0,
     CONSTRAINT _folder_label_uc UNIQUE (folder_path, label_id),
     FOREIGN KEY (label_id) REFERENCES labels(id) ON DELETE CASCADE
 );

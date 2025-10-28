@@ -25,17 +25,32 @@ def apply_migration(db_url: str, migration_file: str):
     with open(migration_path, 'r') as f:
         sql_content = f.read()
     
-    # Split into individual statements (simple split by semicolon)
-    statements = [s.strip() for s in sql_content.split(';') if s.strip() and not s.strip().startswith('--')]
+    # Remove comments and split into statements
+    lines = sql_content.split('\n')
+    clean_lines = []
+    in_comment = False
+    
+    for line in lines:
+        # Skip single-line comments
+        if line.strip().startswith('--'):
+            continue
+        # Handle multi-line comments
+        if '/*' in line:
+            in_comment = True
+        if '*/' in line:
+            in_comment = False
+            continue
+        if not in_comment:
+            clean_lines.append(line)
+    
+    # Join and split by semicolon
+    clean_sql = ' '.join(clean_lines)
+    statements = [s.strip() for s in clean_sql.split(';') if s.strip()]
     
     try:
         with engine.begin() as conn:
-            for i, statement in enumerate(statements):
-                # Skip comments
-                if statement.startswith('/*') or not statement:
-                    continue
-                
-                print(f"  Executing statement {i+1}/{len(statements)}...")
+            for i, statement in enumerate(statements, 1):
+                print(f"  Executing statement {i}/{len(statements)}...")
                 conn.execute(text(statement))
         
         print(f"✅ Migration applied successfully!")
