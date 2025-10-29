@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Script to extract individual license files for each dependency."""
+"""Script to extract individual license files for each dependency.
+
+Now categorizes licenses into:
+- licenses/direct/       (packages declared in pyproject.toml, including dev groups)
+- licenses/transitive/   (dependencies pulled in transitively)
+"""
 
 import json
 import subprocess
@@ -7,6 +12,7 @@ import sys
 from pathlib import Path
 from importlib.metadata import metadata, PackageNotFoundError, files
 import re
+import toml
 
 
 def get_installed_packages():
@@ -214,33 +220,71 @@ def extract_license_for_package(package_name, licenses_dir):
         return False
 
 
+def get_direct_dependencies(pyproject_path: Path = Path("pyproject.toml")) -> set:
+    """Get set of direct dependencies (including dev groups) from pyproject.toml."""
+    direct = set()
+    try:
+        data = toml.load(pyproject_path)
+        # Project dependencies
+        for dep in data.get("project", {}).get("dependencies", []) or []:
+            pkg = dep.split("[")[0].split(">")[0].split("<")[0].split("=")[0].strip().lower()
+            if pkg:
+                direct.add(pkg)
+        # Dev groups
+        for group_deps in data.get("dependency-groups", {}).values() or []:
+            for dep in group_deps or []:
+                pkg = dep.split("[")[0].split(">")[0].split("<")[0].split("=")[0].strip().lower()
+                if pkg:
+                    direct.add(pkg)
+    except Exception:
+        pass
+    return direct
+
+
 def main():
     """Main function to extract all license files."""
     print("Extracting individual license files for all dependencies...")
     
     packages = get_installed_packages()
-    licenses_dir = Path("licenses")
-    licenses_dir.mkdir(exist_ok=True)
+    licenses_root = Path("licenses")
+    licenses_root.mkdir(exist_ok=True)
+    direct_dir = licenses_root / "direct"
+    transitive_dir = licenses_root / "transitive"
+    direct_dir.mkdir(exist_ok=True)
+    transitive_dir.mkdir(exist_ok=True)
+
+    direct_pkgs = get_direct_dependencies()
+    installed_names = {pkg["name"].lower(): pkg for pkg in packages}
     
     success_count = 0
     failed_count = 0
+    direct_count = 0
+    transitive_count = 0
     
     for pkg in packages:
         name = pkg["name"]
         if name == "inv-vmware-opa":  # Skip our own package
             continue
+        lower = name.lower()
+        target_dir = direct_dir if lower in direct_pkgs else transitive_dir
         
-        print(f"Extracting license for {name}...")
-        if extract_license_for_package(name, licenses_dir):
+        print(f"Extracting license for {name} -> {'direct' if target_dir is direct_dir else 'transitive'}...")
+        if extract_license_for_package(name, target_dir):
             success_count += 1
+            if target_dir is direct_dir:
+                direct_count += 1
+            else:
+                transitive_count += 1
         else:
             failed_count += 1
     
     print(f"\n✓ License extraction complete!")
+    print(f"  - Direct: {direct_count}")
+    print(f"  - Transitive: {transitive_count}")
     print(f"  - Successfully extracted: {success_count}")
     print(f"  - Failed: {failed_count}")
     print(f"  - Total: {success_count + failed_count}")
-    print(f"  - Location: {licenses_dir}/")
+    print(f"  - Locations: {direct_dir}/ , {transitive_dir}/")
 
 
 if __name__ == "__main__":

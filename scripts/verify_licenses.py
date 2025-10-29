@@ -70,21 +70,34 @@ def main():
     print(f"Total installed packages: {len(installed)}")
     print()
     
-    # Get license files
+    # Get license files (root and categorized)
     licenses_dir = Path("licenses")
-    license_files = list(licenses_dir.glob("*.txt"))
-    print(f"License files generated: {len(license_files)}")
+    license_files = list(licenses_dir.glob("*.txt")) + \
+                    list((licenses_dir / "direct").glob("*.txt")) + \
+                    list((licenses_dir / "transitive").glob("*.txt"))
+    print(f"License files found (all locations): {len(license_files)}")
     print()
     
-    # Extract package names from license files
+    # Extract package names from license files and categorize
     licensed_packages = set()
+    direct_files = list((licenses_dir / "direct").glob("*.txt"))
+    transitive_files = list((licenses_dir / "transitive").glob("*.txt"))
+
+    def extract_name(p: Path) -> str:
+        return '-'.join(p.stem.split('-')[:-1]).lower()
+
+    direct_set = {extract_name(p) for p in direct_files}
+    transitive_set = {extract_name(p) for p in transitive_files}
+
     for lic_file in license_files:
-        # Format is packagename-version.txt
-        pkg_name = '-'.join(lic_file.stem.split('-')[:-1])
-        licensed_packages.add(pkg_name.lower())
+        pkg_name = extract_name(lic_file)
+        licensed_packages.add(pkg_name)
     
     print("=" * 80)
     print("ANALYSIS")
+    print("=" * 80)
+    print()
+    print(f"Categorized license files: direct={len(direct_set)}, transitive={len(transitive_set)}")
     print("=" * 80)
     print()
     
