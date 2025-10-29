@@ -10,13 +10,16 @@ A Python CLI tool for managing VMware inventory data from Excel exports into a s
 - **⚡ CLI Interface**: Simple command-line interface for data management
 - **📊 Statistics**: Query and analyze inventory data
 - **🔍 Filtering**: Filter VMs by datacenter, cluster, and other attributes
+- **🏷️ Label Management**: Organize VMs and folders with custom labels
 
 ### Interactive Dashboard
 - **🖥️ Web Interface**: Rich Streamlit-based dashboard with multiple views
 - **📈 Advanced Analytics**: CPU vs Memory patterns, OS distribution, cluster efficiency
 - **⚖️ Comparison Tools**: Side-by-side datacenter, cluster, and host comparisons
-- **📁 Folder Analysis**: Comprehensive folder-level resource and storage analytics
-- **🔎 VM Explorer**: Advanced search and detailed VM inspection
+- **📁 Folder Analysis**: Comprehensive folder-level resource and storage analytics with labels
+- **🔎 VM Explorer**: Advanced search with regex pattern matching
+- **🔍 VM Search**: Dedicated regex-based search with advanced filters
+- **🏷️ Folder Labelling**: Complete label management UI with inheritance
 - **📊 Data Quality**: Field completeness analysis and recommendations
 
 ### PDF Export
@@ -28,12 +31,26 @@ A Python CLI tool for managing VMware inventory data from Excel exports into a s
 ## Architecture
 
 ```mermaid
-graph LR
+graph TB
     A[Excel File] --> B[CLI Loader]
     B --> C[Parser]
     C --> D[SQLAlchemy Models]
     D --> E[Database]
-    E --> F[Query/Stats]
+    E --> F[CLI Commands]
+    E --> G[Web Dashboard]
+    E --> H[PDF Reports]
+    
+    subgraph "Data Model"
+        D1[virtual_machines] 
+        D2[labels]
+        D3[vm_labels]
+        D4[folder_labels]
+    end
+    
+    D --> D1
+    D --> D2
+    D --> D3
+    D --> D4
 ```
 
 ## Quick Start
@@ -59,6 +76,14 @@ uv run python -m src.cli list --limit 10
 - **Analysis**: Query and filter VMs by various attributes
 - **Migration Planning**: Analyze VM distributions and resource usage
 
+## Documentation
+
+- **[Data Model](data-model.md)** - Complete database schema and table reference
+- **[CLI Commands](user-guide/cli-commands.md)** - Command-line interface guide
+- **[Dashboard](user-guide/dashboard.md)** - Web interface documentation
+- **[PDF Export](user-guide/pdf-export.md)** - Report generation guide
+- **[Getting Started](getting-started/quickstart.md)** - Quick start guide
+
 ## Requirements
 
 - Python 3.10 or higher
@@ -66,6 +91,7 @@ uv run python -m src.cli list --limit 10
 - Click 8.0+
 - Pandas 2.0+
 - OpenPyXL 3.0+
+- Streamlit 1.28+ (for dashboard)
 
 ## License
 
