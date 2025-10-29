@@ -1,0 +1,11 @@
+Package: pyarrow
+Version: 22.0.0
+License: Apache Software License
+License Classifiers:
+  - License :: OSI Approved :: Apache Software License
+
+================================================================================
+
+No license text available in package metadata.
+Please refer to the package homepage for license information:
+Homepage not available
