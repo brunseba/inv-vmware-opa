@@ -110,6 +110,11 @@ with st.sidebar:
         st.session_state.current_page = "Folder Labelling"
         st.rerun()
     
+    st.markdown("**💾 Backup**")
+    if st.button("Database Backup", key="btn_Database_Backup", width='stretch'):
+        st.session_state.current_page = "Database Backup"
+        st.rerun()
+    
     st.markdown("**🚀 Planning**")
     if st.button("Migration Planning", key="btn_Migration_Planning", width='stretch'):
         st.session_state.current_page = "Migration Planning"
@@ -188,6 +193,10 @@ try:
     elif page == "Folder Labelling":
         from pages import folder_labelling
         folder_labelling.render(st.session_state.db_url)
+        
+    elif page == "Database Backup":
+        from pages import backup
+        backup.render(st.session_state.db_url)
         
     elif page == "Analytics":
         from pages import analytics

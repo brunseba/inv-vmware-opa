@@ -125,6 +125,21 @@ def render(db_url: str):
         with col3:
             sort_by = st.selectbox("Sort by", ["VMs", "Total_CPUs", "Total_Memory_GB", "Total_Provisioned_GB", "Total_In_Use_GB", "Folder"])
         
+        # Label filters
+        col_label1, col_label2 = st.columns(2)
+        with col_label1:
+            from src.models import Label
+            label_keys = [k[0] for k in session.query(Label.key).distinct().all() if k[0]]
+            selected_label_key = st.selectbox("Filter by Label Key", ["All"] + label_keys, help="Filter folders by label key")
+        
+        with col_label2:
+            selected_label_value = None
+            if selected_label_key != "All":
+                label_values = [v[0] for v in session.query(Label.value).filter(
+                    Label.key == selected_label_key
+                ).distinct().all() if v[0]]
+                selected_label_value = st.selectbox("Filter by Label Value", ["All"] + label_values)
+        
         # Apply folder aggregation
         if aggregate_level != "Full Path":
             level = int(aggregate_level.split()[1])  # Extract level number
@@ -159,6 +174,18 @@ def render(db_url: str):
             
             st.info(f"📂 Viewing folders aggregated at **{aggregate_level}** (folders grouped by first {aggregate_level.split()[1]} level(s))")
         
+        # Add label coverage info to dataframe (before summary metrics)
+        folder_label_counts = {}
+        for folder in df_folders['Folder']:
+            try:
+                labels = label_service.get_folder_labels(folder)
+                folder_label_counts[folder] = len(labels)
+            except:
+                folder_label_counts[folder] = 0
+        
+        df_folders['Label_Count'] = df_folders['Folder'].map(folder_label_counts)
+        df_folders['Label_Count'] = df_folders['Label_Count'].fillna(0).astype(int)
+        
         add_vertical_space(2)
         
         # Summary metrics
@@ -167,7 +194,7 @@ def render(db_url: str):
             description="Key folder metrics and statistics",
             color_name="orange-70"
         )
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
             st.metric("Total Folders", len(df_folders))
@@ -178,6 +205,10 @@ def render(db_url: str):
             max_vms = df_folders['VMs'].max()
             st.metric("Largest Folder", f"{int(max_vms)} VMs")
         with col4:
+            folders_with_labels = len(df_folders[df_folders['Label_Count'] > 0])
+            label_coverage_pct = (folders_with_labels / len(df_folders) * 100) if len(df_folders) > 0 else 0
+            st.metric("🏷️ Labeled Folders", folders_with_labels, delta=f"{label_coverage_pct:.0f}%")
+        with col5:
             folders_with_null = session.query(func.count(VirtualMachine.id)).filter(
                 VirtualMachine.folder.is_(None)
             ).scalar() or 0
@@ -192,6 +223,58 @@ def render(db_url: str):
         )
         
         add_vertical_space(2)
+        
+        # Apply label filter if selected
+        if selected_label_key != "All":
+            from src.models import FolderLabel
+            
+            # Get folders with the selected label
+            if selected_label_value and selected_label_value != "All":
+                # Specific key=value
+                label = session.query(Label).filter(
+                    Label.key == selected_label_key,
+                    Label.value == selected_label_value
+                ).first()
+                if label:
+                    labeled_folders = session.query(FolderLabel.folder_path).filter(
+                        FolderLabel.label_id == label.id
+                    ).all()
+                    labeled_folders = [f[0] for f in labeled_folders]
+            else:
+                # Any value for this key
+                label_ids = session.query(Label.id).filter(
+                    Label.key == selected_label_key
+                ).all()
+                label_ids = [lid[0] for lid in label_ids]
+                if label_ids:
+                    labeled_folders = session.query(FolderLabel.folder_path).filter(
+                        FolderLabel.label_id.in_(label_ids)
+                    ).distinct().all()
+                    labeled_folders = [f[0] for f in labeled_folders]
+                else:
+                    labeled_folders = []
+            
+            # Filter dataframe to only labeled folders
+            df_folders = df_folders[df_folders['Folder'].isin(labeled_folders)]
+            
+            if len(df_folders) > 0:
+                st.info(f"🏷️ Showing {len(df_folders)} folders with label: {selected_label_key}" + 
+                       (f"={selected_label_value}" if selected_label_value and selected_label_value != "All" else ""))
+            else:
+                st.warning(f"No folders found with label: {selected_label_key}" + 
+                          (f"={selected_label_value}" if selected_label_value and selected_label_value != "All" else ""))
+            
+            # Recalculate label counts for filtered folders
+            folder_label_counts = {}
+            for folder in df_folders['Folder']:
+                try:
+                    labels = label_service.get_folder_labels(folder)
+                    folder_label_counts[folder] = len(labels)
+                except:
+                    folder_label_counts[folder] = 0
+            
+            df_folders['Label_Count'] = df_folders['Folder'].map(folder_label_counts)
+            df_folders['Label_Count'] = df_folders['Label_Count'].fillna(0).astype(int)
         
         # Apply filters
         df_filtered = df_folders[df_folders['VMs'] >= min_vms]
@@ -216,7 +299,7 @@ def render(db_url: str):
         
         # Select columns to display
         display_df = df_filtered[[
-            'Folder', 'VMs', 'Total_CPUs', 'Total_Memory_GB', 
+            'Folder', 'Label_Count', 'VMs', 'Total_CPUs', 'Total_Memory_GB', 
             'Total_Provisioned_GB', 'Total_In_Use_GB', 'Total_Unshared_GB',
             'Avg_CPUs', 'Avg_Memory_GB', 'Avg_Provisioned_GB', 'Avg_In_Use_GB',
             'Datacenters', 'Clusters', 'Hosts'
@@ -224,6 +307,7 @@ def render(db_url: str):
         
         st.dataframe(
             display_df.style.format({
+                'Label_Count': '{:,.0f}',
                 'VMs': '{:,.0f}',
                 'Total_CPUs': '{:,.0f}',
                 'Total_Memory_GB': '{:,.1f}',

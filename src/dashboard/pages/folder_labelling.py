@@ -184,8 +184,137 @@ def render(db_url: str):
             
             add_vertical_space(1)
             
+            # Bulk assign label to all folders
+            with st.expander("📦 Bulk Assign Label to All Folders", expanded=False):
+                st.markdown("**Assign a label to all folders (or filtered subset):**")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Get available labels
+                    label_keys = label_service.get_label_keys()
+                    if label_keys:
+                        bulk_key = st.selectbox("Label Key", label_keys, key="bulk_folder_label_key")
+                        bulk_label_values = label_service.get_label_values(bulk_key)
+                        bulk_value = st.selectbox("Label Value", bulk_label_values, key="bulk_folder_label_value")
+                    else:
+                        st.warning("No labels defined. Create labels in the 'Label Definitions' tab first.")
+                        bulk_key = None
+                        bulk_value = None
+                
+                with col2:
+                    bulk_pattern = st.text_input(
+                        "Filter Pattern (optional)",
+                        placeholder="e.g., */prod/*, */backend/*",
+                        help="Use glob-style pattern to filter folders",
+                        key="bulk_pattern"
+                    )
+                    st.caption(f"Will apply to: {len(folders) if not bulk_pattern else 'filtered'} folder(s)")
+                
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    bulk_inherit_vms = st.checkbox("Apply to VMs in folders", value=True, key="bulk_inherit_vms")
+                with col2:
+                    bulk_inherit_subfolders = st.checkbox("Apply to subfolders", value=False, key="bulk_inherit_subfolders")
+                with col3:
+                    bulk_assigned_by = st.text_input("Assigned by", placeholder="Optional", key="bulk_assigned_by")
+                
+                # Preview button
+                if st.button("🔍 Preview Folders", key="bulk_preview"):
+                    import fnmatch
+                    
+                    # Filter folders by pattern if provided
+                    if bulk_pattern:
+                        preview_folders = [f for f in folders if fnmatch.fnmatch(f, bulk_pattern)]
+                    else:
+                        preview_folders = folders
+                    
+                    st.write(f"**Preview: {len(preview_folders)} folder(s) will be labeled:**")
+                    
+                    # Show first 20
+                    for folder in preview_folders[:20]:
+                        stats = label_service.get_folder_stats(folder)
+                        st.caption(f"📁 {folder} ({stats['vm_count']} VMs)")
+                    
+                    if len(preview_folders) > 20:
+                        st.caption(f"... and {len(preview_folders) - 20} more")
+                
+                # Apply button
+                if st.button("✅ Apply to All Folders", type="primary", key="bulk_apply"):
+                    if bulk_key and bulk_value:
+                        import fnmatch
+                        
+                        # Filter folders by pattern if provided
+                        if bulk_pattern:
+                            target_folders = [f for f in folders if fnmatch.fnmatch(f, bulk_pattern)]
+                            st.info(f"📊 Filtered to {len(target_folders)} folders matching pattern")
+                        else:
+                            target_folders = folders
+                        
+                        if not target_folders:
+                            st.warning("No folders match the criteria")
+                        else:
+                            # Confirm
+                            confirm_key = f"confirm_bulk_{bulk_key}_{bulk_value}"
+                            if st.session_state.get(confirm_key):
+                                try:
+                                    label = label_service.get_label_by_key_value(bulk_key, bulk_value)
+                                    if not label:
+                                        label = label_service.create_label(bulk_key, bulk_value)
+                                        st.info(f"ℹ️ Created new label: {bulk_key}={bulk_value}")
+                                    
+                                    # Progress bar
+                                    progress_bar = st.progress(0)
+                                    status_text = st.empty()
+                                    
+                                    success_count = 0
+                                    error_count = 0
+                                    
+                                    for idx, folder in enumerate(target_folders):
+                                        try:
+                                            label_service.assign_folder_label(
+                                                folder,
+                                                label.id,
+                                                assigned_by=bulk_assigned_by or None,
+                                                inherit_to_vms=bulk_inherit_vms,
+                                                inherit_to_subfolders=bulk_inherit_subfolders
+                                            )
+                                            success_count += 1
+                                        except Exception as e:
+                                            session.rollback()
+                                            error_count += 1
+                                            if idx < 5:  # Show first few errors
+                                                st.warning(f"⚠️ {folder}: {str(e)[:50]}")
+                                        
+                                        # Update progress
+                                        progress = (idx + 1) / len(target_folders)
+                                        progress_bar.progress(progress)
+                                        status_text.text(f"Processing: {idx + 1}/{len(target_folders)}")
+                                    
+                                    progress_bar.empty()
+                                    status_text.empty()
+                                    
+                                    st.success(f"✅ Complete: {success_count} folders labeled")
+                                    if error_count > 0:
+                                        st.warning(f"⚠️ {error_count} errors (check above for details)")
+                                    
+                                    # Clear confirmation
+                                    st.session_state[confirm_key] = False
+                                    st.rerun()
+                                    
+                                except Exception as e:
+                                    st.error(f"❌ Error: {e}")
+                            else:
+                                st.session_state[confirm_key] = True
+                                st.warning(f"⚠️ Click again to confirm: Will label {len(target_folders)} folders")
+                    else:
+                        st.warning("Please select label key and value")
+            
+            add_vertical_space(1)
+            
             # Assign label to folder
-            with st.expander("➕ Assign Label to Folder", expanded=False):
+            with st.expander("➕ Assign Label to Single Folder", expanded=False):
                 col1, col2 = st.columns(2)
                 
                 with col1:
@@ -513,6 +642,138 @@ def render(db_url: str):
                 ).count() if hasattr(VirtualMachine, 'labels') else 0
                 
                 st.caption(f"📊 Active in system")
+            
+            add_vertical_space(2)
+            st.divider()
+            
+            # Backup and Restore
+            st.write("**💾 Backup & Restore:**")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.write("**Create Backup**")
+                st.caption("Export all labels and assignments to JSON file")
+                
+                from datetime import datetime
+                from pathlib import Path
+                
+                default_filename = f"labels_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                backup_filename = st.text_input("Backup Filename", value=default_filename, key="backup_filename")
+                
+                if st.button("💾 Create Backup", type="primary", key="create_backup"):
+                    try:
+                        from src.services.backup_service import BackupService
+                        backup_service = BackupService(session)
+                        
+                        backup_path = Path("data/backups") / backup_filename
+                        
+                        with st.spinner("Creating backup..."):
+                            stats = backup_service.export_labels(backup_path)
+                        
+                        st.success(f"✅ Backup created successfully!")
+                        st.info(f"📊 Labels: {stats['labels']}, VM Assignments: {stats['vm_assignments']}, Folder Assignments: {stats['folder_assignments']}")
+                        st.caption(f"📁 File: {stats['file']} ({stats['size_bytes']:,} bytes)")
+                        
+                        # Offer download
+                        with open(backup_path, 'r') as f:
+                            backup_data = f.read()
+                        
+                        st.download_button(
+                            label="⬇️ Download Backup",
+                            data=backup_data,
+                            file_name=backup_filename,
+                            mime="application/json"
+                        )
+                        
+                    except Exception as e:
+                        st.error(f"❌ Error creating backup: {e}")
+            
+            with col2:
+                st.write("**Restore from Backup**")
+                st.caption("Import labels and assignments from backup file")
+                
+                # File uploader
+                uploaded_file = st.file_uploader(
+                    "Choose backup file",
+                    type=['json'],
+                    key="restore_file"
+                )
+                
+                if uploaded_file:
+                    import json
+                    import tempfile
+                    
+                    try:
+                        # Show backup info
+                        backup_content = json.loads(uploaded_file.read())
+                        uploaded_file.seek(0)  # Reset file pointer
+                        
+                        st.info(f"📊 Backup contains:")
+                        st.caption(f"Labels: {len(backup_content.get('labels', []))}")
+                        st.caption(f"VM Assignments: {len(backup_content.get('vm_assignments', []))}")
+                        st.caption(f"Folder Assignments: {len(backup_content.get('folder_assignments', []))}")
+                        st.caption(f"Exported: {backup_content.get('exported_at', 'Unknown')}")
+                        
+                        restore_mode = st.selectbox(
+                            "Import Mode",
+                            ["merge", "skip_duplicates", "replace"],
+                            help="merge: Update existing, skip_duplicates: Keep existing, replace: Delete and recreate",
+                            key="restore_mode"
+                        )
+                        
+                        if st.button("🔄 Restore from Backup", type="primary", key="restore_backup"):
+                            # Confirmation
+                            confirm_key = "confirm_restore"
+                            if st.session_state.get(confirm_key):
+                                try:
+                                    from src.services.backup_service import BackupService
+                                    backup_service = BackupService(session)
+                                    
+                                    # Save uploaded file temporarily
+                                    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
+                                        json.dump(backup_content, tmp)
+                                        tmp_path = Path(tmp.name)
+                                    
+                                    with st.spinner("Restoring backup..."):
+                                        stats = backup_service.import_labels(tmp_path, mode=restore_mode)
+                                    
+                                    # Clean up
+                                    tmp_path.unlink()
+                                    
+                                    st.success("✅ Restore complete!")
+                                    st.info(f"""
+                                    **Results:**
+                                    - Labels Created: {stats['labels_created']}
+                                    - Labels Updated: {stats['labels_updated']}
+                                    - Labels Skipped: {stats['labels_skipped']}
+                                    - VM Assignments Created: {stats['vm_assignments_created']}
+                                    - VM Assignments Skipped: {stats['vm_assignments_skipped']}
+                                    - Folder Assignments Created: {stats['folder_assignments_created']}
+                                    - Folder Assignments Skipped: {stats['folder_assignments_skipped']}
+                                    """)
+                                    
+                                    if stats['errors']:
+                                        st.warning(f"⚠️ {len(stats['errors'])} errors occurred")
+                                        with st.expander("View Errors"):
+                                            for error in stats['errors'][:20]:
+                                                st.caption(f"- {error}")
+                                    
+                                    st.session_state[confirm_key] = False
+                                    st.rerun()
+                                    
+                                except Exception as e:
+                                    st.error(f"❌ Error restoring backup: {e}")
+                                    if tmp_path.exists():
+                                        tmp_path.unlink()
+                            else:
+                                st.session_state[confirm_key] = True
+                                st.warning("⚠️ Click again to confirm restore operation")
+                        
+                    except json.JSONDecodeError:
+                        st.error("❌ Invalid backup file format")
+                    except Exception as e:
+                        st.error(f"❌ Error reading backup file: {e}")
     
     except Exception as e:
         st.error(f"❌ Error: {str(e)}")

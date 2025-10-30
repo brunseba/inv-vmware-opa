@@ -1,6 +1,7 @@
 """CLI commands for label management."""
 
 import click
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tabulate import tabulate
@@ -482,6 +483,219 @@ def sync_inherited_labels(folder: str, db_url: str):
         service.sync_inherited_labels(folder)
         
         click.echo(f"✅ Inherited labels synced successfully")
+        
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@label.command('backup')
+@click.argument('output_file', type=click.Path(path_type=Path))
+@click.option('--db-url', default='sqlite:///data/vmware_inventory.db',
+              help='Database URL', show_default=True)
+def backup_labels(output_file: Path, db_url: str):
+    """Backup all labels and assignments to JSON file."""
+    try:
+        from src.services.backup_service import BackupService
+        service = get_label_service(db_url)
+        backup_service = BackupService(service.session)
+        
+        click.echo(f"\n💾 Creating backup...")
+        stats = backup_service.export_labels(output_file)
+        
+        click.echo(f"\n✅ Backup complete!")
+        click.echo(f"   File: {stats['file']}")
+        click.echo(f"   Size: {stats['size_bytes']:,} bytes")
+        click.echo(f"\n📊 Backed up:")
+        click.echo(f"   Labels: {stats['labels']}")
+        click.echo(f"   VM Assignments: {stats['vm_assignments']}")
+        click.echo(f"   Folder Assignments: {stats['folder_assignments']}")
+        
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@label.command('restore')
+@click.argument('input_file', type=click.Path(exists=True, path_type=Path))
+@click.option('--mode', 
+              type=click.Choice(['merge', 'skip_duplicates', 'replace'], case_sensitive=False),
+              default='merge',
+              help='Import mode',
+              show_default=True)
+@click.option('--clear-existing', is_flag=True,
+              help='Clear all existing labels before restore (DANGEROUS!)')
+@click.option('--db-url', default='sqlite:///data/vmware_inventory.db',
+              help='Database URL', show_default=True)
+@click.confirmation_option(prompt='This will modify the database. Continue?')
+def restore_labels(input_file: Path, mode: str, clear_existing: bool, db_url: str):
+    """Restore labels and assignments from backup file."""
+    try:
+        from src.services.backup_service import BackupService
+        service = get_label_service(db_url)
+        backup_service = BackupService(service.session)
+        
+        if clear_existing:
+            click.echo("⚠️  WARNING: This will delete all existing labels!")
+            if not click.confirm("Are you absolutely sure?"):
+                click.echo("Cancelled.")
+                return
+        
+        click.echo(f"\n🔄 Restoring from backup...")
+        click.echo(f"   Mode: {mode}")
+        
+        stats = backup_service.import_labels(input_file, mode=mode, clear_existing=clear_existing)
+        
+        click.echo(f"\n✅ Restore complete!")
+        click.echo(f"\n📊 Results:")
+        click.echo(f"   Labels:")
+        click.echo(f"     - Created: {stats['labels_created']}")
+        click.echo(f"     - Updated: {stats['labels_updated']}")
+        click.echo(f"     - Skipped: {stats['labels_skipped']}")
+        click.echo(f"   VM Assignments:")
+        click.echo(f"     - Created: {stats['vm_assignments_created']}")
+        click.echo(f"     - Skipped: {stats['vm_assignments_skipped']}")
+        click.echo(f"   Folder Assignments:")
+        click.echo(f"     - Created: {stats['folder_assignments_created']}")
+        click.echo(f"     - Skipped: {stats['folder_assignments_skipped']}")
+        
+        if stats['errors']:
+            click.echo(f"\n⚠️  Errors ({len(stats['errors'])})")
+            for error in stats['errors'][:10]:  # Show first 10
+                click.echo(f"   - {error}")
+            if len(stats['errors']) > 10:
+                click.echo(f"   ... and {len(stats['errors']) - 10} more")
+        
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@label.command('list-backups')
+@click.option('--backup-dir', 
+              type=click.Path(exists=False, path_type=Path),
+              default='data/backups',
+              help='Backup directory',
+              show_default=True)
+@click.option('--db-url', default='sqlite:///data/vmware_inventory.db',
+              help='Database URL', show_default=True)
+def list_backups_cmd(backup_dir: Path, db_url: str):
+    """List available backup files."""
+    try:
+        from src.services.backup_service import BackupService
+        service = get_label_service(db_url)
+        backup_service = BackupService(service.session)
+        
+        backups = backup_service.list_backups(backup_dir)
+        
+        if not backups:
+            click.echo(f"No backups found in {backup_dir}")
+            return
+        
+        click.echo(f"\n💾 Available Backups ({len(backups)}):\n")
+        
+        for backup in backups:
+            click.echo(f"📄 {backup['filename']}")
+            click.echo(f"   Path: {backup['path']}")
+            click.echo(f"   Size: {backup['size_bytes']:,} bytes")
+            click.echo(f"   Modified: {backup['modified']}")
+            click.echo(f"   Labels: {backup['labels_count']}, "
+                      f"VM Assignments: {backup['vm_assignments_count']}, "
+                      f"Folder Assignments: {backup['folder_assignments_count']}")
+            click.echo()
+        
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@label.command('assign-all-folders')
+@click.argument('key')
+@click.argument('value')
+@click.option('--pattern', help='Filter folders by pattern (glob-style)')
+@click.option('--inherit-vms/--no-inherit-vms', default=True,
+              help='Apply label to VMs in folders')
+@click.option('--inherit-subfolders/--no-inherit-subfolders', default=False,
+              help='Apply to subfolders recursively')
+@click.option('--by', help='Assigned by (user name)')
+@click.option('--dry-run', is_flag=True, help='Show what would be done without applying')
+@click.option('--db-url', default='sqlite:///data/vmware_inventory.db',
+              help='Database URL', show_default=True)
+def assign_all_folders_label(key: str, value: str, pattern: str,
+                            inherit_vms: bool, inherit_subfolders: bool,
+                            by: str, dry_run: bool, db_url: str):
+    """Assign a label to all folders (or filtered by pattern)."""
+    try:
+        import fnmatch
+        service = get_label_service(db_url)
+        
+        # Get all folders
+        all_folders = service.get_all_folders()
+        
+        # Filter by pattern if provided
+        if pattern:
+            folders = [f for f in all_folders if fnmatch.fnmatch(f, pattern)]
+            click.echo(f"\n📁 Filtered {len(folders)} folders matching pattern: {pattern}")
+        else:
+            folders = all_folders
+            click.echo(f"\n📁 Processing all {len(folders)} folders")
+        
+        if not folders:
+            click.echo("No folders to process.")
+            return
+        
+        # Show preview
+        click.echo(f"\nLabel to assign: {key}={value}")
+        if inherit_vms:
+            click.echo("  ✓ Will apply to VMs in folders")
+        if inherit_subfolders:
+            click.echo("  ✓ Will apply to subfolders")
+        
+        if dry_run:
+            click.echo(f"\n🔍 DRY RUN - Folders that would be labeled:\n")
+            for folder in folders[:20]:  # Show first 20
+                stats = service.get_folder_stats(folder)
+                click.echo(f"  • {folder:<60} ({stats['vm_count']} VMs)")
+            if len(folders) > 20:
+                click.echo(f"  ... and {len(folders) - 20} more")
+            click.echo(f"\n💡 Remove --dry-run to apply changes")
+            return
+        
+        # Confirm action
+        if not click.confirm(f"\nApply label to {len(folders)} folders?"):
+            click.echo("Cancelled.")
+            return
+        
+        # Get or create label
+        label = service.get_label_by_key_value(key, value)
+        if not label:
+            label = service.create_label(key, value)
+            click.echo(f"ℹ️  Created new label: {key}={value}\n")
+        
+        # Apply to all folders
+        click.echo(f"\n🔄 Applying label to folders...\n")
+        success_count = 0
+        error_count = 0
+        
+        with click.progressbar(folders, label='Processing folders') as bar:
+            for folder in bar:
+                try:
+                    service.assign_folder_label(
+                        folder,
+                        label.id,
+                        assigned_by=by,
+                        inherit_to_vms=inherit_vms,
+                        inherit_to_subfolders=inherit_subfolders
+                    )
+                    success_count += 1
+                except Exception as e:
+                    error_count += 1
+                    click.echo(f"\n  ⚠️  Error on {folder}: {e}")
+        
+        click.echo(f"\n✅ Complete:")
+        click.echo(f"   Successfully labeled: {success_count} folders")
+        if error_count > 0:
+            click.echo(f"   Errors: {error_count}")
         
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)

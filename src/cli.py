@@ -73,6 +73,81 @@ def load(excel_file: Path, db_url: str, clear: bool, sheet: str, list_sheets: bo
 
 
 @cli.command()
+@click.argument('output_file', type=click.Path(path_type=Path))
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+def backup(output_file: Path, db_url: str):
+    """Create a full database backup."""
+    from datetime import datetime
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+    from .services.backup_service import BackupService
+    
+    try:
+        engine = create_engine(db_url, echo=False)
+        SessionLocal = sessionmaker(bind=engine)
+        session = SessionLocal()
+        backup_service = BackupService(session)
+        
+        click.echo(f"\n💾 Creating database backup...")
+        stats = backup_service.backup_database(output_file, db_url)
+        
+        click.echo(f"\n✅ Database backup complete!")
+        click.echo(f"   Source: {stats['source']}")
+        click.echo(f"   Backup: {stats['backup_file']}")
+        click.echo(f"   Size: {stats['size_bytes']:,} bytes")
+        click.echo(f"   Tables: {stats['tables']}")
+        click.echo()
+        
+        session.close()
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@cli.command()
+@click.argument('backup_file', type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.confirmation_option(prompt='This will replace the current database. Continue?')
+def restore(backup_file: Path, db_url: str):
+    """Restore database from backup file."""
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+    from .services.backup_service import BackupService
+    
+    try:
+        engine = create_engine(db_url, echo=False)
+        SessionLocal = sessionmaker(bind=engine)
+        session = SessionLocal()
+        backup_service = BackupService(session)
+        
+        click.echo(f"\n🔄 Restoring database from backup...")
+        click.echo("   ⚠️  Current database will be backed up before restore")
+        
+        stats = backup_service.restore_database(backup_file, db_url, confirm=True)
+        
+        click.echo(f"\n✅ Database restore complete!")
+        click.echo(f"   Restored from: {stats['restored_from']}")
+        click.echo(f"   Restored to: {stats['restored_to']}")
+        click.echo(f"   Size: {stats['size_bytes']:,} bytes")
+        click.echo()
+        
+        session.close()
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@cli.command()
 @click.option(
     "--db-url",
     default="sqlite:///data/vmware_inventory.db",
