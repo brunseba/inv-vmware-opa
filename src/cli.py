@@ -570,26 +570,33 @@ def clusters(db_url: str, datacenter: str, cluster_filter: str):
     show_default=True,
 )
 @click.option(
+    "--table",
+    type=click.Choice(["virtual_machines", "labels", "vm_labels", "folder_labels", "all"], case_sensitive=False),
+    default="virtual_machines",
+    help="Table to display schema for",
+    show_default=True,
+)
+@click.option(
     "--filter",
     "filters",
     multiple=True,
-    help="Filter columns by category (basic, resources, network, storage, hardware, infrastructure, os, custom)",
+    help="Filter columns by category (basic, resources, network, storage, hardware, infrastructure, os, custom, relationships)",
 )
 @click.option(
     "--group-by",
     type=click.Choice(["category", "type", "nullable", "indexed"], case_sensitive=False),
     help="Group columns by attribute",
 )
-def schema(db_url: str, filters: tuple, group_by: str):
+def schema(db_url: str, table: str, filters: tuple, group_by: str):
     """View the datamodel schema with filtering and grouping options."""
     from sqlalchemy import create_engine, inspect
-    from .models import VirtualMachine
+    from .models import VirtualMachine, Label, VMLabel, FolderLabel
     
     engine = create_engine(db_url, echo=False)
     inspector = inspect(engine)
     
-    # Define column categories
-    categories = {
+    # Define column categories for each table
+    vm_categories = {
         "basic": ["id", "vm", "powerstate", "template", "srm_placeholder", "config_status", 
                   "dns_name", "connection_state", "guest_state", "heartbeat", "consolidation_needed"],
         "timing": ["poweron", "suspend_time", "creation_date", "change_version"],
@@ -615,11 +622,49 @@ def schema(db_url: str, filters: tuple, group_by: str):
         "metadata": ["imported_at"],
     }
     
+    label_categories = {
+        "basic": ["id", "key", "value"],
+        "metadata": ["description", "color", "created_at", "updated_at"],
+    }
+    
+    vm_label_categories = {
+        "relationships": ["id", "vm_id", "label_id"],
+        "metadata": ["assigned_at", "assigned_by"],
+        "inheritance": ["inherited_from_folder", "source_folder_path"],
+    }
+    
+    folder_label_categories = {
+        "relationships": ["id", "folder_path", "label_id"],
+        "metadata": ["assigned_at", "assigned_by"],
+        "inheritance": ["inherit_to_vms", "inherit_to_subfolders"],
+    }
+    
+    # Determine which tables to display
+    tables_to_show = []
+    if table == "all":
+        tables_to_show = [("virtual_machines", vm_categories), ("labels", label_categories), 
+                          ("vm_labels", vm_label_categories), ("folder_labels", folder_label_categories)]
+    elif table == "virtual_machines":
+        tables_to_show = [("virtual_machines", vm_categories)]
+    elif table == "labels":
+        tables_to_show = [("labels", label_categories)]
+    elif table == "vm_labels":
+        tables_to_show = [("vm_labels", vm_label_categories)]
+    elif table == "folder_labels":
+        tables_to_show = [("folder_labels", folder_label_categories)]
+    
+    # Process each table
+    for table_name, categories in tables_to_show:
+        _display_table_schema(inspector, table_name, categories, filters, group_by)
+
+
+def _display_table_schema(inspector, table_name: str, categories: dict, filters: tuple, group_by: str):
+    """Display schema for a specific table."""
     # Get column information
     try:
-        columns = inspector.get_columns("virtual_machines")
+        columns = inspector.get_columns(table_name)
     except Exception:
-        click.echo("⚠ Database table does not exist. Load data first.", err=True)
+        click.echo(f"⚠ Table '{table_name}' does not exist. Load data first.", err=True)
         return
     
     # Build column info with metadata
@@ -633,8 +678,11 @@ def schema(db_url: str, filters: tuple, group_by: str):
                 break
         
         # Get indexes
-        indexes = inspector.get_indexes("virtual_machines")
-        is_indexed = any(col["name"] in idx["column_names"] for idx in indexes)
+        try:
+            indexes = inspector.get_indexes(table_name)
+            is_indexed = any(col["name"] in idx["column_names"] for idx in indexes)
+        except Exception:
+            is_indexed = False
         
         # Get type name
         type_name = str(col["type"])
@@ -657,7 +705,7 @@ def schema(db_url: str, filters: tuple, group_by: str):
         return
     
     # Display results
-    click.echo(f"\n=== VirtualMachine Schema ({len(column_info)} columns) ===")
+    click.echo(f"\n=== {table_name.replace('_', ' ').title()} Schema ({len(column_info)} columns) ===")
     
     if group_by:
         # Group and display
