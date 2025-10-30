@@ -543,7 +543,7 @@ def render(db_url: str):
                 # Filter selection
                 filter_type = st.selectbox(
                     "Select Filter Type",
-                    ["OS Family", "Resource Size", "Network Complexity", "Storage Complexity"],
+                    ["OS Family", "Specific OS", "Resource Size", "Network Complexity", "Storage Complexity"],
                     key="batch_filter_type"
                 )
                 
@@ -557,6 +557,58 @@ def render(db_url: str):
                             key="os_family_select"
                         )
                         st.caption("📊 Preview VMs matching this OS family")
+                    
+                    elif filter_type == "Specific OS":
+                        # Get distinct OS values from database
+                        try:
+                            os_list = session.query(VirtualMachine.os_config).filter(
+                                VirtualMachine.os_config.isnot(None)
+                            ).distinct().order_by(VirtualMachine.os_config).all()
+                            os_options = [os[0] for os in os_list if os[0]]
+                        except Exception as e:
+                            session.rollback()
+                            st.error(f"Error loading OS list: {e}")
+                            os_options = []
+                        
+                        if os_options:
+                            # Option to use exact match or pattern
+                            match_mode = st.radio(
+                                "Match Mode",
+                                ["Exact Match", "Contains Pattern"],
+                                key="os_match_mode",
+                                horizontal=True
+                            )
+                            
+                            if match_mode == "Exact Match":
+                                category = st.selectbox(
+                                    "Select OS",
+                                    os_options,
+                                    key="specific_os_select"
+                                )
+                                st.caption(f"💻 Exact match: {category}")
+                            else:
+                                # Pattern matching
+                                os_pattern_input = st.text_input(
+                                    "OS Pattern (SQL LIKE syntax)",
+                                    placeholder="e.g., %Ubuntu%, Windows Server%",
+                                    key="os_pattern_input"
+                                )
+                                category = os_pattern_input if os_pattern_input else None
+                                st.caption("🔍 Use % as wildcard (e.g., %Ubuntu% matches all Ubuntu variants)")
+                                
+                                # Show matching OS preview
+                                if category:
+                                    matching_os = [os for os in os_options if 
+                                                 category.replace('%', '').lower() in os.lower()]
+                                    if matching_os:
+                                        with st.expander(f"👁️ Preview matching OS ({len(matching_os)})"):
+                                            for os in matching_os[:10]:
+                                                st.caption(f"- {os}")
+                                            if len(matching_os) > 10:
+                                                st.caption(f"... and {len(matching_os) - 10} more")
+                        else:
+                            st.warning("⚠️ No OS data available in database")
+                            category = None
                     
                     elif filter_type == "Resource Size":
                         category = st.selectbox(
@@ -618,6 +670,19 @@ def render(db_url: str):
                         # Get matching VMs based on filter type
                         if filter_type == "OS Family":
                             matching_vms = label_service.get_vms_by_os_category(os_family=category)
+                        elif filter_type == "Specific OS":
+                            if category:
+                                # Check if it's exact match or pattern
+                                if 'os_match_mode' in st.session_state and st.session_state.os_match_mode == "Exact Match":
+                                    # Exact match
+                                    matching_vms = session.query(VirtualMachine).filter(
+                                        VirtualMachine.os_config == category
+                                    ).all()
+                                else:
+                                    # Pattern match (use label_service method)
+                                    matching_vms = label_service.get_vms_by_os_category(os_pattern=category)
+                            else:
+                                matching_vms = []
                         elif filter_type == "Resource Size":
                             matching_vms = label_service.get_vms_by_resource_category(category)
                         elif filter_type == "Network Complexity":

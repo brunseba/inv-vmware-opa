@@ -688,6 +688,22 @@ class LabelService:
         else:
             return []
     
+    def get_distinct_os_values(self) -> List[str]:
+        """Get all distinct OS configuration values from VMs.
+        
+        Returns:
+            List of unique OS configuration strings, sorted alphabetically
+            
+        Example:
+            os_list = service.get_distinct_os_values()
+            # ['Microsoft Windows Server 2016', 'Red Hat Enterprise Linux 8', ...]
+        """
+        result = self.session.query(VirtualMachine.os_config).filter(
+            VirtualMachine.os_config.isnot(None)
+        ).distinct().order_by(VirtualMachine.os_config).all()
+        
+        return [os[0] for os in result if os[0]]
+    
     def get_vm_counts_by_criteria(self, os_pattern: str = None, 
                                   resource_category: str = None) -> Dict:
         """Get count of VMs matching various criteria.

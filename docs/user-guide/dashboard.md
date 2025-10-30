@@ -163,6 +163,11 @@ Two approaches for labelling individual VMs:
   - Linux VMs (Ubuntu, RHEL, CentOS, Debian, SUSE, Fedora)
   - Unix VMs (Solaris, AIX, HP-UX, BSD)
   - Other OS
+- **Specific OS Filtering** (NEW):
+  - Exact Match: Select from actual OS values in your inventory
+  - Pattern Match: Use SQL LIKE patterns (e.g., %Ubuntu%, Windows Server%)
+  - OS Preview: See matching OS values before applying filter
+  - Dynamic OS List: Automatically populated from database
 - **Resource Size Categories**:
   - Small: 1-2 vCPUs, ≤4 GB RAM
   - Medium: 3-4 vCPUs, 4-16 GB RAM
@@ -210,7 +215,11 @@ Two approaches for labelling individual VMs:
 ```
 1. Use batch operations to label all Windows VMs: os:windows
 2. Label Linux VMs by distribution: os:ubuntu, os:rhel
-3. Generate OS-specific migration or patching lists
+3. Use Specific OS filtering for precise targeting:
+   - Exact Match: Select "Microsoft Windows Server 2019 (64-bit)"
+   - Pattern Match: Use "%Ubuntu 20.04%" for specific versions
+4. Generate OS-specific migration or patching lists
+5. Label VMs needing OS upgrades using version patterns
 ```
 
 ### 📄 PDF Export
