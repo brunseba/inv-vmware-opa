@@ -86,27 +86,47 @@ def get_vm_counts(db_url: str) -> Dict[str, int]:
         - suspended: Count of suspended VMs
     """
     from .database import DatabaseManager
+    from sqlalchemy import inspect
     
-    with DatabaseManager.session_scope(db_url) as session:
-        total = session.query(func.count(VirtualMachine.id)).scalar() or 0
-        
-        powered_on = session.query(func.count(VirtualMachine.id)).filter(
-            VirtualMachine.powerstate == "poweredOn"
-        ).scalar() or 0
-        
-        powered_off = session.query(func.count(VirtualMachine.id)).filter(
-            VirtualMachine.powerstate == "poweredOff"
-        ).scalar() or 0
-        
-        suspended = session.query(func.count(VirtualMachine.id)).filter(
-            VirtualMachine.powerstate == "suspended"
-        ).scalar() or 0
-        
+    try:
+        with DatabaseManager.session_scope(db_url) as session:
+            # Check if virtual_machines table exists
+            inspector = inspect(session.bind)
+            if 'virtual_machines' not in inspector.get_table_names():
+                return {
+                    "total": 0,
+                    "powered_on": 0,
+                    "powered_off": 0,
+                    "suspended": 0
+                }
+            
+            total = session.query(func.count(VirtualMachine.id)).scalar() or 0
+            
+            powered_on = session.query(func.count(VirtualMachine.id)).filter(
+                VirtualMachine.powerstate == "poweredOn"
+            ).scalar() or 0
+            
+            powered_off = session.query(func.count(VirtualMachine.id)).filter(
+                VirtualMachine.powerstate == "poweredOff"
+            ).scalar() or 0
+            
+            suspended = session.query(func.count(VirtualMachine.id)).filter(
+                VirtualMachine.powerstate == "suspended"
+            ).scalar() or 0
+            
+            return {
+                "total": total,
+                "powered_on": powered_on,
+                "powered_off": powered_off,
+                "suspended": suspended
+            }
+    except Exception as e:
+        logger.warning(f"Error getting VM counts: {e}")
         return {
-            "total": total,
-            "powered_on": powered_on,
-            "powered_off": powered_off,
-            "suspended": suspended
+            "total": 0,
+            "powered_on": 0,
+            "powered_off": 0,
+            "suspended": 0
         }
 
 

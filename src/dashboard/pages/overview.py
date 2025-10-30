@@ -21,15 +21,41 @@ def render(db_url: str):
     )
     
     try:
+        from sqlalchemy import inspect
+        
         engine = create_engine(db_url, echo=False)
         SessionLocal = sessionmaker(bind=engine)
         session = SessionLocal()
+        
+        # Check if virtual_machines table exists
+        inspector = inspect(engine)
+        if 'virtual_machines' not in inspector.get_table_names():
+            st.info("📊 **No database tables found**")
+            st.write("""It looks like this is a fresh database. To get started:
+            
+1. **Navigate to Data Import**: Go to Management > Data Import in the sidebar
+2. **Upload Your File**: Click to upload your VMware inventory Excel file (RVTools export)
+3. **Import Data**: Select the sheet and click "Import Data"
+4. **Return Here**: Come back to see your infrastructure overview
+            
+            Alternatively, you can load data via CLI:
+            ```bash
+            vmware-inv load <excel_file> --clear
+            ```
+            """)
+            
+            # Show helpful links
+            col1, col2 = st.columns(2)
+            with col1:
+                st.page_link("pages/data_import.py", label="📥 Go to Data Import", icon="📥")
+            return
         
         # Check if data exists
         total_vms = session.query(func.count(VirtualMachine.id)).scalar()
         
         if total_vms == 0:
-            st.warning("⚠️ No data found in database. Please load data first using: `vmware-inv load <excel_file>`")
+            st.warning("⚠️ No data found in database. Please load data first.")
+            st.write("Navigate to **Management > Data Import** to upload your inventory file.")
             return
         
         # Data quality indicators
