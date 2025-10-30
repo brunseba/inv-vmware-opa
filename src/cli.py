@@ -9,7 +9,7 @@ from .commands.label import label
 
 
 @click.group()
-@click.version_option(version="0.1.0")
+@click.version_option(version="0.5.0")
 def cli():
     """VMware inventory management CLI."""
     pass
