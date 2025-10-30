@@ -117,16 +117,24 @@ with st.sidebar:
             ("💻 Resources", "Resources"),
             ("🌐 Infrastructure", "Infrastructure"),
             ("📁 Folder Analysis", "Folder Analysis"),
+            ("🏷️ Folder Labelling", "Folder Labelling"),
         ]
         for display_name, page_name in infra_pages:
+            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+                PageNavigator.navigate_to(page_name)
+    
+    # === MIGRATION (Collapsible) ===
+    with st.expander("🚀 Migration", expanded=False):
+        migration_pages = [
+            ("📋 Migration Planning", "Migration Planning"),
+        ]
+        for display_name, page_name in migration_pages:
             if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
                 PageNavigator.navigate_to(page_name)
     
     # === MANAGEMENT (Collapsible) ===
     with st.expander("⚙️ Management", expanded=False):
         mgmt_pages = [
-            ("🏷️ Folder Labelling", "Folder Labelling"),
-            ("🚀 Migration Planning", "Migration Planning"),
             ("💾 Database Backup", "Database Backup"),
         ]
         for display_name, page_name in mgmt_pages:
