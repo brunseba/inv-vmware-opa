@@ -61,6 +61,10 @@ mypy-report/
 # Workspace root folder
 /workspace/
 
+# Environment variables
+.env
+.env.local
+
 # OS
 .DS_Store
 Thumbs.db

@@ -16,14 +16,16 @@ RUN apt-get update && \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency files
+# Copy dependency files and source code
 COPY pyproject.toml uv.lock ./
+COPY src ./src
+COPY README.md ./
 
 # Install uv package manager
 RUN pip install --no-cache-dir uv
 
-# Install dependencies using uv
-RUN uv pip install --system --no-cache -r pyproject.toml
+# Install the application and its dependencies (including dashboard extras)
+RUN uv pip install --system --no-cache ".[dashboard]"
 
 # ============================================================================
 # Stage 2: Runtime - Slim final image
@@ -34,12 +36,12 @@ FROM python:3.12-slim
 LABEL org.opencontainers.image.title="VMware Inventory Dashboard" \
       org.opencontainers.image.description="Interactive web dashboard for VMware vSphere inventory analysis with RVTools support" \
       org.opencontainers.image.version="0.6.0" \
-      org.opencontainers.image.authors="VMware Inventory Team" \
+      org.opencontainers.image.authors="brunseba" \
       org.opencontainers.image.url="https://github.com/brunseba/inv-vmware-opa" \
       org.opencontainers.image.documentation="https://github.com/brunseba/inv-vmware-opa/blob/main/README.md" \
       org.opencontainers.image.source="https://github.com/brunseba/inv-vmware-opa" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.vendor="VMware Inventory Project" \
+      org.opencontainers.image.vendor="SparrowHawkOfHills" \
       org.opencontainers.image.base.name="python:3.12-slim"
 
 # Set labels for better Docker Hub integration
@@ -56,7 +58,7 @@ RUN apt-get update && \
 
 # Create non-root user for security
 RUN groupadd -r vmwareinv && \
-    useradd -r -g vmwareinv -u 1000 -d /app -s /sbin/nologin vmwareinv
+    useradd -r -g vmwareinv -u 10000 -d /app -s /sbin/nologin vmwareinv
 
 # Set working directory
 WORKDIR /app
@@ -68,9 +70,9 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY --chown=vmwareinv:vmwareinv . .
 
-# Create data directory for database
-RUN mkdir -p /app/data && \
-    chown -R vmwareinv:vmwareinv /app/data
+# Create data and config directories
+RUN mkdir -p /app/data /app/.streamlit && \
+    chown -R vmwareinv:vmwareinv /app/data /app/.streamlit
 
 # Create volume mount points
 VOLUME ["/app/data"]
@@ -90,7 +92,8 @@ ENV PYTHONUNBUFFERED=1 \
     VMWARE_INV_DB_URL="sqlite:///data/vmware_inventory.db" \
     STREAMLIT_SERVER_HEADLESS=true \
     STREAMLIT_SERVER_ENABLE_CORS=false \
-    STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=true
+    STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=true \
+    STREAMLIT_HOME=/app/.streamlit
 
 # Entrypoint using fullweb command
 ENTRYPOINT ["vmware-inv", "fullweb"]
