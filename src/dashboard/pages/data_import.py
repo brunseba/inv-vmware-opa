@@ -329,30 +329,117 @@ def render(db_url: str):
         
         # Clear all data
         st.write("**🗑️ Clear All Data**")
-        st.caption("Remove all VM records from the database (structure remains intact)")
+        st.caption("Remove VM records and optionally clear labels")
         
-        if st.button("Clear All VM Data", type="secondary"):
-            st.warning("⚠️ This will delete all VM records. Are you sure?")
+        # Clear mode selection
+        clear_mode = st.radio(
+            "Select what to clear:",
+            [
+                "VM Data Only (Preserve all labels)",
+                "VM Data + Label Mappings (Preserve label definitions)",
+                "Everything (VM Data + All Labels)"
+            ],
+            key="clear_mode",
+            help="Choose what data to remove from the database"
+        )
+        
+        # Show what will be affected
+        with st.expander("ℹ️ What will be deleted?"):
+            if clear_mode == "VM Data Only (Preserve all labels)":
+                st.write("**Will Delete:**")
+                st.write("- ✅ All VM records")
+                st.write("\n**Will Preserve:**")
+                st.write("- ✅ Label definitions (Label table)")
+                st.write("- ✅ VM label assignments (VMLabel table)")
+                st.write("- ✅ Folder label assignments (FolderLabel table)")
+                st.info("💡 Use this when you want to reload VM data but keep your labelling work intact")
+            
+            elif clear_mode == "VM Data + Label Mappings (Preserve label definitions)":
+                st.write("**Will Delete:**")
+                st.write("- ✅ All VM records")
+                st.write("- ✅ VM label assignments (VMLabel table)")
+                st.write("- ✅ Folder label assignments (FolderLabel table)")
+                st.write("\n**Will Preserve:**")
+                st.write("- ✅ Label definitions (Label table)")
+                st.info("💡 Use this when you want to reload data and reassign labels, but keep label definitions")
+            
+            else:  # Everything
+                st.write("**Will Delete:**")
+                st.write("- ✅ All VM records")
+                st.write("- ✅ All label definitions (Label table)")
+                st.write("- ✅ VM label assignments (VMLabel table)")
+                st.write("- ✅ Folder label assignments (FolderLabel table)")
+                st.warning("⚠️ This will completely reset your database - all data and labels will be lost!")
+        
+        add_vertical_space(1)
+        
+        if st.button("Clear Data", type="secondary"):
+            st.warning(f"⚠️ **Confirmation Required**")
+            st.write(f"You selected: **{clear_mode}**")
             
             col1, col2 = st.columns(2)
             
             with col1:
-                if st.button("✅ Yes, Clear All Data", type="primary"):
+                if st.button("✅ Yes, Clear Data", type="primary"):
                     try:
+                        from src.models import Label, VMLabel, FolderLabel
+                        
                         engine = create_engine(db_url, echo=False)
                         SessionLocal = sessionmaker(bind=engine)
                         session = SessionLocal()
                         
-                        count_before = session.query(VirtualMachine).count()
+                        # Count before deletion
+                        vm_count = session.query(VirtualMachine).count()
+                        
+                        results = []
+                        
+                        # Delete VM data
                         session.query(VirtualMachine).delete()
+                        results.append(f"✅ Deleted {vm_count:,} VM records")
+                        
+                        # Handle labels based on mode
+                        if clear_mode == "VM Data + Label Mappings (Preserve label definitions)":
+                            # Delete label mappings only
+                            vm_label_count = session.query(VMLabel).count()
+                            folder_label_count = session.query(FolderLabel).count()
+                            
+                            session.query(VMLabel).delete()
+                            session.query(FolderLabel).delete()
+                            
+                            results.append(f"✅ Deleted {vm_label_count:,} VM label mappings")
+                            results.append(f"✅ Deleted {folder_label_count:,} folder label mappings")
+                            results.append(f"ℹ️ Preserved label definitions")
+                        
+                        elif clear_mode == "Everything (VM Data + All Labels)":
+                            # Delete everything including label definitions
+                            label_count = session.query(Label).count()
+                            vm_label_count = session.query(VMLabel).count()
+                            folder_label_count = session.query(FolderLabel).count()
+                            
+                            # Delete in correct order (mappings first, then definitions)
+                            session.query(VMLabel).delete()
+                            session.query(FolderLabel).delete()
+                            session.query(Label).delete()
+                            
+                            results.append(f"✅ Deleted {vm_label_count:,} VM label mappings")
+                            results.append(f"✅ Deleted {folder_label_count:,} folder label mappings")
+                            results.append(f"✅ Deleted {label_count:,} label definitions")
+                        else:
+                            # VM Data Only - labels preserved
+                            results.append(f"ℹ️ Preserved all labels and mappings")
+                        
                         session.commit()
                         session.close()
                         
-                        st.success(f"✅ Deleted {count_before:,} VM records")
+                        st.success(f"✅ Clear operation completed!")
+                        for result in results:
+                            st.write(result)
+                        
                         st.cache_data.clear()
                         st.rerun()
                     except Exception as e:
                         st.error(f"❌ Error: {e}")
+                        session.rollback()
             
             with col2:
                 if st.button("❌ Cancel"):
