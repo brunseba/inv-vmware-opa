@@ -7,6 +7,8 @@ from sqlalchemy import create_engine, func, inspect
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from src.models import VirtualMachine
+from src.dashboard.utils.pagination import PaginationHelper
+from src.dashboard.utils.errors import DataValidator
 
 
 def render(db_url: str):
@@ -250,33 +252,60 @@ def _render_detailed_report(session, columns, total_vms):
         # Get unique values with counts
         st.subheader(f"Unique Values in '{selected_column}'")
         
-        value_counts = session.query(
+        # Count total distinct values
+        total_distinct = session.query(func.count(func.distinct(col_attr))).filter(
+            col_attr.isnot(None)
+        ).scalar() or 0
+        
+        if total_distinct == 0:
+            st.info("No non-null values found for this column")
+            return
+        
+        # Initialize pagination
+        pagination = PaginationHelper(
+            key_prefix=f"data_quality_detail_{selected_column}",
+            default_page_size=25
+        )
+        
+        # Build base query
+        base_query = session.query(
             col_attr,
             func.count(VirtualMachine.id).label('count')
         ).filter(
             col_attr.isnot(None)
-        ).group_by(col_attr).order_by(func.count(VirtualMachine.id).desc()).all()
+        ).group_by(col_attr).order_by(func.count(VirtualMachine.id).desc())
         
-        if not value_counts:
-            st.info("No non-null values found for this column")
-            return
+        # Apply pagination
+        paginated_query = pagination.paginate_query(
+            base_query,
+            total_count=total_distinct
+        )
         
-        # Create dataframe
+        value_counts = paginated_query.all()
+        
+        # Create dataframe for current page
         df_values = pd.DataFrame(value_counts, columns=['Value', 'Count'])
         df_values['Percentage'] = (df_values['Count'] / total_vms * 100).round(2)
         
-        # Show top values
-        limit = st.slider("Number of values to display", 10, min(100, len(df_values)), 25)
-        df_display = df_values.head(limit)
+        # Show pagination info
+        st.info(f"Showing {len(df_values)} of {total_distinct:,} unique values")
         
-        # Export button
+        limit = len(df_values)
+        df_display = df_values
+        
+        # Export button (exports current page only)
         csv_data = df_values.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label=f"⬇️ Export All {len(df_values)} Values CSV",
-            data=csv_data,
-            file_name=f"unique_values_{selected_column}.csv",
-            mime="text/csv"
-        )
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.download_button(
+                label=f"⬇️ Export Current Page ({len(df_values)} values)",
+                data=csv_data,
+                file_name=f"unique_values_{selected_column}_page_{pagination.current_page}.csv",
+                mime="text/csv"
+            )
+        with col2:
+            # Pagination controls
+            pagination.show_pagination_controls()
         
         # Display table
         st.dataframe(
@@ -440,8 +469,27 @@ def _render_label_quality_report(session, total_vms):
     with tab2:
         st.write("**Label Key Usage Analysis:**")
         
-        # Get label key usage statistics
-        key_stats = session.query(
+        # Count total label keys
+        total_label_keys_count = session.query(
+            func.count(func.distinct(Label.key))
+        ).scalar() or 0
+        
+        if total_label_keys_count == 0:
+            st.info("No label keys found")
+            return
+        
+        # Initialize pagination for label keys
+        label_key_pagination = PaginationHelper(
+            key_prefix="data_quality_label_keys",
+            default_page_size=25
+        )
+        
+        # Build base query for label key statistics
+        # Note: We need to use a subquery approach for proper pagination with GROUP BY
+        from sqlalchemy import select
+        
+        # Get label key usage statistics with pagination
+        base_key_query = session.query(
             Label.key,
             func.count(func.distinct(Label.id)).label('value_count'),
             func.count(func.distinct(VMLabel.vm_id)).label('vm_count')
@@ -449,11 +497,27 @@ def _render_label_quality_report(session, total_vms):
             VMLabel, Label.id == VMLabel.label_id
         ).group_by(Label.key).order_by(
             func.count(func.distinct(VMLabel.vm_id)).desc()
-        ).all()
+        )
+        
+        # Apply pagination
+        paginated_key_query = label_key_pagination.paginate_query(
+            base_key_query,
+            total_count=total_label_keys_count
+        )
+        
+        key_stats = paginated_key_query.all()
         
         if key_stats:
             df_keys = pd.DataFrame(key_stats, columns=['Label Key', 'Value Count', 'VM Count'])
             df_keys['VM Coverage %'] = (df_keys['VM Count'] / total_vms * 100).round(1)
+            
+            # Show pagination info
+            st.info(f"Showing {len(df_keys)} of {total_label_keys_count:,} label keys")
+            
+            # Pagination controls
+            label_key_pagination.show_pagination_controls()
+            
+            st.divider()
             
             # Show table
             st.dataframe(
@@ -466,12 +530,12 @@ def _render_label_quality_report(session, total_vms):
                 use_container_width=True
             )
             
-            # Export
+            # Export (current page)
             csv_data = df_keys.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="⬇️ Export Label Keys Report",
+                label=f"⬇️ Export Current Page ({len(df_keys)} keys)",
                 data=csv_data,
-                file_name="label_keys_analysis.csv",
+                file_name=f"label_keys_analysis_page_{label_key_pagination.current_page}.csv",
                 mime="text/csv"
             )
             
@@ -589,8 +653,25 @@ def _render_label_quality_report(session, total_vms):
     with tab4:
         st.write("**Label Coverage by Folder:**")
         
-        # Get folders and their label coverage
-        folder_coverage = session.query(
+        # Count total folders
+        total_folders = session.query(
+            func.count(func.distinct(VirtualMachine.folder))
+        ).filter(
+            VirtualMachine.folder.isnot(None)
+        ).scalar() or 0
+        
+        if total_folders == 0:
+            st.info("No folder data available")
+            return
+        
+        # Initialize pagination for folders
+        folder_pagination = PaginationHelper(
+            key_prefix="data_quality_folder_coverage",
+            default_page_size=50
+        )
+        
+        # Build base query for folders
+        base_folder_query = session.query(
             VirtualMachine.folder,
             func.count(func.distinct(VirtualMachine.id)).label('total_vms'),
             func.count(func.distinct(VMLabel.vm_id)).label('labeled_vms')
@@ -602,7 +683,15 @@ def _render_label_quality_report(session, total_vms):
             VirtualMachine.folder
         ).order_by(
             func.count(func.distinct(VirtualMachine.id)).desc()
-        ).limit(50).all()
+        )
+        
+        # Apply pagination
+        paginated_folder_query = folder_pagination.paginate_query(
+            base_folder_query,
+            total_count=total_folders
+        )
+        
+        folder_coverage = paginated_folder_query.all()
         
         if folder_coverage:
             df_folders = pd.DataFrame(
@@ -612,12 +701,17 @@ def _render_label_quality_report(session, total_vms):
             df_folders['Coverage %'] = (df_folders['Labeled VMs'] / df_folders['Total VMs'] * 100).round(1)
             df_folders['Unlabeled VMs'] = df_folders['Total VMs'] - df_folders['Labeled VMs']
             
+            # Show pagination info
+            st.info(f"Showing {len(df_folders)} of {total_folders:,} folders")
+            
             # Filter options
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 min_vms = st.slider('Minimum VMs in folder', 1, int(df_folders['Total VMs'].max()), 1)
             with col2:
                 sort_by = st.selectbox('Sort by', ['Total VMs', 'Coverage %', 'Unlabeled VMs'])
+            with col3:
+                folder_pagination.show_pagination_controls()
             
             df_filtered = df_folders[df_folders['Total VMs'] >= min_vms].sort_values(
                 sort_by,
@@ -636,12 +730,12 @@ def _render_label_quality_report(session, total_vms):
                 use_container_width=True
             )
             
-            # Export
-            csv_data = df_folders.to_csv(index=False).encode('utf-8')
+            # Export (current page)
+            csv_data = df_filtered.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="⬇️ Export Folder Coverage Report",
+                label=f"⬇️ Export Current Page ({len(df_filtered)} folders)",
                 data=csv_data,
-                file_name="folder_label_coverage.csv",
+                file_name=f"folder_label_coverage_page_{folder_pagination.current_page}.csv",
                 mime="text/csv"
             )
             

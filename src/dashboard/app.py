@@ -9,6 +9,12 @@ from streamlit_extras.add_vertical_space import add_vertical_space
 # Add parent directory to path to import from src
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Import utilities
+from utils.state import StateManager, SessionKeys, PageNavigator
+from utils.database import DatabaseManager
+from utils.cache import get_vm_counts, CacheManager
+from utils.errors import ErrorHandler
+
 # Page configuration
 st.set_page_config(
     page_title="VMware Inventory Dashboard",
@@ -35,10 +41,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
-if "db_url" not in st.session_state:
-    # Use environment variable if set, otherwise default
-    st.session_state.db_url = os.environ.get('VMWARE_INV_DB_URL', 'sqlite:///data/vmware_inventory.db')
+# Initialize session state with StateManager
+StateManager.init_state()
 
 # Sidebar
 with st.sidebar:
@@ -63,30 +67,26 @@ with st.sidebar:
     with st.expander("⚙️ Configuration", expanded=False):
         db_url = st.text_input(
             "Database URL",
-            value=st.session_state.db_url,
+            value=StateManager.get(SessionKeys.DB_URL),
             help="SQLite or other SQLAlchemy connection string",
             label_visibility="collapsed"
         )
-        st.session_state.db_url = db_url
+        StateManager.set(SessionKeys.DB_URL, db_url)
         
-        # Quick connection test
-        from sqlalchemy import create_engine
-        try:
-            engine = create_engine(st.session_state.db_url, echo=False)
-            with engine.connect() as conn:
-                st.success("✓ Connected")
-        except Exception as e:
-            st.error(f"✗ Connection failed")
-            st.caption(str(e)[:50])
+        # Quick connection test using DatabaseManager
+        success, error = DatabaseManager.test_connection(db_url)
+        if success:
+            ErrorHandler.show_success("Connected", icon="✓")
+        else:
+            ErrorHandler.show_error(Exception(error or "Connection failed"), show_details=False, context="connecting to database")
     
     add_vertical_space(1)
     
     # Navigation with better grouping
     st.subheader("Navigation")
     
-    # Initialize current page
-    if "current_page" not in st.session_state:
-        st.session_state.current_page = "Overview"
+    # Get current page from StateManager
+    current_page = PageNavigator.get_current_page()
     
     # Main dashboards
     st.markdown("**📊 Dashboards**")
@@ -94,69 +94,54 @@ with st.sidebar:
     
     for page_name in dashboard_pages:
         if st.button(page_name, key=f"btn_{page_name}", width='stretch'):
-            st.session_state.current_page = page_name
-            st.rerun()
+            PageNavigator.navigate_to(page_name)
     
     st.markdown("**🔍 Analysis Tools**")
     analysis_pages = ["VM Explorer", "VM Search", "Analytics", "Comparison", "Data Quality"]
     
     for page_name in analysis_pages:
         if st.button(page_name, key=f"btn_{page_name}", width='stretch'):
-            st.session_state.current_page = page_name
-            st.rerun()
+            PageNavigator.navigate_to(page_name)
     
     st.markdown("**🏷️ Labelling**")
     if st.button("Folder Labelling", key="btn_Folder_Labelling", width='stretch'):
-        st.session_state.current_page = "Folder Labelling"
-        st.rerun()
+        PageNavigator.navigate_to("Folder Labelling")
     
     st.markdown("**💾 Backup**")
     if st.button("Database Backup", key="btn_Database_Backup", width='stretch'):
-        st.session_state.current_page = "Database Backup"
-        st.rerun()
+        PageNavigator.navigate_to("Database Backup")
     
     st.markdown("**🚀 Planning**")
     if st.button("Migration Planning", key="btn_Migration_Planning", width='stretch'):
-        st.session_state.current_page = "Migration Planning"
-        st.rerun()
+        PageNavigator.navigate_to("Migration Planning")
     
     st.markdown("**📊 Export**")
     if st.button("📄 PDF Report", key="btn_PDF_Export", width='stretch'):
-        st.session_state.current_page = "PDF Export"
-        st.rerun()
+        PageNavigator.navigate_to("PDF Export")
     
     st.markdown("**❓ Help**")
     if st.button("📚 Documentation", key="btn_Help", width='stretch'):
-        st.session_state.current_page = "Help"
-        st.rerun()
+        PageNavigator.navigate_to("Help")
     
     # Get the active page
-    page = st.session_state.current_page
+    page = current_page
     
     add_vertical_space(1)
     
-    # Quick stats
+    # Quick stats (using cached data)
     with st.expander("📈 Quick Stats", expanded=False):
         try:
-            from sqlalchemy import func
-            from sqlalchemy.orm import sessionmaker
-            from src.models import VirtualMachine
+            db_url = StateManager.get(SessionKeys.DB_URL)
+            counts = get_vm_counts(db_url)
             
-            engine = create_engine(st.session_state.db_url, echo=False)
-            SessionLocal = sessionmaker(bind=engine)
-            session = SessionLocal()
-            
-            total = session.query(func.count(VirtualMachine.id)).scalar() or 0
-            powered_on = session.query(func.count(VirtualMachine.id)).filter(
-                VirtualMachine.powerstate == "poweredOn"
-            ).scalar() or 0
-            
-            st.metric("Total VMs", f"{total:,}")
-            st.metric("Powered On", f"{powered_on:,}")
-            
-            session.close()
-        except:
+            st.metric("Total VMs", f"{counts['total']:,}")
+            st.metric("Powered On", f"{counts['powered_on']:,}")
+        except Exception as e:
             st.caption("Load data to see stats")
+    
+    # Cache controls
+    with st.expander("🔄 Cache Controls", expanded=False):
+        CacheManager.show_cache_controls()
     
     add_vertical_space(1)
     
@@ -166,9 +151,11 @@ with st.sidebar:
 
 # Main content area
 try:
+    db_url = StateManager.get(SessionKeys.DB_URL)
+    
     if page == "Overview":
         from pages import overview
-        overview.render(st.session_state.db_url)
+        overview.render(db_url)
         
     elif page == "Resources":
         from pages import resources

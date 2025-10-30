@@ -6,6 +6,13 @@ from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from src.models import VirtualMachine
+from src.dashboard.utils.database import DatabaseManager
+from src.dashboard.utils.errors import DataValidator, ErrorHandler
+from src.dashboard.utils.pagination import (
+    paginate_query, show_pagination_controls, 
+    show_results_warning, PaginationConfig, DEFAULT_PAGE_SIZE
+)
+from src.dashboard.utils.cache import get_datacenters, get_power_states
 
 
 def render(db_url: str):
@@ -13,6 +20,7 @@ def render(db_url: str):
     st.markdown('<h1 class="main-header">🔍 VM Explorer</h1>', unsafe_allow_html=True)
     
     try:
+        # Create database session
         engine = create_engine(db_url, echo=False)
         SessionLocal = sessionmaker(bind=engine)
         session = SessionLocal()
@@ -27,11 +35,13 @@ def render(db_url: str):
             use_regex = st.checkbox("Use Regex", value=False, help="Enable regex pattern matching")
         
         with col2:
-            datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
+            # Use cached datacenter list
+            datacenters = get_datacenters(db_url)
             selected_dc = st.selectbox("Datacenter", ["All"] + datacenters)
         
         with col3:
-            power_states = [p[0] for p in session.query(VirtualMachine.powerstate).distinct().all() if p[0]]
+            # Use cached power states
+            power_states = get_power_states(db_url)
             selected_power = st.selectbox("Power State", ["All"] + power_states)
         
         # Additional filters
@@ -54,13 +64,31 @@ def render(db_url: str):
             ).distinct().all() if v[0]]
             selected_label_value = st.selectbox("Label Value", ["All"] + label_values)
         
+        # Validate regex if used
+        if search_term and use_regex:
+            is_valid, error_msg = DataValidator.validate_regex(search_term)
+            if not is_valid:
+                ErrorHandler.show_error(
+                    Exception(error_msg), 
+                    context="validating search pattern",
+                    show_details=False
+                )
+                return
+        
+        # Validate search term length
+        if search_term:
+            is_valid, error_msg = DataValidator.validate_string_length(search_term, 500, "Search term")
+            if not is_valid:
+                ErrorHandler.show_warning(error_msg)
+                return
+        
         # Build query
         query = session.query(VirtualMachine)
         
         # Handle regex vs normal search
         if search_term and use_regex:
-            # For regex, get all VMs and filter in Python
-            pass  # We'll filter after fetching
+            # For regex, we'll filter after fetching (regex not directly supported by SQLite)
+            pass
         elif search_term:
             query = query.filter(
                 or_(
@@ -120,33 +148,59 @@ def render(db_url: str):
                 if label_ids:
                     query = query.join(VMLabel).filter(VMLabel.label_id.in_(label_ids))
         
-        # Apply regex filter if needed
-        all_vms = query.all()
+        # Get pagination state
+        page = st.session_state.get('vm_explorer_page', 1)
+        page_size = st.session_state.get('vm_explorer_page_size', DEFAULT_PAGE_SIZE)
         
+        # For regex search, we need to fetch and filter in Python
         if search_term and use_regex:
-            try:
-                regex = re.compile(search_term, re.IGNORECASE)
-                all_vms = [
-                    vm for vm in all_vms 
-                    if any([
-                        vm.vm and regex.search(vm.vm),
-                        vm.dns_name and regex.search(vm.dns_name),
-                        vm.primary_ip_address and regex.search(vm.primary_ip_address)
-                    ])
-                ]
-            except re.error as e:
-                st.error(f"❌ Invalid regex pattern: {e}")
-                return
-        
-        # Pagination
-        total_results = len(all_vms)
-        st.info(f"Found {total_results:,} VMs" + (" (regex filter applied)" if use_regex and search_term else ""))
-        
-        page_size = st.selectbox("Results per page", [10, 25, 50, 100], index=1)
-        page = st.number_input("Page", min_value=1, max_value=max(1, (total_results // page_size) + 1), value=1)
-        
-        offset = (page - 1) * page_size
-        vms = all_vms[offset:offset + page_size]
+            # Get total count first for warning
+            total_count = query.count()
+            config = PaginationConfig(page_size=page_size)
+            show_results_warning(total_count, config)
+            
+            # Fetch with limit
+            all_vms = query.limit(config.max_fetch).all()
+            
+            # Apply regex filter
+            regex = re.compile(search_term, re.IGNORECASE)
+            filtered_vms = [
+                vm for vm in all_vms 
+                if any([
+                    vm.vm and regex.search(vm.vm),
+                    vm.dns_name and regex.search(vm.dns_name),
+                    vm.primary_ip_address and regex.search(vm.primary_ip_address)
+                ])
+            ]
+            
+            # Manual pagination for filtered results
+            total_results = len(filtered_vms)
+            st.info(f"Found {total_results:,} VMs (regex filter applied)")
+            
+            # Simple pagination controls
+            page_size = st.selectbox("Results per page", [10, 25, 50, 100], index=1)
+            page = st.number_input("Page", min_value=1, max_value=max(1, (total_results // page_size) + 1), value=1)
+            
+            offset = (page - 1) * page_size
+            vms = filtered_vms[offset:offset + page_size]
+        else:
+            # Use database-side pagination (much more efficient)
+            # Get total for warning
+            total_count = query.count()
+            config = PaginationConfig(page_size=page_size)
+            show_results_warning(total_count, config)
+            
+            # Paginate query
+            result = paginate_query(query, page=page, page_size=page_size)
+            vms = result.items
+            
+            st.info(f"Found {result.total:,} VMs")
+            
+            # Show pagination controls
+            new_page = show_pagination_controls(result, key_prefix="vm_explorer")
+            if new_page != page:
+                st.session_state['vm_explorer_page'] = new_page
+                st.rerun()
         
         if not vms:
             st.warning("No VMs found matching your criteria")
@@ -336,8 +390,9 @@ def render(db_url: str):
                 if selected_vm.annotation:
                     with st.expander("📝 Annotation"):
                         st.text(selected_vm.annotation)
-        
+    
     except Exception as e:
-        st.error(f"❌ Error loading data: {str(e)}")
+        ErrorHandler.show_error(e, context="loading VM Explorer data")
     finally:
-        session.close()
+        if 'session' in locals():
+            session.close()

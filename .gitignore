@@ -24,6 +24,9 @@ pip-log.txt
 pip-delete-this-directory.txt
 .pytest_cache/
 .coverage
+.coverage.*
+coverage.json
+coverage.lcov
 htmlcov/
 *.cover
 .hypothesis/
@@ -47,6 +50,13 @@ docs/_build/
 *.swp
 *.swo
 *~
+
+# Linting and Type Checking
+.mypy_cache/
+mypy-report/
+.ruff_cache/
+.pylint.d/
+.pytype/
 
 # Workspace root folder
 /workspace/
