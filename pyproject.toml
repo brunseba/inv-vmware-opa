@@ -1,6 +1,6 @@
 [project]
 name = "inv-vmware-opa"
-version = "0.6.0"  # Can be dynamic with setuptools-scm
+version = "0.6.1"  # Can be dynamic with setuptools-scm
 description = "VMware inventory management CLI with backup/restore and label quality analysis"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10,<4.0"
@@ -42,13 +42,13 @@ dependencies = [
 [project.optional-dependencies]
 dashboard = [
     "streamlit>=1.50.0,<2.0.0",
-    "plotly>=5.24.0,<6.0.0",
+    "plotly>=5.24.0,<7.0.0",
     "streamlit-extras>=0.7.8,<1.0.0",
     "watchdog>=6.0.0,<7.0.0",
 ]
 reports = [
     "reportlab>=4.4.4,<5.0.0",
-    "pillow>=11.3.0,<12.0.0",
+    "pillow>=11.3.0,<13.0.0",
     "matplotlib>=3.10.7,<4.0.0",
 ]
 all = ["inv-vmware-opa[dashboard,reports]"]
@@ -110,7 +110,7 @@ dev = [
     "pytest-mock>=3.14.0,<4.0.0",  # Enhanced mocking
     "mkdocs>=1.6.1,<2.0.0",
     "mkdocs-git-revision-date-localized-plugin>=1.4.7,<2.0.0",
-    "mkdocs-material>=9.6.22,<10.0.0",
+    "mkdocs-material>=9.6.22,<11.0.0",
     "mkdocs-with-pdf>=0.9.3,<1.0.0",
     "mkdocs-mermaid2-plugin>=1.1.0,<2.0.0",  # Mermaid diagrams
 ]
