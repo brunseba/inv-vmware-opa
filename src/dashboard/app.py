@@ -9,6 +9,12 @@ from streamlit_extras.add_vertical_space import add_vertical_space
 # Add parent directory to path to import from src
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Import version
+try:
+    from src import __version__
+except ImportError:
+    __version__ = "0.6.0"  # Fallback
+
 # Import utilities
 from utils.state import StateManager, SessionKeys, PageNavigator
 from utils.database import DatabaseManager
@@ -147,7 +153,7 @@ with st.sidebar:
     
     # Info section
     st.caption("VMware vSphere Inventory")
-    st.caption("Version 0.5.0")
+    st.caption(f"Version {__version__}")
 
 # Main content area
 try:
