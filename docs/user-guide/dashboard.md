@@ -131,6 +131,88 @@ Data completeness and quality metrics:
 - **Missing Data Analysis**: Identify incomplete records
 - **Recommendations**: Suggestions for data quality improvement
 
+### 🏷️ Folder Labelling
+
+Comprehensive labelling system for organizing and categorizing VMs:
+
+#### Label Management
+- **Create Labels**: Define key-value pairs with optional descriptions and colors
+- **Color Coding**: Visual organization with customizable label colors
+- **Label Categories**: Group labels by purpose (environment, cost center, migration wave, etc.)
+
+#### Folder Labelling
+- **Hierarchical Assignment**: Apply labels to folder structures
+- **Inheritance Options**:
+  - Inherit to VMs: Automatically apply labels to all VMs in folder
+  - Inherit to Subfolders: Cascade labels down folder hierarchy
+- **Folder Search**: Quick search for folders with autocomplete
+- **Label Statistics**: View VM count and storage per labelled folder
+
+#### VM Labelling
+Two approaches for labelling individual VMs:
+
+**Individual VM Operations**:
+- Search VMs by name
+- View current labels (direct and inherited)
+- Assign/remove labels per VM
+- Visual distinction between direct and inherited labels
+
+**Batch Operations** (NEW):
+- **OS Family Filtering**:
+  - Windows VMs (Windows, Microsoft variants)
+  - Linux VMs (Ubuntu, RHEL, CentOS, Debian, SUSE, Fedora)
+  - Unix VMs (Solaris, AIX, HP-UX, BSD)
+  - Other OS
+- **Resource Size Categories**:
+  - Small: 1-2 vCPUs, ≤4 GB RAM
+  - Medium: 3-4 vCPUs, 4-16 GB RAM
+  - Large: 5-8 vCPUs, 16-32 GB RAM
+  - XLarge: 9+ vCPUs, 32+ GB RAM
+- **Network Complexity**:
+  - Simple: 1 NIC (single network)
+  - Standard: 2 NICs (dual-homed)
+  - Complex: 3+ NICs (multi-network)
+- **Storage Complexity**:
+  - Simple: 1 disk (single volume)
+  - Standard: 2-3 disks (OS + data)
+  - Complex: 4+ disks (multi-volume)
+- **Preview & Assign**: Preview matching VMs before batch labelling
+- **Progress Tracking**: Success/failure counts for batch operations
+
+#### Search by Label
+- **Find VMs**: Locate all VMs with specific labels
+- **Find Folders**: Identify folders with specific labels
+- **Export Results**: Download search results as CSV
+- **Combined Search**: Search both VMs and folders simultaneously
+
+#### Management Operations
+- **Sync Labels**: Re-apply folder labels based on current inheritance settings
+- **Statistics Dashboard**: View total labels, label keys, and assignment counts
+- **Backup/Restore**: Backup label definitions and assignments
+
+#### Use Cases
+**Migration Planning**:
+```
+1. Create labels: migration-wave:1, migration-wave:2, etc.
+2. Assign to folders based on migration priority
+3. Track progress using label search
+4. Export VM lists per wave for detailed planning
+```
+
+**Cost Tracking**:
+```
+1. Label VMs by cost-center: IT-ops, Dev, QA, Production
+2. Use resource size labels for capacity planning
+3. Export reports filtered by cost center
+```
+
+**OS Categorization**:
+```
+1. Use batch operations to label all Windows VMs: os:windows
+2. Label Linux VMs by distribution: os:ubuntu, os:rhel
+3. Generate OS-specific migration or patching lists
+```
+
 ### 📄 PDF Export
 
 Generate comprehensive PDF reports:
