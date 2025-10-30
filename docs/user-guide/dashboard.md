@@ -131,6 +131,93 @@ Data completeness and quality metrics:
 - **Missing Data Analysis**: Identify incomplete records
 - **Recommendations**: Suggestions for data quality improvement
 
+### 📥 Data Import & Database Management
+
+Comprehensive interface for loading data and managing the database directly from the web UI:
+
+#### Import Data Tab
+**Upload and Import VMware Inventory:**
+- **File Upload**: Drag-and-drop or browse for Excel files (.xlsx, .xls)
+- **Sheet Selection**: Choose from available sheets in the workbook
+- **Import Modes**:
+  - Replace Mode: Clear existing data before import (recommended)
+  - Append Mode: Add to existing data
+- **Preview**: Review data structure before importing
+- **Progress Tracking**: Real-time import status with record counts
+- **Validation**: Automatic data validation and error reporting
+
+**Supported Formats:**
+- RVTools vInfo exports (recommended)
+- PowerCLI VM inventory exports
+- Custom exports with standard VMware fields
+
+**Required Columns:**
+- VM (name)
+- Powerstate
+- CPUs
+- Memory
+- Datacenter
+- Cluster
+
+#### Database Info Tab
+**Comprehensive Database Statistics:**
+- **Connection Details**:
+  - Database type (SQLite, PostgreSQL, MySQL)
+  - Connection status
+  - Database file size (for SQLite)
+- **Table Statistics**: Record counts for all tables
+- **VM Inventory Metrics**:
+  - Total VMs
+  - Powered On/Off/Suspended counts
+  - Datacenter and Cluster counts
+  - Resource totals (vCPUs, Memory)
+
+#### Database Maintenance Tab
+**Database Operations:**
+- **Clear All Data**: Remove all VM records (preserves structure)
+- **Rebuild Schema**: Recreate database tables
+- **Optimize Database**: Vacuum and compact SQLite databases
+  - Shows before/after file sizes
+  - Reclaims unused space
+- **Health Check**: Comprehensive database verification
+  - Connection test
+  - Table integrity check
+  - Data accessibility test
+  - Write permission test
+
+**Safety Features:**
+- Warning prompts for destructive operations
+- Confirmation dialogs for data deletion
+- Error details and troubleshooting info
+
+#### Use Cases
+**Initial Setup:**
+```
+1. Export inventory from vSphere using RVTools
+2. Navigate to Data Import page
+3. Upload Excel file
+4. Select "vInfo" sheet
+5. Enable "Clear Existing Data"
+6. Preview data
+7. Import
+```
+
+**Regular Updates:**
+```
+1. Create database backup first (Database Backup page)
+2. Export fresh inventory data
+3. Import with "Clear Existing Data" enabled
+4. Verify import in Database Info tab
+```
+
+**Troubleshooting:**
+```
+1. Run Health Check in Maintenance tab
+2. Check connection status
+3. Verify table integrity
+4. Optimize database if needed
+```
+
 ### 🏷️ Folder Labelling
 
 Comprehensive labelling system for organizing and categorizing VMs:

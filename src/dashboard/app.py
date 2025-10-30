@@ -135,6 +135,7 @@ with st.sidebar:
     # === MANAGEMENT (Collapsible) ===
     with st.expander("⚙️ Management", expanded=False):
         mgmt_pages = [
+            ("📥 Data Import", "Data Import"),
             ("💾 Database Backup", "Database Backup"),
         ]
         for display_name, page_name in mgmt_pages:
@@ -209,6 +210,10 @@ try:
     elif page == "Folder Labelling":
         from pages import folder_labelling
         folder_labelling.render(st.session_state.db_url)
+        
+    elif page == "Data Import":
+        from pages import data_import
+        data_import.render(st.session_state.db_url)
         
     elif page == "Database Backup":
         from pages import backup
