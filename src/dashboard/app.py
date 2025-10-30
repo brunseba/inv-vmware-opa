@@ -98,12 +98,22 @@ with st.sidebar:
             st.rerun()
     
     st.markdown("**🔍 Analysis Tools**")
-    analysis_pages = ["VM Explorer", "Analytics", "Comparison", "Data Quality"]
+    analysis_pages = ["VM Explorer", "VM Search", "Analytics", "Comparison", "Data Quality"]
     
     for page_name in analysis_pages:
         if st.button(page_name, key=f"btn_{page_name}", width='stretch'):
             st.session_state.current_page = page_name
             st.rerun()
+    
+    st.markdown("**🏷️ Labelling**")
+    if st.button("Folder Labelling", key="btn_Folder_Labelling", width='stretch'):
+        st.session_state.current_page = "Folder Labelling"
+        st.rerun()
+    
+    st.markdown("**💾 Backup**")
+    if st.button("Database Backup", key="btn_Database_Backup", width='stretch'):
+        st.session_state.current_page = "Database Backup"
+        st.rerun()
     
     st.markdown("**🚀 Planning**")
     if st.button("Migration Planning", key="btn_Migration_Planning", width='stretch'):
@@ -175,6 +185,18 @@ try:
     elif page == "VM Explorer":
         from pages import vm_explorer
         vm_explorer.render(st.session_state.db_url)
+        
+    elif page == "VM Search":
+        from pages import vm_search
+        vm_search.render(st.session_state.db_url)
+        
+    elif page == "Folder Labelling":
+        from pages import folder_labelling
+        folder_labelling.render(st.session_state.db_url)
+        
+    elif page == "Database Backup":
+        from pages import backup
+        backup.render(st.session_state.db_url)
         
     elif page == "Analytics":
         from pages import analytics

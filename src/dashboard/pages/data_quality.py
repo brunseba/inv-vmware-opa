@@ -39,6 +39,7 @@ def render(db_url: str):
             "Hardware": ["firmware", "hw_version", "hw_upgrade_status"],
             "Custom Fields": ["code_ccx", "vm_nbu", "vm_orchid", "env"],
             "Identifiers": ["vm_id", "vm_uuid"],
+            "Labels": "labels",  # Special handling for labels
         }
         
         selected_category = st.selectbox("Select Category", list(categories.keys()))
@@ -66,7 +67,10 @@ def render(db_url: str):
         
         st.divider()
         
-        if analysis_mode == "Summary":
+        # Check if Labels category is selected
+        if selected_category == "Labels":
+            _render_label_quality_report(session, total_vms)
+        elif analysis_mode == "Summary":
             _render_summary_report(session, columns_to_analyze, total_vms, show_charts)
         else:
             _render_detailed_report(session, columns_to_analyze, total_vms)
@@ -333,3 +337,318 @@ def _render_detailed_report(session, columns, total_vms):
                 
     except Exception as e:
         st.error(f"Error analyzing column: {str(e)}")
+
+
+def _render_label_quality_report(session, total_vms):
+    """Render label quality and coverage report."""
+    from src.models import Label, VMLabel, FolderLabel
+    
+    st.subheader("🏷️ Label Coverage & Quality")
+    
+    # Get label statistics
+    total_labels = session.query(func.count(Label.id)).scalar() or 0
+    total_label_keys = session.query(func.count(func.distinct(Label.key))).scalar() or 0
+    
+    # Get VM label assignments (direct only, not inherited)
+    vms_with_labels = session.query(
+        func.count(func.distinct(VMLabel.vm_id))
+    ).filter(VMLabel.inherited_from_folder == False).scalar() or 0
+    
+    # Get folder label assignments
+    folders_with_labels = session.query(
+        func.count(func.distinct(FolderLabel.folder_path))
+    ).scalar() or 0
+    
+    # Display overview metrics
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Label Definitions", f"{total_labels:,}")
+    with col2:
+        st.metric("Unique Label Keys", f"{total_label_keys:,}")
+    with col3:
+        vm_coverage = (vms_with_labels / total_vms * 100) if total_vms > 0 else 0
+        st.metric("VMs with Direct Labels", f"{vms_with_labels:,}", delta=f"{vm_coverage:.1f}%")
+    with col4:
+        st.metric("Folders with Labels", f"{folders_with_labels:,}")
+    
+    st.divider()
+    
+    # Tab view for different analyses
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "📊 Label Coverage",
+        "🔑 Label Keys Analysis",
+        "⚠️ Quality Issues",
+        "📈 Coverage by Folder"
+    ])
+    
+    with tab1:
+        st.write("**VM Label Coverage:**")
+        
+        # VMs with no labels at all (direct or inherited)
+        vms_no_labels = session.query(
+            func.count(VirtualMachine.id)
+        ).outerjoin(VMLabel).filter(VMLabel.id.is_(None)).scalar() or 0
+        
+        # VMs with inherited labels only
+        vms_inherited_only = session.query(
+            func.count(func.distinct(VMLabel.vm_id))
+        ).filter(
+            VMLabel.inherited_from_folder == True
+        ).scalar() or 0
+        
+        vms_with_any_labels = total_vms - vms_no_labels
+        
+        coverage_data = pd.DataFrame({
+            'Category': ['With Direct Labels', 'Inherited Only', 'No Labels'],
+            'Count': [vms_with_labels, vms_inherited_only - vms_with_labels, vms_no_labels],
+            'Percentage': [
+                (vms_with_labels / total_vms * 100) if total_vms > 0 else 0,
+                ((vms_inherited_only - vms_with_labels) / total_vms * 100) if total_vms > 0 else 0,
+                (vms_no_labels / total_vms * 100) if total_vms > 0 else 0
+            ]
+        })
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.dataframe(
+                coverage_data.style.format({
+                    'Count': '{:,}',
+                    'Percentage': '{:.1f}%'
+                }),
+                hide_index=True
+            )
+        
+        with col2:
+            fig = px.pie(
+                coverage_data,
+                values='Count',
+                names='Category',
+                title='VM Label Coverage Distribution',
+                color='Category',
+                color_discrete_map={
+                    'With Direct Labels': '#28a745',
+                    'Inherited Only': '#ffc107',
+                    'No Labels': '#dc3545'
+                }
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        if vms_no_labels > 0:
+            st.warning(f"⚠️ {vms_no_labels:,} VMs ({vms_no_labels/total_vms*100:.1f}%) have no labels assigned")
+    
+    with tab2:
+        st.write("**Label Key Usage Analysis:**")
+        
+        # Get label key usage statistics
+        key_stats = session.query(
+            Label.key,
+            func.count(func.distinct(Label.id)).label('value_count'),
+            func.count(func.distinct(VMLabel.vm_id)).label('vm_count')
+        ).outerjoin(
+            VMLabel, Label.id == VMLabel.label_id
+        ).group_by(Label.key).order_by(
+            func.count(func.distinct(VMLabel.vm_id)).desc()
+        ).all()
+        
+        if key_stats:
+            df_keys = pd.DataFrame(key_stats, columns=['Label Key', 'Value Count', 'VM Count'])
+            df_keys['VM Coverage %'] = (df_keys['VM Count'] / total_vms * 100).round(1)
+            
+            # Show table
+            st.dataframe(
+                df_keys.style.format({
+                    'Value Count': '{:,}',
+                    'VM Count': '{:,}',
+                    'VM Coverage %': '{:.1f}%'
+                }),
+                hide_index=True,
+                use_container_width=True
+            )
+            
+            # Export
+            csv_data = df_keys.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="⬇️ Export Label Keys Report",
+                data=csv_data,
+                file_name="label_keys_analysis.csv",
+                mime="text/csv"
+            )
+            
+            # Visualization
+            fig = px.bar(
+                df_keys,
+                x='VM Count',
+                y='Label Key',
+                orientation='h',
+                title='VM Count by Label Key',
+                text='VM Count',
+                color='VM Coverage %',
+                color_continuous_scale='RdYlGn'
+            )
+            fig.update_traces(textposition='outside')
+            fig.update_layout(yaxis={'categoryorder':'total ascending'})
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No label keys found")
+    
+    with tab3:
+        st.write("**Data Quality Issues:**")
+        
+        issues = []
+        
+        # Check for VMs without required labels (customize based on your requirements)
+        if vms_no_labels > 0:
+            issues.append({
+                'Issue': 'VMs without labels',
+                'Count': vms_no_labels,
+                'Severity': 'High',
+                'Description': f'{vms_no_labels:,} VMs have no labels assigned (direct or inherited)'
+            })
+        
+        # Check for label keys with only one value (might be misconfigured)
+        single_value_keys = session.query(
+            Label.key
+        ).group_by(Label.key).having(
+            func.count(func.distinct(Label.value)) == 1
+        ).all()
+        
+        if single_value_keys:
+            issues.append({
+                'Issue': 'Label keys with single value',
+                'Count': len(single_value_keys),
+                'Severity': 'Low',
+                'Description': f'{len(single_value_keys)} label keys have only one value: {", ".join([k[0] for k in single_value_keys[:5]])}{"..." if len(single_value_keys) > 5 else ""}'
+            })
+        
+        # Check for unused labels
+        unused_labels = session.query(
+            func.count(Label.id)
+        ).outerjoin(
+            VMLabel, Label.id == VMLabel.label_id
+        ).outerjoin(
+            FolderLabel, Label.id == FolderLabel.label_id
+        ).filter(
+            VMLabel.id.is_(None),
+            FolderLabel.id.is_(None)
+        ).scalar() or 0
+        
+        if unused_labels > 0:
+            issues.append({
+                'Issue': 'Unused label definitions',
+                'Count': unused_labels,
+                'Severity': 'Medium',
+                'Description': f'{unused_labels} label definitions are not assigned to any VM or folder'
+            })
+        
+        # Check for low coverage labels
+        low_coverage_keys = session.query(
+            Label.key
+        ).join(
+            VMLabel, Label.id == VMLabel.label_id
+        ).group_by(Label.key).having(
+            func.count(func.distinct(VMLabel.vm_id)) < total_vms * 0.1  # Less than 10% coverage
+        ).all()
+        
+        if low_coverage_keys and total_vms > 10:
+            issues.append({
+                'Issue': 'Label keys with low coverage',
+                'Count': len(low_coverage_keys),
+                'Severity': 'Low',
+                'Description': f'{len(low_coverage_keys)} label keys are used by less than 10% of VMs'
+            })
+        
+        if issues:
+            df_issues = pd.DataFrame(issues)
+            
+            # Color code by severity
+            def color_severity(val):
+                if val == 'High':
+                    return 'background-color: #f8d7da'
+                elif val == 'Medium':
+                    return 'background-color: #fff3cd'
+                else:
+                    return 'background-color: #d1ecf1'
+            
+            styled_issues = df_issues.style.map(
+                color_severity,
+                subset=['Severity']
+            )
+            
+            st.dataframe(styled_issues, hide_index=True, use_container_width=True)
+            
+            # Summary
+            high_issues = len(df_issues[df_issues['Severity'] == 'High'])
+            if high_issues > 0:
+                st.error(f"⚠️ {high_issues} high-severity issues found")
+            else:
+                st.success("✅ No high-severity issues found")
+        else:
+            st.success("✅ No quality issues detected")
+    
+    with tab4:
+        st.write("**Label Coverage by Folder:**")
+        
+        # Get folders and their label coverage
+        folder_coverage = session.query(
+            VirtualMachine.folder,
+            func.count(func.distinct(VirtualMachine.id)).label('total_vms'),
+            func.count(func.distinct(VMLabel.vm_id)).label('labeled_vms')
+        ).outerjoin(
+            VMLabel, VirtualMachine.id == VMLabel.vm_id
+        ).filter(
+            VirtualMachine.folder.isnot(None)
+        ).group_by(
+            VirtualMachine.folder
+        ).order_by(
+            func.count(func.distinct(VirtualMachine.id)).desc()
+        ).limit(50).all()
+        
+        if folder_coverage:
+            df_folders = pd.DataFrame(
+                folder_coverage,
+                columns=['Folder', 'Total VMs', 'Labeled VMs']
+            )
+            df_folders['Coverage %'] = (df_folders['Labeled VMs'] / df_folders['Total VMs'] * 100).round(1)
+            df_folders['Unlabeled VMs'] = df_folders['Total VMs'] - df_folders['Labeled VMs']
+            
+            # Filter options
+            col1, col2 = st.columns(2)
+            with col1:
+                min_vms = st.slider('Minimum VMs in folder', 1, int(df_folders['Total VMs'].max()), 1)
+            with col2:
+                sort_by = st.selectbox('Sort by', ['Total VMs', 'Coverage %', 'Unlabeled VMs'])
+            
+            df_filtered = df_folders[df_folders['Total VMs'] >= min_vms].sort_values(
+                sort_by,
+                ascending=(sort_by != 'Coverage %')
+            )
+            
+            # Display table
+            st.dataframe(
+                df_filtered.style.format({
+                    'Total VMs': '{:,}',
+                    'Labeled VMs': '{:,}',
+                    'Unlabeled VMs': '{:,}',
+                    'Coverage %': '{:.1f}%'
+                }),
+                hide_index=True,
+                use_container_width=True
+            )
+            
+            # Export
+            csv_data = df_folders.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="⬇️ Export Folder Coverage Report",
+                data=csv_data,
+                file_name="folder_label_coverage.csv",
+                mime="text/csv"
+            )
+            
+            # Show folders with 0% coverage
+            zero_coverage = df_filtered[df_filtered['Coverage %'] == 0]
+            if len(zero_coverage) > 0:
+                with st.expander(f"⚠️ {len(zero_coverage)} folders with 0% label coverage"):
+                    st.dataframe(zero_coverage[['Folder', 'Total VMs']], hide_index=True)
+        else:
+            st.info("No folder data available")

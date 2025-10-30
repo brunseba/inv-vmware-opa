@@ -1,6 +1,7 @@
 """VM Explorer page - Detailed VM search and information."""
 
 import streamlit as st
+import re
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
@@ -17,10 +18,13 @@ def render(db_url: str):
         session = SessionLocal()
         
         # Search and filters
-        col1, col2, col3 = st.columns([2, 1, 1])
+        col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
         
         with col1:
             search_term = st.text_input("🔎 Search VMs", placeholder="Enter VM name, IP, or hostname...")
+        
+        with col4:
+            use_regex = st.checkbox("Use Regex", value=False, help="Enable regex pattern matching")
         
         with col2:
             datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
@@ -31,16 +35,33 @@ def render(db_url: str):
             selected_power = st.selectbox("Power State", ["All"] + power_states)
         
         # Additional filters
-        colf1, colf2 = st.columns(2)
+        colf1, colf2, colf3 = st.columns(3)
         with colf1:
             template_filter = st.selectbox("Template", ["All", "Only Templates", "Exclude Templates"], index=2)
         with colf2:
             date_range = st.date_input("Creation Date Range", value=[])
+        with colf3:
+            # Label filter
+            from src.models import Label
+            label_keys = [k[0] for k in session.query(Label.key).distinct().all() if k[0]]
+            selected_label_key = st.selectbox("Label Key", ["All"] + label_keys)
+        
+        # Label value filter (shown if key is selected)
+        selected_label_value = None
+        if selected_label_key != "All":
+            label_values = [v[0] for v in session.query(Label.value).filter(
+                Label.key == selected_label_key
+            ).distinct().all() if v[0]]
+            selected_label_value = st.selectbox("Label Value", ["All"] + label_values)
         
         # Build query
         query = session.query(VirtualMachine)
         
-        if search_term:
+        # Handle regex vs normal search
+        if search_term and use_regex:
+            # For regex, get all VMs and filter in Python
+            pass  # We'll filter after fetching
+        elif search_term:
             query = query.filter(
                 or_(
                     VirtualMachine.vm.ilike(f"%{search_term}%"),
@@ -77,15 +98,55 @@ def render(db_url: str):
                         import datetime
                         query = query.filter(VirtualMachine.creation_date < (datetime.datetime.combine(end_date, datetime.time.max)))
         
+        # Label filter
+        if selected_label_key != "All":
+            from src.models import VMLabel
+            
+            # Get label ID(s)
+            if selected_label_value and selected_label_value != "All":
+                # Filter by specific key=value
+                label = session.query(Label).filter(
+                    Label.key == selected_label_key,
+                    Label.value == selected_label_value
+                ).first()
+                if label:
+                    query = query.join(VMLabel).filter(VMLabel.label_id == label.id)
+            else:
+                # Filter by key only (any value)
+                label_ids = session.query(Label.id).filter(
+                    Label.key == selected_label_key
+                ).all()
+                label_ids = [lid[0] for lid in label_ids]
+                if label_ids:
+                    query = query.join(VMLabel).filter(VMLabel.label_id.in_(label_ids))
+        
+        # Apply regex filter if needed
+        all_vms = query.all()
+        
+        if search_term and use_regex:
+            try:
+                regex = re.compile(search_term, re.IGNORECASE)
+                all_vms = [
+                    vm for vm in all_vms 
+                    if any([
+                        vm.vm and regex.search(vm.vm),
+                        vm.dns_name and regex.search(vm.dns_name),
+                        vm.primary_ip_address and regex.search(vm.primary_ip_address)
+                    ])
+                ]
+            except re.error as e:
+                st.error(f"❌ Invalid regex pattern: {e}")
+                return
+        
         # Pagination
-        total_results = query.count()
-        st.info(f"Found {total_results:,} VMs")
+        total_results = len(all_vms)
+        st.info(f"Found {total_results:,} VMs" + (" (regex filter applied)" if use_regex and search_term else ""))
         
         page_size = st.selectbox("Results per page", [10, 25, 50, 100], index=1)
         page = st.number_input("Page", min_value=1, max_value=max(1, (total_results // page_size) + 1), value=1)
         
         offset = (page - 1) * page_size
-        vms = query.limit(page_size).offset(offset).all()
+        vms = all_vms[offset:offset + page_size]
         
         if not vms:
             st.warning("No VMs found matching your criteria")
@@ -168,7 +229,7 @@ def render(db_url: str):
                     st.metric("NICs", selected_vm.nics or 0)
                 
                 # Detailed information tabs
-                tab1, tab2, tab3, tab4 = st.tabs(["📋 General", "💾 Resources", "🌐 Network", "🏗️ Infrastructure"])
+                tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 General", "💾 Resources", "🌐 Network", "🏭️ Infrastructure", "🏷️ Labels"])
                 
                 with tab1:
                     col1, col2 = st.columns(2)
@@ -227,6 +288,49 @@ def render(db_url: str):
                         st.write("**vApp:**", selected_vm.vapp or "N/A")
                         st.write("**HA Protection:**", selected_vm.das_protection or "N/A")
                         st.write("**Environment:**", selected_vm.env or "N/A")
+                
+                with tab5:
+                    # Show VM labels
+                    from src.services.label_service import LabelService
+                    label_service = LabelService(session)
+                    
+                    vm_labels = label_service.get_vm_labels(selected_vm.id, include_inherited=True)
+                    
+                    if vm_labels:
+                        # Separate direct and inherited labels
+                        direct_labels = [lbl for lbl in vm_labels if not lbl['inherited']]
+                        inherited_labels = [lbl for lbl in vm_labels if lbl['inherited']]
+                        
+                        if direct_labels:
+                            st.write("**Direct Labels:**")
+                            for lbl in direct_labels:
+                                col1, col2, col3 = st.columns([2, 2, 1])
+                                with col1:
+                                    st.write(f"🏷️ **{lbl['key']}**")
+                                with col2:
+                                    st.write(lbl['value'])
+                                with col3:
+                                    if lbl['assigned_by']:
+                                        st.caption(f"By: {lbl['assigned_by']}")
+                            st.divider()
+                        
+                        if inherited_labels:
+                            st.write("**Inherited Labels:**")
+                            for lbl in inherited_labels:
+                                col1, col2, col3 = st.columns([2, 2, 1])
+                                with col1:
+                                    st.write(f"🔗 **{lbl['key']}**")
+                                with col2:
+                                    st.write(lbl['value'])
+                                with col3:
+                                    st.caption(f"From: {lbl['source_folder']}")
+                        
+                        # Summary
+                        st.divider()
+                        st.caption(f"Total: {len(vm_labels)} labels ({len(direct_labels)} direct, {len(inherited_labels)} inherited)")
+                    else:
+                        st.info("ℹ️ No labels assigned to this VM")
+                        st.caption("Labels can be assigned in the 'Folder Labelling' section")
                 
                 # Annotation if available
                 if selected_vm.annotation:

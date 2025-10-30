@@ -5,6 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 from .loader import load_excel_to_db
+from .commands.label import label
 
 
 @click.group()
@@ -12,6 +13,10 @@ from .loader import load_excel_to_db
 def cli():
     """VMware inventory management CLI."""
     pass
+
+
+# Register label command group
+cli.add_command(label)
 
 
 @cli.command()
@@ -68,6 +73,81 @@ def load(excel_file: Path, db_url: str, clear: bool, sheet: str, list_sheets: bo
 
 
 @cli.command()
+@click.argument('output_file', type=click.Path(path_type=Path))
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+def backup(output_file: Path, db_url: str):
+    """Create a full database backup."""
+    from datetime import datetime
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+    from .services.backup_service import BackupService
+    
+    try:
+        engine = create_engine(db_url, echo=False)
+        SessionLocal = sessionmaker(bind=engine)
+        session = SessionLocal()
+        backup_service = BackupService(session)
+        
+        click.echo(f"\n💾 Creating database backup...")
+        stats = backup_service.backup_database(output_file, db_url)
+        
+        click.echo(f"\n✅ Database backup complete!")
+        click.echo(f"   Source: {stats['source']}")
+        click.echo(f"   Backup: {stats['backup_file']}")
+        click.echo(f"   Size: {stats['size_bytes']:,} bytes")
+        click.echo(f"   Tables: {stats['tables']}")
+        click.echo()
+        
+        session.close()
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@cli.command()
+@click.argument('backup_file', type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.confirmation_option(prompt='This will replace the current database. Continue?')
+def restore(backup_file: Path, db_url: str):
+    """Restore database from backup file."""
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+    from .services.backup_service import BackupService
+    
+    try:
+        engine = create_engine(db_url, echo=False)
+        SessionLocal = sessionmaker(bind=engine)
+        session = SessionLocal()
+        backup_service = BackupService(session)
+        
+        click.echo(f"\n🔄 Restoring database from backup...")
+        click.echo("   ⚠️  Current database will be backed up before restore")
+        
+        stats = backup_service.restore_database(backup_file, db_url, confirm=True)
+        
+        click.echo(f"\n✅ Database restore complete!")
+        click.echo(f"   Restored from: {stats['restored_from']}")
+        click.echo(f"   Restored to: {stats['restored_to']}")
+        click.echo(f"   Size: {stats['size_bytes']:,} bytes")
+        click.echo()
+        
+        session.close()
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+
+
+@cli.command()
 @click.option(
     "--db-url",
     default="sqlite:///data/vmware_inventory.db",
@@ -114,7 +194,17 @@ def stats(db_url: str):
         session.close()
 
 
-@cli.command()
+@click.group()
+def vm():
+    """Virtual machine operations."""
+    pass
+
+
+# Register vm command group
+cli.add_command(vm)
+
+
+@vm.command(name="list")
 @click.option(
     "--db-url",
     default="sqlite:///data/vmware_inventory.db",
@@ -136,7 +226,7 @@ def stats(db_url: str):
     help="Number of records to show",
     show_default=True,
 )
-def list(db_url: str, datacenter: str, cluster: str, limit: int):
+def vm_list(db_url: str, datacenter: str, cluster: str, limit: int):
     """List virtual machines from the inventory."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
@@ -175,6 +265,298 @@ def list(db_url: str, datacenter: str, cluster: str, limit: int):
         
     except Exception as e:
         click.echo(f"✗ Error listing VMs: {e}", err=True)
+        raise click.Abort()
+    finally:
+        session.close()
+
+
+@vm.command(name="search")
+@click.argument("pattern")
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.option(
+    "--datacenter",
+    help="Filter by datacenter",
+)
+@click.option(
+    "--cluster",
+    help="Filter by cluster",
+)
+@click.option(
+    "--powerstate",
+    type=click.Choice(["poweredOn", "poweredOff"], case_sensitive=False),
+    help="Filter by power state",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=50,
+    help="Maximum number of results to return",
+    show_default=True,
+)
+@click.option(
+    "--case-sensitive",
+    is_flag=True,
+    help="Make regex search case-sensitive",
+)
+def vm_search(pattern: str, db_url: str, datacenter: str, cluster: str, powerstate: str, limit: int, case_sensitive: bool):
+    """Search for VMs using regex pattern matching on VM names."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from .models import VirtualMachine
+    from tabulate import tabulate
+    import re
+    
+    engine = create_engine(db_url, echo=False)
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+    
+    try:
+        # Compile regex pattern
+        try:
+            flags = 0 if case_sensitive else re.IGNORECASE
+            regex = re.compile(pattern, flags)
+        except re.error as e:
+            click.echo(f"✗ Invalid regex pattern: {e}", err=True)
+            raise click.Abort()
+        
+        # Build base query
+        query = session.query(VirtualMachine)
+        
+        # Apply filters
+        if datacenter:
+            query = query.filter(VirtualMachine.datacenter == datacenter)
+        if cluster:
+            query = query.filter(VirtualMachine.cluster == cluster)
+        if powerstate:
+            query = query.filter(VirtualMachine.powerstate == powerstate)
+        
+        # Get all matching VMs (we'll filter by regex in Python)
+        all_vms = query.all()
+        
+        # Filter by regex
+        matching_vms = [vm for vm in all_vms if vm.vm and regex.search(vm.vm)]
+        
+        if not matching_vms:
+            click.echo(f"No VMs found matching pattern: {pattern}")
+            return
+        
+        # Apply limit
+        vms_to_show = matching_vms[:limit]
+        
+        # Prepare table data
+        table_data = []
+        for vm in vms_to_show:
+            table_data.append([
+                vm.vm[:45] if len(vm.vm) > 45 else vm.vm,
+                vm.powerstate or "N/A",
+                vm.datacenter or "N/A",
+                vm.cluster or "N/A",
+                f"{vm.cpus or 0}",
+                f"{(vm.memory or 0) / 1024:.1f}" if vm.memory else "0.0"
+            ])
+        
+        # Display results
+        headers = ['VM Name', 'Power', 'Datacenter', 'Cluster', 'vCPUs', 'RAM (GiB)']
+        title = f"\n🔍 Found {len(matching_vms)} VM(s) matching '{pattern}'"
+        if len(matching_vms) > limit:
+            title += f" (showing {limit})"
+        click.echo(title + ":\n")
+        click.echo(tabulate(table_data, headers=headers, tablefmt='simple'))
+        click.echo()
+        
+    except Exception as e:
+        click.echo(f"✗ Error searching VMs: {e}", err=True)
+        raise click.Abort()
+    finally:
+        session.close()
+
+
+@cli.command()
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+def datacenters(db_url: str):
+    """List all datacenters with VM counts and statistics."""
+    from sqlalchemy import create_engine, func
+    from sqlalchemy.orm import sessionmaker
+    from .models import VirtualMachine
+    from tabulate import tabulate
+    
+    engine = create_engine(db_url, echo=False)
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+    
+    try:
+        # Query datacenters with aggregated stats
+        from sqlalchemy import case
+        results = session.query(
+            VirtualMachine.datacenter,
+            func.count(VirtualMachine.id).label('vm_count'),
+            func.sum(case((VirtualMachine.powerstate == 'poweredOn', 1), else_=0)).label('powered_on'),
+            func.sum(case((VirtualMachine.powerstate == 'poweredOff', 1), else_=0)).label('powered_off'),
+            func.count(func.distinct(VirtualMachine.cluster)).label('cluster_count'),
+            func.count(func.distinct(VirtualMachine.host)).label('host_count'),
+            func.sum(VirtualMachine.cpus).label('total_cpus'),
+            func.sum(VirtualMachine.memory).label('total_memory_mib'),
+            func.sum(VirtualMachine.provisioned_mib).label('total_storage_mib')
+        ).filter(
+            VirtualMachine.datacenter.isnot(None)
+        ).group_by(
+            VirtualMachine.datacenter
+        ).order_by(
+            func.count(VirtualMachine.id).desc()
+        ).all()
+        
+        if not results:
+            click.echo("No datacenters found.")
+            return
+        
+        # Prepare table data
+        table_data = []
+        for row in results:
+            memory_gib = (row.total_memory_mib or 0) / 1024
+            storage_tib = (row.total_storage_mib or 0) / 1024 / 1024
+            
+            table_data.append([
+                row.datacenter,
+                row.vm_count,
+                row.powered_on or 0,
+                row.powered_off or 0,
+                row.cluster_count,
+                row.host_count,
+                row.total_cpus or 0,
+                f"{memory_gib:.1f}",
+                f"{storage_tib:.2f}"
+            ])
+        
+        # Display table
+        headers = ['Datacenter', 'VMs', 'On', 'Off', 'Clusters', 'Hosts', 'vCPUs', 'RAM (GiB)', 'Storage (TiB)']
+        click.echo(f"\n🏢 Datacenters ({len(results)}):\n")
+        click.echo(tabulate(table_data, headers=headers, tablefmt='simple'))
+        click.echo()
+        
+    except Exception as e:
+        click.echo(f"✗ Error listing datacenters: {e}", err=True)
+        raise click.Abort()
+    finally:
+        session.close()
+
+
+@cli.command()
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.option(
+    "--datacenter",
+    help="Filter by datacenter",
+)
+@click.option(
+    "--filter",
+    "cluster_filter",
+    help="Regex pattern to filter cluster names",
+)
+def clusters(db_url: str, datacenter: str, cluster_filter: str):
+    """List all clusters with VM counts and statistics."""
+    from sqlalchemy import create_engine, func
+    from sqlalchemy.orm import sessionmaker
+    from .models import VirtualMachine
+    from tabulate import tabulate
+    import re
+    
+    engine = create_engine(db_url, echo=False)
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+    
+    try:
+        # Build query
+        from sqlalchemy import case
+        query = session.query(
+            VirtualMachine.datacenter,
+            VirtualMachine.cluster,
+            func.count(VirtualMachine.id).label('vm_count'),
+            func.sum(case((VirtualMachine.powerstate == 'poweredOn', 1), else_=0)).label('powered_on'),
+            func.sum(case((VirtualMachine.powerstate == 'poweredOff', 1), else_=0)).label('powered_off'),
+            func.count(func.distinct(VirtualMachine.host)).label('host_count'),
+            func.sum(VirtualMachine.cpus).label('total_cpus'),
+            func.sum(VirtualMachine.memory).label('total_memory_mib'),
+            func.sum(VirtualMachine.provisioned_mib).label('total_storage_mib')
+        ).filter(
+            VirtualMachine.cluster.isnot(None)
+        )
+        
+        if datacenter:
+            query = query.filter(VirtualMachine.datacenter == datacenter)
+        
+        results = query.group_by(
+            VirtualMachine.datacenter,
+            VirtualMachine.cluster
+        ).order_by(
+            VirtualMachine.datacenter,
+            func.count(VirtualMachine.id).desc()
+        ).all()
+        
+        if not results:
+            if datacenter:
+                click.echo(f"No clusters found in datacenter: {datacenter}")
+            else:
+                click.echo("No clusters found.")
+            return
+        
+        # Apply regex filter if provided
+        if cluster_filter:
+            try:
+                pattern = re.compile(cluster_filter)
+                results = [row for row in results if pattern.search(row.cluster or '')]
+            except re.error as e:
+                click.echo(f"✗ Invalid regex pattern: {e}", err=True)
+                raise click.Abort()
+            
+            if not results:
+                click.echo(f"No clusters match the filter pattern: {cluster_filter}")
+                return
+        
+        # Prepare table data
+        table_data = []
+        for row in results:
+            memory_gib = (row.total_memory_mib or 0) / 1024
+            storage_tib = (row.total_storage_mib or 0) / 1024 / 1024
+            
+            table_data.append([
+                row.datacenter or 'N/A',
+                row.cluster,
+                row.vm_count,
+                row.powered_on or 0,
+                row.powered_off or 0,
+                row.host_count,
+                row.total_cpus or 0,
+                f"{memory_gib:.1f}",
+                f"{storage_tib:.2f}"
+            ])
+        
+        # Display table
+        headers = ['Datacenter', 'Cluster', 'VMs', 'On', 'Off', 'Hosts', 'vCPUs', 'RAM (GiB)', 'Storage (TiB)']
+        title = f"🖥️  Clusters ({len(results)})"
+        if datacenter:
+            title += f" in {datacenter}"
+        if cluster_filter:
+            title += f" [filter: {cluster_filter}]"
+        click.echo(f"\n{title}:\n")
+        click.echo(tabulate(table_data, headers=headers, tablefmt='simple'))
+        click.echo()
+        
+    except Exception as e:
+        click.echo(f"✗ Error listing clusters: {e}", err=True)
         raise click.Abort()
     finally:
         session.close()

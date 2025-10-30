@@ -65,7 +65,10 @@ nav:
       - CLI Commands: user-guide/cli-commands.md
       - Dashboard: user-guide/dashboard.md
       - PDF Export: user-guide/pdf-export.md
+  - Reference:
+      - Data Model: data-model.md
       - Database Schema: user-guide/database-schema.md
+      - Label System: design/labelling-schema-review.md
   - Features:
       - Dashboard Overview: DASHBOARD.md
       - UI Enhancements: UI_ENHANCEMENTS.md
