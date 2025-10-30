@@ -8,7 +8,7 @@ This module provides centralized database connection management with:
 """
 
 import streamlit as st
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 from contextlib import contextmanager
@@ -150,7 +150,7 @@ class DatabaseManager:
             engine = get_engine(db_url)
             with engine.connect() as conn:
                 # Execute simple query to verify connection
-                conn.execute("SELECT 1")
+                conn.execute(text("SELECT 1"))
             return True, None
         except Exception as e:
             logger.error(f"Database connection test failed: {e}")

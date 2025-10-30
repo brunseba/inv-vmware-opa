@@ -196,6 +196,91 @@ def show_results_warning(total: int, config: PaginationConfig):
         )
 
 
+class PaginationHelper:
+    """Helper class for managing pagination state in Streamlit."""
+    
+    def __init__(self, key_prefix: str, default_page_size: int = DEFAULT_PAGE_SIZE):
+        """Initialize pagination helper.
+        
+        Args:
+            key_prefix: Prefix for session state keys
+            default_page_size: Default page size
+        """
+        self.key_prefix = key_prefix
+        self.default_page_size = default_page_size
+        self._current_page_key = f"{key_prefix}_page"
+        self._page_size_key = f"{key_prefix}_page_size"
+        
+        # Initialize session state
+        if self._current_page_key not in st.session_state:
+            st.session_state[self._current_page_key] = 1
+        if self._page_size_key not in st.session_state:
+            st.session_state[self._page_size_key] = default_page_size
+    
+    @property
+    def current_page(self) -> int:
+        """Get current page number."""
+        return st.session_state.get(self._current_page_key, 1)
+    
+    @current_page.setter
+    def current_page(self, value: int):
+        """Set current page number."""
+        st.session_state[self._current_page_key] = max(1, value)
+    
+    @property
+    def page_size(self) -> int:
+        """Get current page size."""
+        return st.session_state.get(self._page_size_key, self.default_page_size)
+    
+    @page_size.setter
+    def page_size(self, value: int):
+        """Set page size."""
+        st.session_state[self._page_size_key] = value
+    
+    def paginate_query(self, query: Query, total_count: int) -> Query:
+        """Apply pagination to a query.
+        
+        Args:
+            query: SQLAlchemy query
+            total_count: Total number of results
+            
+        Returns:
+            Paginated query
+        """
+        offset = (self.current_page - 1) * self.page_size
+        return query.offset(offset).limit(self.page_size)
+    
+    def show_pagination_controls(self):
+        """Display pagination controls."""
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            # Page size selector
+            new_size = st.selectbox(
+                "Items per page",
+                options=PAGE_SIZE_OPTIONS,
+                index=PAGE_SIZE_OPTIONS.index(self.page_size) if self.page_size in PAGE_SIZE_OPTIONS else 1,
+                key=f"{self.key_prefix}_size_select"
+            )
+            if new_size != self.page_size:
+                self.page_size = new_size
+                self.current_page = 1  # Reset to first page when changing size
+                st.rerun()
+        
+        with col2:
+            # Page navigation
+            subcol1, subcol2 = st.columns(2)
+            with subcol1:
+                if st.button("◀", key=f"{self.key_prefix}_prev"):
+                    if self.current_page > 1:
+                        self.current_page -= 1
+                        st.rerun()
+            with subcol2:
+                if st.button("▶", key=f"{self.key_prefix}_next"):
+                    self.current_page += 1
+                    st.rerun()
+
+
 def limit_query(query: Query, config: PaginationConfig) -> Query:
     """Apply hard limit to query based on configuration.
     
