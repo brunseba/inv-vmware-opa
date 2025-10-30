@@ -18,6 +18,7 @@ Welcome to the **inv-vmware-opa** documentation! This folder contains comprehens
 ### Configuration & Enhancement
 - **[pyproject.toml Enhancements](PYPROJECT_ENHANCEMENTS.md)** - Complete guide to project configuration
 - **[Phase 2 Summary](PYPROJECT_PHASE2_SUMMARY.md)** - Latest configuration improvements
+- **[Phase 3 Summary](PYPROJECT_PHASE3_SUMMARY.md)** - Testing and quality improvements
 - **[Improvements Summary](IMPROVEMENTS_SUMMARY.md)** - Overall project improvements
 
 ### Features & Capabilities
@@ -36,6 +37,14 @@ Welcome to the **inv-vmware-opa** documentation! This folder contains comprehens
 - **[Changelog](changelog.md)** - Version history and changes
 - **[User Guide](user-guide/)** - Detailed usage instructions
 - **[Design Documents](design/)** - Architecture and design decisions
+
+### Technical Debt & Implementation
+- **[Technical Debt Implementation Summary](TECHNICAL_DEBT_IMPLEMENTATION_SUMMARY.md)** - v0.6.0 improvements and implementation status
+- **[Streamlit Technical Debt](STREAMLIT_TECHNICAL_DEBT.md)** - Dashboard improvements and issues
+- **[Dashboard Testing](DASHBOARD_TESTING.md)** - Testing infrastructure and guidelines
+- **[High Priority Implementation](HIGH_PRIORITY_IMPLEMENTATION_REVIEW.md)** - Critical improvements review
+- **[Medium Priority Implementation](MEDIUM_PRIORITY_IMPLEMENTATION_REVIEW.md)** - Medium priority improvements review
+- **[Medium Priority Completion](MEDIUM_PRIORITY_COMPLETION_STATUS.md)** - Completion status tracking
 
 ---
 
@@ -191,8 +200,11 @@ Welcome to the **inv-vmware-opa** documentation! This folder contains comprehens
 | Contributing Guide | ✅ Current | 2025-10-30 | 100% |
 | pyproject.toml Enhancements | ✅ Current | 2025-10-30 | 100% |
 | Phase 2 Summary | ✅ Current | 2025-10-30 | 100% |
+| Phase 3 Summary | ✅ Current | 2025-10-30 | 100% |
 | Security Policy | ✅ Current | 2025-10-30 | 100% |
 | Technical Debt Review | ✅ Current | 2025-10-30 | 100% |
+| Technical Debt Implementation | ✅ Current | 2025-10-30 | 100% |
+| Dashboard Testing | ✅ Current | 2025-10-30 | 100% |
 | Improvements Summary | ✅ Current | 2025-10-30 | 100% |
 | Dashboard Guide | ✅ Current | 2025-10-27 | 90% |
 | PDF Export Guide | ✅ Current | 2025-10-27 | 90% |
@@ -260,8 +272,8 @@ Welcome to the **inv-vmware-opa** documentation! This folder contains comprehens
 ---
 
 **Last Updated:** 2025-10-30  
-**Documentation Version:** 2.0  
-**Project Version:** 0.5.0
+**Documentation Version:** 2.1  
+**Project Version:** 0.6.0
 
 ---
 
@@ -276,7 +288,14 @@ docs/
 ├── TECHNICAL_DEBT_REVIEW.md          # Technical roadmap
 ├── PYPROJECT_ENHANCEMENTS.md         # Configuration guide
 ├── PYPROJECT_PHASE2_SUMMARY.md       # Recent config updates
+├── PYPROJECT_PHASE3_SUMMARY.md       # Testing improvements
 ├── IMPROVEMENTS_SUMMARY.md            # Overall improvements
+├── TECHNICAL_DEBT_IMPLEMENTATION_SUMMARY.md  # v0.6.0 improvements
+├── STREAMLIT_TECHNICAL_DEBT.md       # Dashboard tech debt
+├── DASHBOARD_TESTING.md               # Testing guide
+├── HIGH_PRIORITY_IMPLEMENTATION_REVIEW.md   # High priority review
+├── MEDIUM_PRIORITY_IMPLEMENTATION_REVIEW.md # Medium priority review
+├── MEDIUM_PRIORITY_COMPLETION_STATUS.md     # Completion status
 ├── DASHBOARD.md                       # Dashboard guide
 ├── PDF_EXPORT.md                      # PDF generation
 ├── PDF_CHARTS_GUIDE.md               # PDF charts
