@@ -430,104 +430,260 @@ def render(db_url: str):
                 color_name="violet-70"
             )
             
-            # Search for VM
-            vm_search = st.text_input("🔍 Search VM by name", placeholder="Enter VM name...")
+            # Sub-tabs for individual and batch operations
+            vm_tab1, vm_tab2 = st.tabs(["Individual VMs", "Batch Operations"])
             
-            if vm_search and len(vm_search) >= 2:
-                try:
-                    vms = session.query(VirtualMachine).filter(
-                        VirtualMachine.vm.ilike(f"%{vm_search}%")
-                    ).limit(20).all()
-                except Exception as e:
-                    # Rollback session if there was a previous error
-                    session.rollback()
-                    st.error(f"Database error: {str(e)}")
-                    vms = []
+            # ===== Individual VM Labelling =====
+            with vm_tab1:
+                # Search for VM
+                vm_search = st.text_input("🔍 Search VM by name", placeholder="Enter VM name...")
                 
-                if vms:
-                    st.write(f"Found {len(vms)} VM(s):")
+                if vm_search and len(vm_search) >= 2:
+                    try:
+                        vms = session.query(VirtualMachine).filter(
+                            VirtualMachine.vm.ilike(f"%{vm_search}%")
+                        ).limit(20).all()
+                    except Exception as e:
+                        # Rollback session if there was a previous error
+                        session.rollback()
+                        st.error(f"Database error: {str(e)}")
+                        vms = []
                     
-                    for vm in vms:
-                        with st.expander(f"🖥️ {vm.vm}"):
-                            # Show VM info
-                            col1, col2 = st.columns(2)
-                            
-                            with col1:
-                                st.write(f"**Datacenter:** {vm.datacenter or 'N/A'}")
-                                st.write(f"**Cluster:** {vm.cluster or 'N/A'}")
-                                st.write(f"**Folder:** {vm.folder or 'N/A'}")
-                            
-                            with col2:
-                                st.write(f"**Power:** {vm.powerstate or 'N/A'}")
-                                st.write(f"**vCPUs:** {vm.cpus or 0}")
-                                st.write(f"**Memory:** {(vm.memory or 0) / 1024:.1f} GB")
-                            
-                            st.divider()
-                            
-                            # Current labels
-                            vm_labels = label_service.get_vm_labels(vm.id, include_inherited=True)
-                            
-                            if vm_labels:
-                                st.write("**Current Labels:**")
-                                for lbl in vm_labels:
-                                    col1, col2 = st.columns([4, 1])
-                                    
-                                    with col1:
-                                        st.markdown(_render_label_badge(lbl['key'], lbl['value'], lbl['color']), unsafe_allow_html=True)
-                                        if lbl['inherited']:
-                                            st.caption(f"↳ Inherited from: {lbl['source_folder']}")
-                                    
-                                    with col2:
-                                        if not lbl['inherited']:
-                                            if st.button("Remove", key=f"rm_vm_{vm.id}_{lbl['label_id']}"):
-                                                try:
-                                                    label_service.remove_vm_label(vm.id, lbl['label_id'])
-                                                    st.success("Label removed")
+                    if vms:
+                        st.write(f"Found {len(vms)} VM(s):")
+                        
+                        for vm in vms:
+                            with st.expander(f"🖥️ {vm.vm}"):
+                                # Show VM info
+                                col1, col2 = st.columns(2)
+                                
+                                with col1:
+                                    st.write(f"**Datacenter:** {vm.datacenter or 'N/A'}")
+                                    st.write(f"**Cluster:** {vm.cluster or 'N/A'}")
+                                    st.write(f"**Folder:** {vm.folder or 'N/A'}")
+                                
+                                with col2:
+                                    st.write(f"**Power:** {vm.powerstate or 'N/A'}")
+                                    st.write(f"**vCPUs:** {vm.cpus or 0}")
+                                    st.write(f"**Memory:** {(vm.memory or 0) / 1024:.1f} GB")
+                                
+                                st.divider()
+                                
+                                # Current labels
+                                vm_labels = label_service.get_vm_labels(vm.id, include_inherited=True)
+                                
+                                if vm_labels:
+                                    st.write("**Current Labels:**")
+                                    for lbl in vm_labels:
+                                        col1, col2 = st.columns([4, 1])
+                                        
+                                        with col1:
+                                            st.markdown(_render_label_badge(lbl['key'], lbl['value'], lbl['color']), unsafe_allow_html=True)
+                                            if lbl['inherited']:
+                                                st.caption(f"↳ Inherited from: {lbl['source_folder']}")
+                                        
+                                        with col2:
+                                            if not lbl['inherited']:
+                                                if st.button("Remove", key=f"rm_vm_{vm.id}_{lbl['label_id']}"):
+                                                    try:
+                                                        label_service.remove_vm_label(vm.id, lbl['label_id'])
+                                                        st.success("Label removed")
+                                                        st.rerun()
+                                                    except Exception as e:
+                                                        st.error(f"Error: {e}")
+                                else:
+                                    st.info("No labels assigned")
+                                
+                                # Assign new label
+                                st.divider()
+                                st.write("**Assign New Label:**")
+                                
+                                col1, col2, col3 = st.columns([2, 2, 1])
+                                
+                                with col1:
+                                    label_keys = label_service.get_label_keys()
+                                    if label_keys:
+                                        vm_label_key = st.selectbox("Key", label_keys, key=f"vm_key_{vm.id}")
+                                    else:
+                                        st.warning("No labels defined")
+                                        vm_label_key = None
+                                
+                                with col2:
+                                    if vm_label_key:
+                                        vm_label_values = label_service.get_label_values(vm_label_key)
+                                        vm_label_value = st.selectbox("Value", vm_label_values, key=f"vm_val_{vm.id}")
+                                    else:
+                                        vm_label_value = None
+                                
+                                with col3:
+                                    if st.button("Assign", key=f"assign_vm_{vm.id}", type="primary"):
+                                        if vm_label_key and vm_label_value:
+                                            try:
+                                                label = label_service.get_label_by_key_value(vm_label_key, vm_label_value)
+                                                if label:
+                                                    label_service.assign_vm_label(vm.id, label.id)
+                                                    st.success("Label assigned")
                                                     st.rerun()
-                                                except Exception as e:
+                                            except Exception as e:
+                                                session.rollback()
+                                                error_msg = str(e)
+                                                if "UNIQUE constraint failed" in error_msg or "already assigned" in error_msg.lower():
+                                                    st.info("ℹ️ This label is already assigned to this VM")
+                                                else:
                                                     st.error(f"Error: {e}")
-                            else:
-                                st.info("No labels assigned")
+                    else:
+                        st.warning("No VMs found matching your search")
+            
+            # ===== Batch VM Labelling =====
+            with vm_tab2:
+                st.write("**Batch assign labels to VMs matching specific criteria**")
+                
+                add_vertical_space(1)
+                
+                # Filter selection
+                filter_type = st.selectbox(
+                    "Select Filter Type",
+                    ["OS Family", "Resource Size", "Network Complexity", "Storage Complexity"],
+                    key="batch_filter_type"
+                )
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    if filter_type == "OS Family":
+                        category = st.selectbox(
+                            "OS Family",
+                            ["windows", "linux", "unix", "other"],
+                            key="os_family_select"
+                        )
+                        st.caption("📊 Preview VMs matching this OS family")
+                    
+                    elif filter_type == "Resource Size":
+                        category = st.selectbox(
+                            "Resource Category",
+                            ["small", "medium", "large", "xlarge"],
+                            key="resource_category_select"
+                        )
+                        size_descriptions = {
+                            "small": "1-2 vCPUs, ≤ 4 GB RAM",
+                            "medium": "3-4 vCPUs, 4-16 GB RAM",
+                            "large": "5-8 vCPUs, 16-32 GB RAM",
+                            "xlarge": "9+ vCPUs, 32+ GB RAM"
+                        }
+                        st.caption(f"📈 {size_descriptions[category]}")
+                    
+                    elif filter_type == "Network Complexity":
+                        category = st.selectbox(
+                            "Network Complexity",
+                            ["simple", "standard", "complex"],
+                            key="network_complexity_select"
+                        )
+                        net_descriptions = {
+                            "simple": "1 NIC (single network)",
+                            "standard": "2 NICs (dual-homed)",
+                            "complex": "3+ NICs (multi-network)"
+                        }
+                        st.caption(f"🌐 {net_descriptions[category]}")
+                    
+                    elif filter_type == "Storage Complexity":
+                        category = st.selectbox(
+                            "Storage Complexity",
+                            ["simple", "standard", "complex"],
+                            key="storage_complexity_select"
+                        )
+                        storage_descriptions = {
+                            "simple": "1 disk (single volume)",
+                            "standard": "2-3 disks (OS + data)",
+                            "complex": "4+ disks (multi-volume)"
+                        }
+                        st.caption(f"💾 {storage_descriptions[category]}")
+                
+                with col2:
+                    # Label selection
+                    label_keys = label_service.get_label_keys()
+                    if label_keys:
+                        batch_label_key = st.selectbox("Label Key", label_keys, key="batch_label_key")
+                        batch_label_values = label_service.get_label_values(batch_label_key)
+                        batch_label_value = st.selectbox("Label Value", batch_label_values, key="batch_label_value")
+                    else:
+                        st.warning("⚠️ No labels defined. Create labels first.")
+                        batch_label_key = None
+                        batch_label_value = None
+                
+                add_vertical_space(1)
+                
+                # Preview button
+                if st.button("🔍 Preview VMs", key="preview_batch"):
+                    try:
+                        # Get matching VMs based on filter type
+                        if filter_type == "OS Family":
+                            matching_vms = label_service.get_vms_by_os_category(os_family=category)
+                        elif filter_type == "Resource Size":
+                            matching_vms = label_service.get_vms_by_resource_category(category)
+                        elif filter_type == "Network Complexity":
+                            matching_vms = label_service.get_vms_by_network_complexity(category)
+                        elif filter_type == "Storage Complexity":
+                            matching_vms = label_service.get_vms_by_storage_complexity(category)
+                        else:
+                            matching_vms = []
+                        
+                        if matching_vms:
+                            st.success(f"✅ Found {len(matching_vms)} VMs matching criteria")
                             
-                            # Assign new label
-                            st.divider()
-                            st.write("**Assign New Label:**")
+                            # Display preview
+                            preview_data = []
+                            for vm in matching_vms[:50]:  # Show first 50
+                                preview_data.append({
+                                    'VM': vm.vm,
+                                    'OS': vm.os_config or 'N/A',
+                                    'vCPUs': vm.cpus or 0,
+                                    'Memory (GB)': f"{(vm.memory or 0) / 1024:.1f}",
+                                    'NICs': vm.nics or 0,
+                                    'Disks': vm.disks or 0,
+                                    'Folder': vm.folder or 'N/A'
+                                })
                             
-                            col1, col2, col3 = st.columns([2, 2, 1])
+                            df_preview = pd.DataFrame(preview_data)
+                            st.dataframe(df_preview, width="stretch", hide_index=True)
                             
-                            with col1:
-                                label_keys = label_service.get_label_keys()
-                                if label_keys:
-                                    vm_label_key = st.selectbox("Key", label_keys, key=f"vm_key_{vm.id}")
-                                else:
-                                    st.warning("No labels defined")
-                                    vm_label_key = None
+                            if len(matching_vms) > 50:
+                                st.info(f"ℹ️ Showing first 50 of {len(matching_vms)} VMs")
                             
-                            with col2:
-                                if vm_label_key:
-                                    vm_label_values = label_service.get_label_values(vm_label_key)
-                                    vm_label_value = st.selectbox("Value", vm_label_values, key=f"vm_val_{vm.id}")
-                                else:
-                                    vm_label_value = None
-                            
-                            with col3:
-                                if st.button("Assign", key=f"assign_vm_{vm.id}", type="primary"):
-                                    if vm_label_key and vm_label_value:
-                                        try:
-                                            label = label_service.get_label_by_key_value(vm_label_key, vm_label_value)
-                                            if label:
-                                                label_service.assign_vm_label(vm.id, label.id)
-                                                st.success("Label assigned")
-                                                st.rerun()
-                                        except Exception as e:
-                                            session.rollback()
-                                            error_msg = str(e)
-                                            if "UNIQUE constraint failed" in error_msg or "already assigned" in error_msg.lower():
-                                                st.info("ℹ️ This label is already assigned to this VM")
-                                            else:
-                                                st.error(f"Error: {e}")
-                else:
-                    st.warning("No VMs found matching your search")
+                            # Store in session state for batch assign
+                            st.session_state['batch_vm_ids'] = [vm.id for vm in matching_vms]
+                        else:
+                            st.warning("⚠️ No VMs found matching criteria")
+                            st.session_state['batch_vm_ids'] = []
+                    
+                    except Exception as e:
+                        st.error(f"❌ Error: {e}")
+                        st.session_state['batch_vm_ids'] = []
+                
+                add_vertical_space(1)
+                
+                # Batch assign button
+                if batch_label_key and batch_label_value:
+                    if st.button("✅ Assign Label to All Matching VMs", type="primary", key="batch_assign"):
+                        if 'batch_vm_ids' in st.session_state and st.session_state['batch_vm_ids']:
+                            try:
+                                label = label_service.get_label_by_key_value(batch_label_key, batch_label_value)
+                                if label:
+                                    vm_ids = st.session_state['batch_vm_ids']
+                                    
+                                    with st.spinner(f"Assigning {batch_label_key}={batch_label_value} to {len(vm_ids)} VMs..."):
+                                        successful, failed = label_service.batch_assign_label_to_vms(
+                                            vm_ids, label.id, assigned_by='dashboard'
+                                        )
+                                    
+                                    st.success(f"✅ Batch assignment complete!")
+                                    st.info(f"📋 **Results:** {successful} assigned, {failed} skipped (already assigned or error)")
+                                    
+                                    # Clear session state
+                                    del st.session_state['batch_vm_ids']
+                            except Exception as e:
+                                st.error(f"❌ Error: {e}")
+                        else:
+                            st.warning("⚠️ Please preview VMs first before batch assignment")
         
         # =====================================================================
         # Tab 4: Search by Label
