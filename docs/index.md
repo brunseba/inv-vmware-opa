@@ -11,16 +11,19 @@ A Python CLI tool for managing VMware inventory data from Excel exports into a s
 - **📊 Statistics**: Query and analyze inventory data
 - **🔍 Filtering**: Filter VMs by datacenter, cluster, and other attributes
 - **🏷️ Label Management**: Organize VMs and folders with custom labels
+- **💾 Backup & Restore**: Full database and label backup/restore capabilities
+- **📈 Label Quality**: Comprehensive label coverage analysis and reporting
 
 ### Interactive Dashboard
 - **🖥️ Web Interface**: Rich Streamlit-based dashboard with multiple views
 - **📈 Advanced Analytics**: CPU vs Memory patterns, OS distribution, cluster efficiency
 - **⚖️ Comparison Tools**: Side-by-side datacenter, cluster, and host comparisons
-- **📁 Folder Analysis**: Comprehensive folder-level resource and storage analytics with labels
-- **🔎 VM Explorer**: Advanced search with regex pattern matching
+- **📁 Folder Analysis**: Comprehensive folder-level resource and storage analytics with label filtering
+- **🔎 VM Explorer**: Advanced search with regex pattern matching and label filters
 - **🔍 VM Search**: Dedicated regex-based search with advanced filters
-- **🏷️ Folder Labelling**: Complete label management UI with inheritance
-- **📊 Data Quality**: Field completeness analysis and recommendations
+- **🏷️ Folder Labelling**: Complete label management UI with inheritance and bulk operations
+- **📊 Data Quality**: Field completeness analysis, recommendations, and label quality reporting
+- **💾 Database Backup**: Dedicated backup/restore page with download capability
 
 ### PDF Export
 - **📄 Professional Reports**: Generate comprehensive PDF reports with 20+ visualizations
