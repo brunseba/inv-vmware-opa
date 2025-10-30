@@ -447,3 +447,203 @@ class LabelService:
                         }
         
         return labels
+    
+    # ========================================================================
+    # VM Retrieval by Categories (OS and Resources)
+    # ========================================================================
+    
+    def get_vms_by_os_category(self, os_pattern: str = None, 
+                               os_family: str = None) -> List[VirtualMachine]:
+        """Get VMs filtered by operating system.
+        
+        Args:
+            os_pattern: SQL LIKE pattern for os_config (e.g., 'Windows%', '%Linux%')
+            os_family: Predefined OS family ('windows', 'linux', 'unix', 'other')
+            
+        Returns:
+            List of VirtualMachine objects matching criteria
+            
+        Example:
+            # Get all Windows VMs
+            windows_vms = service.get_vms_by_os_category(os_family='windows')
+            
+            # Get specific Linux distro
+            ubuntu_vms = service.get_vms_by_os_category(os_pattern='%Ubuntu%')
+        """
+        query = self.session.query(VirtualMachine)
+        
+        if os_pattern:
+            query = query.filter(VirtualMachine.os_config.like(os_pattern))
+        elif os_family:
+            # Predefined patterns for common OS families
+            if os_family.lower() == 'windows':
+                query = query.filter(
+                    or_(
+                        VirtualMachine.os_config.like('%Windows%'),
+                        VirtualMachine.os_config.like('%Microsoft%')
+                    )
+                )
+            elif os_family.lower() == 'linux':
+                query = query.filter(
+                    or_(
+                        VirtualMachine.os_config.like('%Linux%'),
+                        VirtualMachine.os_config.like('%Ubuntu%'),
+                        VirtualMachine.os_config.like('%Red Hat%'),
+                        VirtualMachine.os_config.like('%CentOS%'),
+                        VirtualMachine.os_config.like('%Debian%'),
+                        VirtualMachine.os_config.like('%SUSE%'),
+                        VirtualMachine.os_config.like('%Fedora%')
+                    )
+                )
+            elif os_family.lower() == 'unix':
+                query = query.filter(
+                    or_(
+                        VirtualMachine.os_config.like('%Solaris%'),
+                        VirtualMachine.os_config.like('%AIX%'),
+                        VirtualMachine.os_config.like('%HP-UX%'),
+                        VirtualMachine.os_config.like('%BSD%')
+                    )
+                )
+            elif os_family.lower() == 'other':
+                query = query.filter(
+                    VirtualMachine.os_config.isnot(None),
+                    ~VirtualMachine.os_config.like('%Windows%'),
+                    ~VirtualMachine.os_config.like('%Linux%'),
+                    ~VirtualMachine.os_config.like('%Solaris%')
+                )
+        
+        return query.order_by(VirtualMachine.vm).all()
+    
+    def get_vms_by_resource_criteria(self,
+                                     min_cpus: int = None,
+                                     max_cpus: int = None,
+                                     min_memory_gb: float = None,
+                                     max_memory_gb: float = None,
+                                     min_storage_gb: float = None,
+                                     max_storage_gb: float = None) -> List[VirtualMachine]:
+        """Get VMs filtered by resource specifications.
+        
+        Args:
+            min_cpus: Minimum vCPUs
+            max_cpus: Maximum vCPUs
+            min_memory_gb: Minimum memory in GB
+            max_memory_gb: Maximum memory in GB
+            min_storage_gb: Minimum provisioned storage in GB
+            max_storage_gb: Maximum provisioned storage in GB
+            
+        Returns:
+            List of VirtualMachine objects matching criteria
+            
+        Example:
+            # Get large VMs (8+ CPUs, 32+ GB RAM)
+            large_vms = service.get_vms_by_resource_criteria(
+                min_cpus=8,
+                min_memory_gb=32
+            )
+            
+            # Get small VMs (1-2 CPUs, up to 4 GB RAM)
+            small_vms = service.get_vms_by_resource_criteria(
+                max_cpus=2,
+                max_memory_gb=4
+            )
+        """
+        query = self.session.query(VirtualMachine)
+        
+        # CPU filters
+        if min_cpus is not None:
+            query = query.filter(VirtualMachine.cpus >= min_cpus)
+        if max_cpus is not None:
+            query = query.filter(VirtualMachine.cpus <= max_cpus)
+        
+        # Memory filters (convert GB to MB for database)
+        if min_memory_gb is not None:
+            query = query.filter(VirtualMachine.memory >= min_memory_gb * 1024)
+        if max_memory_gb is not None:
+            query = query.filter(VirtualMachine.memory <= max_memory_gb * 1024)
+        
+        # Storage filters (convert GB to MiB for database)
+        if min_storage_gb is not None:
+            query = query.filter(VirtualMachine.provisioned_mib >= min_storage_gb * 1024)
+        if max_storage_gb is not None:
+            query = query.filter(VirtualMachine.provisioned_mib <= max_storage_gb * 1024)
+        
+        return query.order_by(VirtualMachine.vm).all()
+    
+    def get_vms_by_resource_category(self, category: str) -> List[VirtualMachine]:
+        """Get VMs by predefined resource size categories.
+        
+        Args:
+            category: One of 'small', 'medium', 'large', 'xlarge'
+            
+        Returns:
+            List of VirtualMachine objects
+            
+        Categories:
+            - small: 1-2 vCPUs, up to 4 GB RAM
+            - medium: 3-4 vCPUs, 4-16 GB RAM
+            - large: 5-8 vCPUs, 16-32 GB RAM
+            - xlarge: 9+ vCPUs, 32+ GB RAM
+        """
+        if category == 'small':
+            return self.get_vms_by_resource_criteria(max_cpus=2, max_memory_gb=4)
+        elif category == 'medium':
+            return self.get_vms_by_resource_criteria(min_cpus=3, max_cpus=4, 
+                                                    min_memory_gb=4, max_memory_gb=16)
+        elif category == 'large':
+            return self.get_vms_by_resource_criteria(min_cpus=5, max_cpus=8,
+                                                    min_memory_gb=16, max_memory_gb=32)
+        elif category == 'xlarge':
+            return self.get_vms_by_resource_criteria(min_cpus=9, min_memory_gb=32)
+        else:
+            return []
+    
+    def batch_assign_label_to_vms(self, vm_ids: List[int], label_id: int,
+                                  assigned_by: str = None) -> Tuple[int, int]:
+        """Assign a label to multiple VMs in batch.
+        
+        Args:
+            vm_ids: List of VM IDs
+            label_id: Label ID to assign
+            assigned_by: Who assigned the label
+            
+        Returns:
+            Tuple of (successful_count, failed_count)
+        """
+        successful = 0
+        failed = 0
+        
+        for vm_id in vm_ids:
+            try:
+                self.assign_vm_label(vm_id, label_id, assigned_by=assigned_by)
+                successful += 1
+            except Exception:
+                self.session.rollback()
+                failed += 1
+        
+        return successful, failed
+    
+    def get_vm_counts_by_criteria(self, os_pattern: str = None, 
+                                  resource_category: str = None) -> Dict:
+        """Get count of VMs matching various criteria.
+        
+        Args:
+            os_pattern: OS pattern to filter
+            resource_category: Resource size category
+            
+        Returns:
+            Dictionary with counts by criteria
+        """
+        counts = {}
+        
+        # OS family counts
+        counts['windows'] = len(self.get_vms_by_os_category(os_family='windows'))
+        counts['linux'] = len(self.get_vms_by_os_category(os_family='linux'))
+        counts['unix'] = len(self.get_vms_by_os_category(os_family='unix'))
+        
+        # Resource size counts
+        counts['small'] = len(self.get_vms_by_resource_category('small'))
+        counts['medium'] = len(self.get_vms_by_resource_category('medium'))
+        counts['large'] = len(self.get_vms_by_resource_category('large'))
+        counts['xlarge'] = len(self.get_vms_by_resource_category('xlarge'))
+        
+        return counts
