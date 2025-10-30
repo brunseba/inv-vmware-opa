@@ -42,6 +42,13 @@ class MigrationTarget(Base):
     bandwidth_mbps = Column(Integer, default=1000)  # Dedicated migration bandwidth
     network_efficiency = Column(Float, default=0.8)  # 80% efficiency
     
+    # Replication efficiency parameters
+    compression_ratio = Column(Float, default=0.6)  # 0.6 = 40% compression savings
+    dedup_ratio = Column(Float, default=0.8)  # 0.8 = 20% deduplication savings
+    change_rate_percent = Column(Float, default=0.10)  # 10% data change during migration
+    network_protocol_overhead = Column(Float, default=1.2)  # 20% TCP/IP overhead
+    delta_sync_count = Column(Integer, default=2)  # Number of delta syncs before cutover
+    
     # Cost factors (per hour)
     compute_cost_per_vcpu = Column(Float, default=0.0)
     memory_cost_per_gb = Column(Float, default=0.0)
@@ -100,9 +107,27 @@ class MigrationScenario(Base):
     
     # Timeline
     estimated_duration_days = Column(Float)
-    estimated_cost_total = Column(Float)
+    
+    # VM resource metrics
+    vm_count = Column(Integer)  # Number of VMs
+    total_vcpus = Column(Integer)  # Total vCPUs across all VMs
+    total_memory_gb = Column(Float)  # Total RAM in GB
+    total_storage_gb = Column(Float)  # Total storage in GB
+    
+    # Cost breakdown: Migration (one-time) vs Runtime (ongoing)
+    estimated_migration_cost = Column(Float)  # One-time migration costs
+    estimated_runtime_cost_monthly = Column(Float)  # Monthly operational costs
+    estimated_cost_total = Column(Float)  # Total for comparison (migration + runtime * duration)
+    
+    # Detailed cost breakdowns
+    migration_cost_breakdown = Column(JSON, default=dict)
+    # {"labor": 5000, "network_transfer": 200, "tools": 500}
+    
+    runtime_cost_breakdown = Column(JSON, default=dict)
+    # {"compute": 1000, "memory": 500, "storage": 300, "network": 100}
+    
+    # Legacy field for backward compatibility
     estimated_cost_breakdown = Column(JSON, default=dict)
-    # {"compute": 1000, "storage": 500, "network": 200, "labor": 5000}
     
     # Risk assessment
     risk_level = Column(String(20))  # LOW, MEDIUM, HIGH, CRITICAL
@@ -121,6 +146,39 @@ class MigrationScenario(Base):
     
     def __repr__(self):
         return f"<MigrationScenario(name={self.name}, target={self.target.name if self.target else 'None'}, strategy={self.strategy.value})>"
+
+
+class MigrationStrategyConfig(Base):
+    """Configuration parameters for migration strategies."""
+    
+    __tablename__ = "migration_strategy_configs"
+    
+    id = Column(Integer, primary_key=True)
+    strategy = Column(Enum(MigrationStrategy), nullable=False, unique=True)
+    
+    # Labor configuration
+    hours_per_vm = Column(Float, default=4.0)
+    labor_rate_per_hour = Column(Float, default=150.0)
+    
+    # Infrastructure multipliers (applied to base costs)
+    compute_multiplier = Column(Float, default=1.0)  # 1.0 = 100%, 0.9 = 90%
+    memory_multiplier = Column(Float, default=1.0)
+    storage_multiplier = Column(Float, default=1.0)
+    network_multiplier = Column(Float, default=1.0)
+    
+    # Additional costs
+    saas_cost_per_vm_per_month = Column(Float, default=0.0)  # For REPURCHASE
+    
+    # Replication parameters
+    replication_efficiency = Column(Float, default=1.0)  # Strategy-specific replication multiplier
+    parallel_replication_factor = Column(Float, default=1.0)  # Parallelism efficiency
+    
+    # Description and notes
+    description = Column(String(500))
+    notes = Column(String(1000))
+    
+    def __repr__(self):
+        return f"<MigrationStrategyConfig(strategy={self.strategy.value}, hours={self.hours_per_vm})>"
 
 
 class MigrationWave(Base):

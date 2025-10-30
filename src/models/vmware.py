@@ -2,12 +2,8 @@
 
 from datetime import datetime
 from sqlalchemy import String, Integer, Float, DateTime, Boolean, Text, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-
-
-class Base(DeclarativeBase):
-    """Base class for all models."""
-    pass
+from sqlalchemy.orm import Mapped, mapped_column
+from src.models.base import Base
 
 
 class VirtualMachine(Base):

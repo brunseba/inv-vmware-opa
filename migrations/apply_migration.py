@@ -72,6 +72,7 @@ def main():
     # Apply migrations in order
     migrations = [
         '001_add_labelling_tables.sql',
+        '002_add_migration_planning_tables.sql',
     ]
     
     success = True

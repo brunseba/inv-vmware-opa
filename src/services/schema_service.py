@@ -11,7 +11,7 @@ from src.models import SchemaVersion
 logger = logging.getLogger(__name__)
 
 # Current application schema version
-CURRENT_SCHEMA_VERSION = "1.0.0"
+CURRENT_SCHEMA_VERSION = "1.4.0"
 
 
 class SchemaService:

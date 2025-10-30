@@ -127,6 +127,7 @@ with st.sidebar:
     with st.expander("🚀 Migration", expanded=False):
         migration_pages = [
             ("🎯 Migration Targets", "Migration Targets"),
+            ("⚙️ Strategy Configuration", "Strategy Configuration"),
             ("📋 Migration Planning", "Migration Planning"),
             ("🔄 Migration Scenarios", "Migration Scenarios"),
         ]
@@ -236,6 +237,10 @@ try:
     elif page == "Migration Targets":
         from pages import migration_targets
         migration_targets.render(st.session_state.db_url)
+        
+    elif page == "Strategy Configuration":
+        from pages import strategy_config
+        strategy_config.render(st.session_state.db_url)
         
     elif page == "Migration Planning":
         from pages import migration_planning

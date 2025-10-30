@@ -888,6 +888,229 @@ def optimize(db_url: str):
         raise click.Abort()
 
 
+@cli.command(name="schema-version")
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.option(
+    "--history",
+    is_flag=True,
+    help="Show version history",
+)
+def schema_version(db_url: str, history: bool):
+    """Show database schema version information."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from .services.schema_service import SchemaService, CURRENT_SCHEMA_VERSION
+    from tabulate import tabulate
+    
+    try:
+        engine = create_engine(db_url, echo=False)
+        SessionLocal = sessionmaker(bind=engine)
+        session = SessionLocal()
+        schema_service = SchemaService(session)
+        
+        # Get current version info
+        current_version = schema_service.get_current_version()
+        compatibility = schema_service.check_schema_compatibility()
+        
+        click.echo(f"\n📊 Schema Version Information")
+        click.echo(f"Database: {db_url}\n")
+        
+        # Current status
+        if current_version:
+            click.echo(f"Current version:  {current_version.version}")
+            click.echo(f"Applied at:       {current_version.applied_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            click.echo(f"Applied by:       {current_version.applied_by or 'N/A'}")
+        else:
+            click.echo(f"Current version:  None (uninitialized)")
+        
+        click.echo(f"Expected version: {CURRENT_SCHEMA_VERSION}")
+        
+        # Compatibility status
+        if compatibility['compatible']:
+            click.echo(f"\n✅ Status: Compatible")
+        else:
+            click.echo(f"\n⚠️  Status: {compatibility['message']}")
+            click.echo(f"\n💡 Run 'vmware-inv schema-upgrade' to update the schema")
+        
+        # Show history if requested
+        if history:
+            versions = schema_service.get_all_versions()
+            if versions:
+                click.echo(f"\n📜 Version History ({len(versions)} versions):\n")
+                
+                table_data = []
+                for v in versions:
+                    status = "✓ Current" if v.is_current else ""
+                    table_data.append([
+                        v.version,
+                        v.description[:60] + "..." if len(v.description) > 60 else v.description,
+                        v.applied_at.strftime('%Y-%m-%d %H:%M'),
+                        v.applied_by or "N/A",
+                        status
+                    ])
+                
+                headers = ['Version', 'Description', 'Applied', 'By', 'Status']
+                click.echo(tabulate(table_data, headers=headers, tablefmt='simple'))
+            else:
+                click.echo("\n📜 No version history available")
+        
+        click.echo()
+        session.close()
+        
+    except Exception as e:
+        click.echo(f"\n✗ Error: {e}", err=True)
+        import traceback
+        traceback.print_exc()
+        raise click.Abort()
+
+
+@cli.command(name="schema-info")
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+def schema_info(db_url: str):
+    """Show detailed schema information including tables and compatibility."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from .services.schema_service import SchemaService
+    from tabulate import tabulate
+    
+    try:
+        engine = create_engine(db_url, echo=False)
+        SessionLocal = sessionmaker(bind=engine)
+        session = SessionLocal()
+        schema_service = SchemaService(session)
+        
+        # Get comprehensive schema info
+        info = schema_service.get_schema_info()
+        
+        click.echo(f"\n📋 Database Schema Information")
+        click.echo(f"Database: {db_url}\n")
+        
+        # Version info
+        click.echo("Version:")
+        click.echo(f"  Current:  {info['current_version'] or 'Not set'}")
+        click.echo(f"  Expected: {info['expected_version']}")
+        click.echo(f"  Status:   {'✅ Compatible' if info['compatible'] else '⚠️  Incompatible'}")
+        
+        # Tables
+        click.echo(f"\nTables ({info['tables_count']}):")
+        table_data = [[i+1, table] for i, table in enumerate(sorted(info['tables']))]
+        click.echo(tabulate(table_data, headers=['#', 'Table Name'], tablefmt='simple'))
+        
+        # Metadata
+        click.echo(f"\nMetadata:")
+        click.echo(f"  Schema tracking: {'✅ Enabled' if info['schema_tracking_enabled'] else '❌ Disabled'}")
+        click.echo(f"  Version history: {info['version_history_count']} record(s)")
+        if info['last_update']:
+            click.echo(f"  Last update:     {info['last_update'].strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        click.echo()
+        session.close()
+        
+    except Exception as e:
+        click.echo(f"\n✗ Error: {e}", err=True)
+        import traceback
+        traceback.print_exc()
+        raise click.Abort()
+
+
+@cli.command(name="schema-upgrade")
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Skip confirmation prompt",
+)
+def schema_upgrade(db_url: str, force: bool):
+    """Upgrade database schema to current version."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from .models import Base
+    from .services.schema_service import SchemaService, CURRENT_SCHEMA_VERSION
+    
+    click.echo(f"\n📊 Database Schema Upgrade")
+    click.echo(f"Database: {db_url}\n")
+    
+    try:
+        engine = create_engine(db_url, echo=False)
+        SessionLocal = sessionmaker(bind=engine)
+        session = SessionLocal()
+        schema_service = SchemaService(session)
+        
+        # Check current version
+        current_version = schema_service.get_current_version()
+        
+        if current_version:
+            click.echo(f"Current version: {current_version.version}")
+        else:
+            click.echo("Current version: None (uninitialized)")
+        
+        click.echo(f"Target version:  {CURRENT_SCHEMA_VERSION}")
+        
+        if current_version and current_version.version == CURRENT_SCHEMA_VERSION:
+            click.echo(f"\n✅ Database is already at the latest version!")
+            return
+        
+        if not force:
+            click.echo("\n⚠️  This will:")
+            click.echo("   - Create any missing tables")
+            click.echo("   - Update schema version tracking")
+            click.echo(f"   - Upgrade from {current_version.version if current_version else 'uninitialized'} to {CURRENT_SCHEMA_VERSION}")
+            click.echo()
+            if not click.confirm("Proceed with upgrade?"):
+                click.echo("Aborted.")
+                return
+        
+        # Create all tables
+        click.echo("\n📦 Creating/updating tables...", nl=False)
+        Base.metadata.create_all(engine)
+        click.echo(" ✓")
+        
+        # Record new schema version
+        click.echo("📝 Recording schema version...", nl=False)
+        if not current_version:
+            # First time initialization
+            schema_service.initialize_schema_tracking()
+        else:
+            # Upgrade
+            schema_service.record_version(
+                version=CURRENT_SCHEMA_VERSION,
+                description="Add migration planning tables (MigrationTarget, MigrationScenario, MigrationWave)",
+                applied_by="cli",
+                migration_script="002_add_migration_planning_tables.sql",
+                tables_added="migration_targets,migration_scenarios,migration_waves",
+                notes="Adds multi-platform migration planning and scenario analysis capabilities"
+            )
+        click.echo(" ✓")
+        
+        session.close()
+        
+        click.echo(f"\n✅ Schema upgraded successfully to version {CURRENT_SCHEMA_VERSION}!")
+        click.echo("\n📊 Next steps:")
+        click.echo("   - Use 'vmware-inv stats' to verify database")
+        click.echo("   - Access migration planning in the dashboard")
+        
+    except Exception as e:
+        click.echo(f"\n✗ Error: {e}", err=True)
+        import traceback
+        traceback.print_exc()
+        raise click.Abort()
+
+
 @cli.command()
 @click.option(
     "--port",
