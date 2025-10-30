@@ -97,6 +97,15 @@ def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False
     SessionLocal = sessionmaker(bind=engine)
     session: Session = SessionLocal()
     
+    # Initialize schema tracking if this is a new database
+    try:
+        from .services.schema_service import SchemaService
+        schema_service = SchemaService(session)
+        schema_service.initialize_schema_tracking()
+    except Exception:
+        # Schema tracking initialization failed, but continue with data load
+        pass
+    
     try:
         # Clear existing data if requested
         if clear_existing:

@@ -207,6 +207,21 @@ def render(db_url: str):
             SessionLocal = sessionmaker(bind=engine)
             session = SessionLocal()
             
+            # Schema version info
+            try:
+                from src.services.schema_service import SchemaService
+                schema_service = SchemaService(session)
+                schema_info = schema_service.get_schema_info()
+                
+                if schema_info['compatible']:
+                    st.success(f"✅ Schema Version: {schema_info['current_version']} (Compatible)")
+                else:
+                    st.warning(f"⚠️ Schema Version: {schema_info['current_version'] or 'Unknown'} (Expected: {schema_info['expected_version']})")
+            except Exception:
+                pass
+            
+            add_vertical_space(1)
+            
             # Connection info
             st.write("**Connection Details:**")
             col1, col2 = st.columns(2)

@@ -217,3 +217,36 @@ class FolderLabel(Base):
     
     def __repr__(self) -> str:
         return f"<FolderLabel(folder_path='{self.folder_path}', label_id={self.label_id})>"
+
+
+class SchemaVersion(Base):
+    """Track database schema versions and migrations.
+    
+    This table maintains a history of schema changes, allowing the application
+    to detect and handle schema version mismatches, and track migration history.
+    """
+    
+    __tablename__ = "schema_versions"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    version: Mapped[str] = mapped_column(String(50), nullable=False, unique=True, index=True)
+    description: Mapped[str] = mapped_column(String(500), nullable=False)
+    applied_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    applied_by: Mapped[str | None] = mapped_column(String(100))
+    
+    # Migration details
+    migration_script: Mapped[str | None] = mapped_column(String(255))  # Name of migration script
+    tables_added: Mapped[str | None] = mapped_column(Text)  # Comma-separated list of tables added
+    tables_modified: Mapped[str | None] = mapped_column(Text)  # Comma-separated list of tables modified
+    tables_removed: Mapped[str | None] = mapped_column(Text)  # Comma-separated list of tables removed
+    
+    # Status
+    is_current: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    rollback_available: Mapped[bool] = mapped_column(Boolean, default=False)
+    rollback_script: Mapped[str | None] = mapped_column(String(255))  # Name of rollback script if available
+    
+    # Notes and metadata
+    notes: Mapped[str | None] = mapped_column(Text)  # Additional notes about the schema change
+    
+    def __repr__(self) -> str:
+        return f"<SchemaVersion(version='{self.version}', is_current={self.is_current}, applied_at='{self.applied_at}')>"
