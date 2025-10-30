@@ -88,46 +88,61 @@ with st.sidebar:
     
     add_vertical_space(1)
     
-    # Navigation with better grouping
-    st.subheader("Navigation")
-    
     # Get current page from StateManager
     current_page = PageNavigator.get_current_page()
     
-    # Main dashboards
-    st.markdown("**📊 Dashboards**")
-    dashboard_pages = ["Overview", "Resources", "Infrastructure", "Folder Analysis"]
+    # === PRIMARY NAVIGATION (Always visible) ===
+    st.markdown("### 🏠 Main")
+    if st.button("📊 Overview", key="btn_Overview", use_container_width=True):
+        PageNavigator.navigate_to("Overview")
     
-    for page_name in dashboard_pages:
-        if st.button(page_name, key=f"btn_{page_name}", width='stretch'):
+    st.divider()
+    
+    # === EXPLORE & ANALYZE (Collapsible) ===
+    with st.expander("🔍 Explore & Analyze", expanded=True):
+        explore_pages = [
+            ("🖥️ VM Explorer", "VM Explorer"),
+            ("🔎 VM Search", "VM Search"),
+            ("📈 Analytics", "Analytics"),
+            ("⚖️ Comparison", "Comparison"),
+            ("✅ Data Quality", "Data Quality"),
+        ]
+        for display_name, page_name in explore_pages:
+            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+                PageNavigator.navigate_to(page_name)
+    
+    # === INFRASTRUCTURE (Collapsible) ===
+    with st.expander("🏗️ Infrastructure", expanded=False):
+        infra_pages = [
+            ("💻 Resources", "Resources"),
+            ("🌐 Infrastructure", "Infrastructure"),
+            ("📁 Folder Analysis", "Folder Analysis"),
+        ]
+        for display_name, page_name in infra_pages:
+            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+                PageNavigator.navigate_to(page_name)
+    
+    # === MANAGEMENT (Collapsible) ===
+    with st.expander("⚙️ Management", expanded=False):
+        mgmt_pages = [
+            ("🏷️ Folder Labelling", "Folder Labelling"),
+            ("🚀 Migration Planning", "Migration Planning"),
+            ("💾 Database Backup", "Database Backup"),
+        ]
+        for display_name, page_name in mgmt_pages:
+            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+                PageNavigator.navigate_to(page_name)
+    
+    # === EXPORT & HELP (Always visible at bottom) ===
+    st.divider()
+    
+    export_help_pages = [
+        ("📄 PDF Report", "PDF Export"),
+        ("📚 Documentation", "Help"),
+    ]
+    for display_name, page_name in export_help_pages:
+        if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
             PageNavigator.navigate_to(page_name)
-    
-    st.markdown("**🔍 Analysis Tools**")
-    analysis_pages = ["VM Explorer", "VM Search", "Analytics", "Comparison", "Data Quality"]
-    
-    for page_name in analysis_pages:
-        if st.button(page_name, key=f"btn_{page_name}", width='stretch'):
-            PageNavigator.navigate_to(page_name)
-    
-    st.markdown("**🏷️ Labelling**")
-    if st.button("Folder Labelling", key="btn_Folder_Labelling", width='stretch'):
-        PageNavigator.navigate_to("Folder Labelling")
-    
-    st.markdown("**💾 Backup**")
-    if st.button("Database Backup", key="btn_Database_Backup", width='stretch'):
-        PageNavigator.navigate_to("Database Backup")
-    
-    st.markdown("**🚀 Planning**")
-    if st.button("Migration Planning", key="btn_Migration_Planning", width='stretch'):
-        PageNavigator.navigate_to("Migration Planning")
-    
-    st.markdown("**📊 Export**")
-    if st.button("📄 PDF Report", key="btn_PDF_Export", width='stretch'):
-        PageNavigator.navigate_to("PDF Export")
-    
-    st.markdown("**❓ Help**")
-    if st.button("📚 Documentation", key="btn_Help", width='stretch'):
-        PageNavigator.navigate_to("Help")
     
     # Get the active page
     page = current_page
