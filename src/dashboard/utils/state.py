@@ -249,7 +249,7 @@ class PageNavigator:
         "dashboards": ["Overview", "Resources", "Infrastructure", "Folder Analysis"],
         "analysis": ["VM Explorer", "VM Search", "Analytics", "Comparison", "Data Quality"],
         "tools": ["Folder Labelling"],
-        "system": ["Database Backup", "Migration Planning", "PDF Export", "Help"],
+        "system": ["Data Import", "Database Backup", "Migration Planning", "PDF Export", "Help"],
     }
     
     @staticmethod
