@@ -959,5 +959,106 @@ def dashboard(port: int, host: str, db_url: str, no_browser: bool):
         raise click.Abort()
 
 
+@cli.command()
+@click.option(
+    "--port",
+    type=int,
+    default=8501,
+    help="Port to run the dashboard on",
+    show_default=True,
+)
+@click.option(
+    "--host",
+    default="localhost",
+    help="Host to bind the dashboard to",
+    show_default=True,
+)
+@click.option(
+    "--db-path",
+    default="vmware_inventory.db",
+    help="Path for new database file (will be created if doesn't exist)",
+    show_default=True,
+)
+@click.option(
+    "--no-browser",
+    is_flag=True,
+    help="Don't automatically open browser",
+)
+def fullweb(port: int, host: str, db_path: str, no_browser: bool):
+    """Launch dashboard in full web mode - create database and load data from web UI.
+    
+    This mode starts the dashboard without requiring an existing database.
+    You can create a new database and import data entirely through the web interface.
+    Perfect for first-time users or standalone deployments.
+    """
+    import os
+    from pathlib import Path
+    from .dashboard import APP_PATH
+    
+    if not APP_PATH.exists():
+        click.echo(f"✗ Error: Dashboard app not found at {APP_PATH}", err=True)
+        click.echo("\nPlease ensure the package is installed correctly.", err=True)
+        raise click.Abort()
+    
+    # Construct database URL
+    db_file = Path(db_path)
+    db_url = f"sqlite:///{db_file.absolute()}"
+    
+    click.echo(f"🌐 Starting VMware Inventory Dashboard (Full Web Mode)...")
+    click.echo(f"\n📌 Configuration:")
+    click.echo(f"   Host: {host}")
+    click.echo(f"   Port: {port}")
+    click.echo(f"   Database: {db_file.absolute()}")
+    
+    # Check if database exists
+    if db_file.exists():
+        click.echo(f"\n💾 Existing database found")
+        click.echo(f"   You can load new data or work with existing data")
+    else:
+        click.echo(f"\n✨ New database will be created")
+        click.echo(f"   Use 'Data Import' page to upload and load your Excel file")
+    
+    click.echo(f"\n🌍 Access at: http://{host}:{port}")
+    click.echo(f"\n📥 To get started:")
+    click.echo(f"   1. Navigate to Management > Data Import")
+    click.echo(f"   2. Upload your Excel file (RVTools export)")
+    click.echo(f"   3. Select sheet and import options")
+    click.echo(f"   4. Click 'Import Data'")
+    click.echo("\n   Press Ctrl+C to stop the dashboard\n")
+    
+    # Set environment variable for default database URL
+    os.environ['VMWARE_INV_DB_URL'] = db_url
+    
+    # Build streamlit command
+    cmd = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(APP_PATH),
+        f"--server.port={port}",
+        f"--server.address={host}",
+    ]
+    
+    if no_browser:
+        cmd.append("--server.headless=true")
+    
+    try:
+        subprocess.run(cmd, check=True)
+    except KeyboardInterrupt:
+        click.echo("\n\n✓ Dashboard stopped.")
+        if db_file.exists():
+            file_size = db_file.stat().st_size / (1024 * 1024)
+            click.echo(f"\n💾 Database saved: {db_file.absolute()} ({file_size:.2f} MB)")
+            click.echo("\n🔄 To restart with same database:")
+            click.echo(f"   vmware-inv fullweb --db-path {db_path}")
+    except subprocess.CalledProcessError as e:
+        click.echo(f"\n✗ Error running dashboard: {e}", err=True)
+        raise click.Abort()
+    except FileNotFoundError:
+        click.echo("\n✗ Error: Streamlit not found. Install it with: uv sync", err=True)
+        raise click.Abort()
+
+
 if __name__ == "__main__":
     cli()

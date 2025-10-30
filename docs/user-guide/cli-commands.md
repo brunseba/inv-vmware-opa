@@ -2,6 +2,106 @@
 
 The `vmware-inv` CLI provides several commands for managing VMware inventory data.
 
+## fullweb (NEW)
+
+Launch the dashboard in full web mode - create database and load data entirely from the web UI.
+
+**This is the recommended way for first-time users and standalone deployments.**
+
+```bash
+vmware-inv fullweb [OPTIONS]
+```
+
+### Options
+
+- `--port INTEGER`: Port to run the dashboard on (default: 8501)
+- `--host TEXT`: Host to bind the dashboard to (default: localhost)
+- `--db-path TEXT`: Path for new database file (default: vmware_inventory.db)
+- `--no-browser`: Don't automatically open browser
+- `--help`: Show help message
+
+### Features
+
+- **No Prerequisites**: No need to load data via CLI first
+- **Web-Based Setup**: Create database and import data through the web interface
+- **Self-Contained**: Perfect for users unfamiliar with command-line tools
+- **Guided Workflow**: Step-by-step instructions in the UI
+
+### Examples
+
+```bash
+# Start dashboard with new database
+vmware-inv fullweb
+
+# Start with custom database path
+vmware-inv fullweb --db-path /path/to/my_inventory.db
+
+# Start on different port
+vmware-inv fullweb --port 8080
+
+# Start without opening browser (for remote servers)
+vmware-inv fullweb --no-browser --host 0.0.0.0
+```
+
+### Getting Started Workflow
+
+1. **Start Dashboard**: Run `vmware-inv fullweb`
+2. **Navigate to Data Import**: Go to Management > Data Import in the web UI
+3. **Upload Excel File**: Drag and drop your RVTools export
+4. **Configure Import**: Select sheet and import options
+5. **Import Data**: Click "Import Data" button
+6. **Explore**: Navigate to Overview or other pages to analyze your data
+
+### When to Use
+
+- ✅ First-time setup
+- ✅ Users unfamiliar with CLI tools
+- ✅ Quick demos or presentations
+- ✅ Standalone installations
+- ✅ When database doesn't exist yet
+
+## dashboard
+
+Launch the interactive web dashboard with an existing database.
+
+```bash
+vmware-inv dashboard [OPTIONS]
+```
+
+### Options
+
+- `--port INTEGER`: Port to run the dashboard on (default: 8501)
+- `--host TEXT`: Host to bind the dashboard to (default: localhost)
+- `--db-url TEXT`: Database URL (default: sqlite:///data/vmware_inventory.db)
+- `--no-browser`: Don't automatically open browser
+- `--help`: Show help message
+
+### Examples
+
+```bash
+# Start dashboard with default database
+vmware-inv dashboard
+
+# Start with custom database
+vmware-inv dashboard --db-url sqlite:///custom.db
+
+# Start with PostgreSQL
+vmware-inv dashboard --db-url postgresql://user:pass@localhost/vmware
+
+# Start on different port
+vmware-inv dashboard --port 8080
+
+# Bind to all interfaces (for remote access)
+vmware-inv dashboard --host 0.0.0.0 --no-browser
+```
+
+### When to Use
+
+- ✅ Database already exists and contains data
+- ✅ Working with PostgreSQL/MySQL databases
+- ✅ Advanced users who prefer CLI for data loading
+- ✅ Automated deployments
+
 ## load
 
 Load VMware inventory data from an Excel file into the database.
