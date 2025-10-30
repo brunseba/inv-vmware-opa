@@ -7,8 +7,12 @@ from sqlalchemy.orm import sessionmaker
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
 
-from src.models.migration_target import MigrationTarget, PlatformType
-from src.services.migration_scenarios import MigrationScenarioService
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from models.migration_target import MigrationTarget, PlatformType
+from services.migration_scenarios import MigrationScenarioService
 
 
 def render(db_url: str):
