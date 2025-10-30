@@ -520,16 +520,24 @@ class LabelService:
                                      min_memory_gb: float = None,
                                      max_memory_gb: float = None,
                                      min_storage_gb: float = None,
-                                     max_storage_gb: float = None) -> List[VirtualMachine]:
+                                     max_storage_gb: float = None,
+                                     min_nics: int = None,
+                                     max_nics: int = None,
+                                     min_disks: int = None,
+                                     max_disks: int = None) -> List[VirtualMachine]:
         """Get VMs filtered by resource specifications.
         
         Args:
-            min_cpus: Minimum vCPUs
-            max_cpus: Maximum vCPUs
-            min_memory_gb: Minimum memory in GB
-            max_memory_gb: Maximum memory in GB
+            min_cpus: Minimum vCPUs (INTEGER)
+            max_cpus: Maximum vCPUs (INTEGER)
+            min_memory_gb: Minimum memory in GB (INTEGER in MB in DB)
+            max_memory_gb: Maximum memory in GB (INTEGER in MB in DB)
             min_storage_gb: Minimum provisioned storage in GB
             max_storage_gb: Maximum provisioned storage in GB
+            min_nics: Minimum number of NICs (INTEGER)
+            max_nics: Maximum number of NICs (INTEGER)
+            min_disks: Minimum number of disks (INTEGER)
+            max_disks: Maximum number of disks (INTEGER)
             
         Returns:
             List of VirtualMachine objects matching criteria
@@ -541,31 +549,43 @@ class LabelService:
                 min_memory_gb=32
             )
             
-            # Get small VMs (1-2 CPUs, up to 4 GB RAM)
-            small_vms = service.get_vms_by_resource_criteria(
-                max_cpus=2,
-                max_memory_gb=4
+            # Get VMs with multiple NICs and many disks
+            complex_vms = service.get_vms_by_resource_criteria(
+                min_nics=2,
+                min_disks=3
             )
         """
         query = self.session.query(VirtualMachine)
         
-        # CPU filters
+        # CPU filters (INTEGER)
         if min_cpus is not None:
             query = query.filter(VirtualMachine.cpus >= min_cpus)
         if max_cpus is not None:
             query = query.filter(VirtualMachine.cpus <= max_cpus)
         
-        # Memory filters (convert GB to MB for database)
+        # Memory filters (INTEGER in MB in database)
         if min_memory_gb is not None:
-            query = query.filter(VirtualMachine.memory >= min_memory_gb * 1024)
+            query = query.filter(VirtualMachine.memory >= int(min_memory_gb * 1024))
         if max_memory_gb is not None:
-            query = query.filter(VirtualMachine.memory <= max_memory_gb * 1024)
+            query = query.filter(VirtualMachine.memory <= int(max_memory_gb * 1024))
         
         # Storage filters (convert GB to MiB for database)
         if min_storage_gb is not None:
             query = query.filter(VirtualMachine.provisioned_mib >= min_storage_gb * 1024)
         if max_storage_gb is not None:
             query = query.filter(VirtualMachine.provisioned_mib <= max_storage_gb * 1024)
+        
+        # NICs filters (INTEGER)
+        if min_nics is not None:
+            query = query.filter(VirtualMachine.nics >= min_nics)
+        if max_nics is not None:
+            query = query.filter(VirtualMachine.nics <= max_nics)
+        
+        # Disks filters (INTEGER)
+        if min_disks is not None:
+            query = query.filter(VirtualMachine.disks >= min_disks)
+        if max_disks is not None:
+            query = query.filter(VirtualMachine.disks <= max_disks)
         
         return query.order_by(VirtualMachine.vm).all()
     
@@ -622,28 +642,89 @@ class LabelService:
         
         return successful, failed
     
+    def get_vms_by_network_complexity(self, complexity: str) -> List[VirtualMachine]:
+        """Get VMs by network complexity based on NIC count.
+        
+        Args:
+            complexity: One of 'simple', 'standard', 'complex'
+            
+        Returns:
+            List of VirtualMachine objects
+            
+        Categories:
+            - simple: 1 NIC (single network)
+            - standard: 2 NICs (typical dual-homed)
+            - complex: 3+ NICs (multi-network)
+        """
+        if complexity == 'simple':
+            return self.get_vms_by_resource_criteria(max_nics=1)
+        elif complexity == 'standard':
+            return self.get_vms_by_resource_criteria(min_nics=2, max_nics=2)
+        elif complexity == 'complex':
+            return self.get_vms_by_resource_criteria(min_nics=3)
+        else:
+            return []
+    
+    def get_vms_by_storage_complexity(self, complexity: str) -> List[VirtualMachine]:
+        """Get VMs by storage complexity based on disk count.
+        
+        Args:
+            complexity: One of 'simple', 'standard', 'complex'
+            
+        Returns:
+            List of VirtualMachine objects
+            
+        Categories:
+            - simple: 1 disk (single volume)
+            - standard: 2-3 disks (OS + data)
+            - complex: 4+ disks (multi-volume)
+        """
+        if complexity == 'simple':
+            return self.get_vms_by_resource_criteria(max_disks=1)
+        elif complexity == 'standard':
+            return self.get_vms_by_resource_criteria(min_disks=2, max_disks=3)
+        elif complexity == 'complex':
+            return self.get_vms_by_resource_criteria(min_disks=4)
+        else:
+            return []
+    
     def get_vm_counts_by_criteria(self, os_pattern: str = None, 
                                   resource_category: str = None) -> Dict:
         """Get count of VMs matching various criteria.
         
         Args:
-            os_pattern: OS pattern to filter
-            resource_category: Resource size category
+            os_pattern: OS pattern to filter (not currently used, reserved for future)
+            resource_category: Resource size category (not currently used, reserved for future)
             
         Returns:
-            Dictionary with counts by criteria
+            Dictionary with counts by criteria organized by category
         """
-        counts = {}
+        counts = {
+            'os_family': {},
+            'resource_size': {},
+            'network_complexity': {},
+            'storage_complexity': {}
+        }
         
         # OS family counts
-        counts['windows'] = len(self.get_vms_by_os_category(os_family='windows'))
-        counts['linux'] = len(self.get_vms_by_os_category(os_family='linux'))
-        counts['unix'] = len(self.get_vms_by_os_category(os_family='unix'))
+        counts['os_family']['windows'] = len(self.get_vms_by_os_category(os_family='windows'))
+        counts['os_family']['linux'] = len(self.get_vms_by_os_category(os_family='linux'))
+        counts['os_family']['unix'] = len(self.get_vms_by_os_category(os_family='unix'))
         
-        # Resource size counts
-        counts['small'] = len(self.get_vms_by_resource_category('small'))
-        counts['medium'] = len(self.get_vms_by_resource_category('medium'))
-        counts['large'] = len(self.get_vms_by_resource_category('large'))
-        counts['xlarge'] = len(self.get_vms_by_resource_category('xlarge'))
+        # Resource size counts (CPUs + Memory)
+        counts['resource_size']['small'] = len(self.get_vms_by_resource_category('small'))
+        counts['resource_size']['medium'] = len(self.get_vms_by_resource_category('medium'))
+        counts['resource_size']['large'] = len(self.get_vms_by_resource_category('large'))
+        counts['resource_size']['xlarge'] = len(self.get_vms_by_resource_category('xlarge'))
+        
+        # Network complexity counts (NICs)
+        counts['network_complexity']['simple'] = len(self.get_vms_by_network_complexity('simple'))
+        counts['network_complexity']['standard'] = len(self.get_vms_by_network_complexity('standard'))
+        counts['network_complexity']['complex'] = len(self.get_vms_by_network_complexity('complex'))
+        
+        # Storage complexity counts (Disks)
+        counts['storage_complexity']['simple'] = len(self.get_vms_by_storage_complexity('simple'))
+        counts['storage_complexity']['standard'] = len(self.get_vms_by_storage_complexity('standard'))
+        counts['storage_complexity']['complex'] = len(self.get_vms_by_storage_complexity('complex'))
         
         return counts
