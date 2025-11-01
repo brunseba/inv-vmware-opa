@@ -62,22 +62,39 @@ nav:
   - Getting Started:
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quickstart.md
+      - Quick Reference: getting-started/QUICK_REFERENCE.md
+      - Quick Start v1.4.0: getting-started/QUICK_START_v1_4_0.md
   - User Guide:
       - CLI Commands: user-guide/cli-commands.md
       - Dashboard: user-guide/dashboard.md
       - PDF Export: user-guide/pdf-export.md
+      - Backup & Restore: user-guide/backup-restore.md
+  - Features:
+      - Dashboard Overview: features/DASHBOARD.md
+      - Dashboard Testing: features/DASHBOARD_TESTING.md
+      - UI Enhancements: features/UI_ENHANCEMENTS.md
+      - PDF Export: features/PDF_EXPORT.md
+      - PDF Charts Guide: features/PDF_CHARTS_GUIDE.md
+      - PDF Enhanced Features: features/PDF_ENHANCED_FEATURES.md
+      - Multi-Target Migration: features/MULTI_TARGET_MIGRATION.md
+      - Fixes Applied: features/FIXES_APPLIED.md
+  - Architecture:
+      - Docker: architecture/DOCKER.md
+      - WebAssembly Evaluation: architecture/WEBASSEMBLY_EVALUATION_PLAN.md
+  - Migration:
+      - Migration Notes: migration/MIGRATION_NOTES.md
+      - Migration Notes v1.4.0: migration/MIGRATION_NOTES_v1_4_0.md
+      - Replication Duration Plan: migration/REPLICATION_DURATION_MITIGATION_PLAN.md
+      - Schema Versioning: migration/CHECK_SCHEMA_VERSION.md
+      - Schema CLI Commands: migration/SCHEMA_CLI_COMMANDS.md
+      - Schema Updates: migration/SCHEMA_CLI_UPDATE_SUMMARY.md
+      - Schema Consolidation: migration/SCHEMA_VERSION_CONSOLIDATION.md
+  - Development:
+      - Contributing: development/CONTRIBUTING.md
+      - Security: development/SECURITY.md
+      - Testing Summary: development/TESTING_SUMMARY.md
+      - Test Coverage: development/TEST_COVERAGE_REPORT.md
   - Reference:
       - Data Model: data-model.md
-      - Database Schema: user-guide/database-schema.md
       - Label System: design/labelling-schema-review.md
-  - Features:
-      - Dashboard Overview: DASHBOARD.md
-      - UI Enhancements: UI_ENHANCEMENTS.md
-      - PDF Export Features: PDF_EXPORT.md
-      - PDF Charts Guide: PDF_CHARTS_GUIDE.md
-      - PDF Enhanced Features: PDF_ENHANCED_FEATURES.md
-  - Development:
-      - Contributing: development/contributing.md
-      - Testing: development/testing.md
-      - Fixes Applied: FIXES_APPLIED.md
   - Changelog: changelog.md
