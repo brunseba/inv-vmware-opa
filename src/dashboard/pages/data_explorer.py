@@ -117,7 +117,7 @@ def load_and_render_explorer(db_url: str, limit: int, include_templates: bool, p
                 'Datacenter': vm.datacenter or 'Unknown',
                 'Cluster': vm.cluster or 'Unknown',
                 'Host': vm.host or 'Unknown',
-                'Folder': vm.folder_name or 'Unknown',
+                'Folder': vm.folder or 'Unknown',
                 'PowerState': vm.powerstate or 'Unknown',
                 'OS': (vm.os_config or 'Unknown')[:50],
                 'Is_Template': bool(vm.template),
