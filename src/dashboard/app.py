@@ -101,6 +101,7 @@ with st.sidebar:
     # === EXPLORE & ANALYZE (Collapsible) ===
     with st.expander("🔍 Explore & Analyze", expanded=True):
         explore_pages = [
+            ("🔬 Data Explorer", "Data Explorer"),  # NEW: PyGWalker explorer
             ("🖥️ VM Explorer", "VM Explorer"),
             ("🔎 VM Search", "VM Search"),
             ("📈 Analytics", "Analytics"),
@@ -201,6 +202,10 @@ try:
     elif page == "Folder Analysis":
         from pages import folder_analysis
         folder_analysis.render(st.session_state.db_url)
+        
+    elif page == "Data Explorer":
+        from pages import data_explorer
+        data_explorer.render(st.session_state.db_url)
         
     elif page == "VM Explorer":
         from pages import vm_explorer
