@@ -282,10 +282,10 @@ def serve(port: int, wait: int):
     ))
     
     try:
-        # Start Streamlit in background
+        # Start Streamlit in background using python -m for pipx compatibility
         process = subprocess.Popen(
             [
-                "streamlit", "run",
+                sys.executable, "-m", "streamlit", "run",
                 "src/dashboard/app.py",
                 f"--server.port={port}",
                 "--server.headless=true"
@@ -470,9 +470,10 @@ def auto(port: int, output: str, theme: str, wait_server: int, wait_page: int):
             console.print("     # Terminal 2: vmware-screenshot capture --all")
             raise click.Abort()
         
+        # Use python -m streamlit to work within pipx venv
         process = subprocess.Popen(
             [
-                "streamlit", "run",
+                sys.executable, "-m", "streamlit", "run",
                 "src/dashboard/app.py",
                 f"--server.port={port}",
                 "--server.headless=true"
