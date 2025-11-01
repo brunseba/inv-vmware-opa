@@ -294,7 +294,7 @@ def render_custom_explorer(db_url: str):
             key="analytics_templates"
         )
     
-    if st.button("🔄 Load Data for Explorer", type="primary", use_container_width=True):
+    if st.button("🔄 Load Data for Explorer", type="primary", width="stretch"):
         with st.spinner(f"Loading {limit:,} VMs..."):
             try:
                 engine = create_engine(db_url, echo=False)

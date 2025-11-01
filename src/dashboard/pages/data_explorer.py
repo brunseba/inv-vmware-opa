@@ -73,7 +73,7 @@ def render(db_url: str):
     add_vertical_space(1)
     
     # Load button
-    if st.button("🔄 Load Data", type="primary", use_container_width=True):
+    if st.button("🔄 Load Data", type="primary", width="stretch"):
         load_and_render_explorer(db_url, limit, include_templates, power_filter)
     else:
         st.info("👆 Click 'Load Data' to start exploring your VM inventory")

@@ -84,7 +84,7 @@ with st.sidebar:
     
     # === PRIMARY NAVIGATION (Always visible) ===
     st.markdown("### 🏠 Main")
-    if st.button("📊 Overview", key="btn_Overview", use_container_width=True):
+    if st.button("📊 Overview", key="btn_Overview", width="stretch"):
         PageNavigator.navigate_to("Overview")
     
     st.divider()
@@ -101,7 +101,7 @@ with st.sidebar:
             ("✅ Data Quality", "Data Quality"),
         ]
         for display_name, page_name in explore_pages:
-            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
     # === INFRASTRUCTURE (Collapsible) ===
@@ -113,7 +113,7 @@ with st.sidebar:
             ("🏷️ Folder Labelling", "Folder Labelling"),
         ]
         for display_name, page_name in infra_pages:
-            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
     # === MIGRATION (Collapsible) ===
@@ -125,7 +125,7 @@ with st.sidebar:
             ("🔄 Migration Scenarios", "Migration Scenarios"),
         ]
         for display_name, page_name in migration_pages:
-            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
     # === MANAGEMENT (Collapsible) ===
@@ -135,7 +135,7 @@ with st.sidebar:
             ("💾 Database Backup", "Database Backup"),
         ]
         for display_name, page_name in mgmt_pages:
-            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
     # === EXPORT & HELP (Always visible at bottom) ===
@@ -146,7 +146,7 @@ with st.sidebar:
         ("📚 Documentation", "Help"),
     ]
     for display_name, page_name in export_help_pages:
-        if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+        if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
             PageNavigator.navigate_to(page_name)
     
     # Get the active page

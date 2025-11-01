@@ -115,7 +115,7 @@ def render(db_url: str):
         return
     
     # Execute query button
-    if st.button("▶️ Execute Query", type="primary", use_container_width=True):
+    if st.button("▶️ Execute Query", type="primary", width="stretch"):
         execute_and_visualize(db_url, query)
     
     add_vertical_space(2)

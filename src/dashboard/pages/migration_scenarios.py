@@ -502,7 +502,7 @@ def render_scenarios_list(service: MigrationScenarioService, session):
                             names="Category",
                             title="Migration Costs"
                         )
-                        st.plotly_chart(fig1, use_container_width=True)
+                        st.plotly_chart(fig1, width="stretch")
             
             with col2:
                 if scenario.runtime_cost_breakdown:
@@ -520,7 +520,7 @@ def render_scenarios_list(service: MigrationScenarioService, session):
                             names="Category",
                             title="Monthly Runtime Costs"
                         )
-                        st.plotly_chart(fig2, use_container_width=True)
+                        st.plotly_chart(fig2, width="stretch")
         
         # Risk factors
         if scenario.risk_factors:
@@ -1132,7 +1132,7 @@ def render_migration_waves(service: MigrationScenarioService, session):
             
             add_vertical_space(1)
             
-            submitted = st.form_submit_button("🌊 Generate Waves", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("🌊 Generate Waves", type="primary", width="stretch")
             
             if submitted:
                 try:
