@@ -52,7 +52,14 @@ reports = [
     "pillow>=11.3.0,<13.0.0",
     "matplotlib>=3.10.7,<4.0.0",
 ]
-all = ["inv-vmware-opa[dashboard,reports]"]
+screenshots = [
+    "selenium>=4.26.1,<5.0.0",
+    "webdriver-manager>=4.0.2,<5.0.0",
+    "pillow>=11.3.0,<13.0.0",
+    "rich>=13.0.0,<14.0.0",
+    "requests>=2.32.0,<3.0.0",
+]
+all = ["inv-vmware-opa[dashboard,reports,screenshots]"]
 
 [project.urls]
 Homepage = "https://github.com/brunseba/inv-vmware-opa"
@@ -65,6 +72,7 @@ Changelog = "https://github.com/brunseba/inv-vmware-opa/blob/main/CHANGELOG.md"
 vmware-inv = "src.cli:cli"
 vmware-dashboard = "src.dashboard.app:main"
 vmware-report = "src.report_generator:main"
+vmware-screenshot = "src.tools.screenshot_cli:cli"
 
 [project.entry-points."mkdocs.plugins"]
 # Reserve for future mkdocs plugin if needed
@@ -98,7 +106,7 @@ where = ["."]
 include = ["src*"]
 
 [tool.setuptools.package-data]
-src = ["dashboard/*.py", "dashboard/pages/*.py"]
+src = ["dashboard/*.py", "dashboard/pages/*.py", "tools/*.py"]
 
 [dependency-groups]
 dev = [
