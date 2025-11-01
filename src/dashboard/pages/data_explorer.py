@@ -156,19 +156,17 @@ def load_and_render_explorer(db_url: str, limit: int, include_templates: bool, p
             )
             
             try:
-                from streamlit_pygwalker import StreamlitRenderer
+                import pygwalker as pyg
                 
-                # Initialize renderer with configuration
-                renderer = StreamlitRenderer(
+                # Render PyGWalker with Streamlit
+                # This automatically creates the interactive explorer
+                pyg.walk(
                     df,
+                    env='Streamlit',
                     spec="./configs/data_explorer.json",
-                    spec_io_mode="rw",  # Read-write mode to save configurations
                     use_kernel_calc=True,  # Use DuckDB for better performance
-                    debug=False
+                    dark='media'  # Auto dark mode based on theme
                 )
-                
-                # Render the explorer
-                renderer.explorer(default_tab="data")
                 
             except ImportError:
                 st.error("""

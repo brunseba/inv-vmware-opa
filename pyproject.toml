@@ -46,7 +46,6 @@ dashboard = [
     "streamlit-extras>=0.7.8,<1.0.0",
     "watchdog>=6.0.0,<7.0.0",
     "pygwalker>=0.4.0,<1.0.0",
-    "streamlit-pygwalker>=0.1.5,<1.0.0",
 ]
 reports = [
     "reportlab>=4.4.4,<5.0.0",
