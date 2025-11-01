@@ -44,12 +44,13 @@ brew install pipx  # macOS
 # OR: python3 -m pip install --user pipx
 
 # Install CLI in isolated environment
-cd tools
-pipx install -r requirements-screenshots.txt
-cd ..
+pipx install ./tools
 
 # Run from anywhere
 screenshot-cli --help
+
+# To uninstall
+pipx uninstall screenshot-cli
 ```
 
 ### Option 4: Direct Python Call
