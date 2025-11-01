@@ -123,12 +123,21 @@ class ThemeManager:
             
             /* Global overrides */
             .stApp {{
-                background-color: var(--bg-primary);
-                color: var(--text-primary);
+                background-color: var(--bg-primary) !important;
+                color: var(--text-primary) !important;
             }}
             
             [data-testid="stSidebar"] {{
-                background-color: var(--bg-secondary);
+                background-color: var(--bg-secondary) !important;
+            }}
+            
+            [data-testid="stSidebar"] > div:first-child {{
+                background-color: var(--bg-secondary) !important;
+            }}
+            
+            /* Main content area */
+            .main .block-container {{
+                background-color: var(--bg-primary) !important;
             }}
             
             /* Headers */
@@ -154,26 +163,82 @@ class ThemeManager:
             
             /* Dataframes */
             [data-testid="stDataFrame"] {{
-                background-color: var(--bg-card);
-                border: 1px solid var(--border-color);
+                background-color: var(--bg-card) !important;
+                border: 1px solid var(--border-color) !important;
+            }}
+            
+            [data-testid="stDataFrame"] table {{
+                background-color: var(--bg-card) !important;
+                color: var(--text-primary) !important;
+            }}
+            
+            [data-testid="stDataFrame"] th {{
+                background-color: var(--bg-secondary) !important;
+                color: var(--text-primary) !important;
+                border-color: var(--border-color) !important;
+            }}
+            
+            [data-testid="stDataFrame"] td {{
+                background-color: var(--bg-card) !important;
+                color: var(--text-primary) !important;
+                border-color: var(--border-color) !important;
             }}
             
             /* Buttons */
             .stButton > button {{
-                border: 1px solid var(--border-color);
-                background-color: var(--bg-card);
-                color: var(--text-primary);
+                border: 1px solid var(--border-color) !important;
+                background-color: var(--bg-card) !important;
+                color: var(--text-primary) !important;
             }}
             
             .stButton > button:hover {{
-                background-color: var(--hover-bg);
-                border-color: var(--accent-color);
+                background-color: var(--hover-bg) !important;
+                border-color: var(--accent-color) !important;
+            }}
+            
+            /* Text inputs */
+            .stTextInput > div > div > input,
+            .stTextArea > div > div > textarea,
+            .stSelectbox > div > div > div,
+            .stMultiSelect > div > div > div {{
+                background-color: var(--bg-card) !important;
+                color: var(--text-primary) !important;
+                border-color: var(--border-color) !important;
+            }}
+            
+            /* Dropdown menus */
+            [data-baseweb="select"] > div {{
+                background-color: var(--bg-card) !important;
+                color: var(--text-primary) !important;
+                border-color: var(--border-color) !important;
+            }}
+            
+            [data-baseweb="popover"] {{
+                background-color: var(--bg-card) !important;
+            }}
+            
+            [role="option"] {{
+                background-color: var(--bg-card) !important;
+                color: var(--text-primary) !important;
+            }}
+            
+            [role="option"]:hover {{
+                background-color: var(--hover-bg) !important;
             }}
             
             /* Expanders */
             [data-testid="stExpander"] {{
-                background-color: var(--bg-card);
-                border: 1px solid var(--border-color);
+                background-color: var(--bg-card) !important;
+                border: 1px solid var(--border-color) !important;
+            }}
+            
+            [data-testid="stExpander"] summary {{
+                background-color: var(--bg-card) !important;
+                color: var(--text-primary) !important;
+            }}
+            
+            [data-testid="stExpander"] > div {{
+                background-color: var(--bg-card) !important;
             }}
             
             /* Tabs */
@@ -192,11 +257,47 @@ class ThemeManager:
             
             /* Metrics */
             [data-testid="stMetricValue"] {{
-                color: var(--text-primary);
+                color: var(--text-primary) !important;
             }}
             
             [data-testid="stMetricLabel"] {{
-                color: var(--text-secondary);
+                color: var(--text-secondary) !important;
+            }}
+            
+            [data-testid="stMetric"] {{
+                background-color: transparent !important;
+            }}
+            
+            /* Code blocks */
+            .stCodeBlock, pre, code {{
+                background-color: var(--bg-secondary) !important;
+                color: var(--text-primary) !important;
+                border: 1px solid var(--border-color) !important;
+            }}
+            
+            /* Markdown */
+            .stMarkdown {{
+                color: var(--text-primary) !important;
+            }}
+            
+            .stMarkdown p, .stMarkdown li, .stMarkdown span {{
+                color: var(--text-primary) !important;
+            }}
+            
+            /* Dividers */
+            hr {{
+                border-color: var(--border-color) !important;
+            }}
+            
+            /* Checkbox and Radio */
+            [data-testid="stCheckbox"] label,
+            [data-testid="stRadio"] label {{
+                color: var(--text-primary) !important;
+            }}
+            
+            /* Slider */
+            [data-testid="stSlider"] {{
+                color: var(--text-primary) !important;
             }}
             
             /* Status messages */
@@ -228,30 +329,60 @@ class ThemeManager:
         theme = ThemeManager.get_current_theme()
         colors = ThemeManager.THEMES[theme]
         
+        base_config = {
+            "layout": {
+                "paper_bgcolor": colors['bg_card'],
+                "plot_bgcolor": colors['bg_card'],
+                "font": {"color": colors['text_primary'], "size": 12},
+                "title": {"font": {"color": colors['text_primary'], "size": 16}},
+                "legend": {
+                    "bgcolor": colors['bg_card'],
+                    "bordercolor": colors['border_color'],
+                    "font": {"color": colors['text_primary']}
+                },
+                "xaxis": {
+                    "gridcolor": colors['border_color'],
+                    "zerolinecolor": colors['border_color'],
+                    "color": colors['text_primary'],
+                    "linecolor": colors['border_color'],
+                },
+                "yaxis": {
+                    "gridcolor": colors['border_color'],
+                    "zerolinecolor": colors['border_color'],
+                    "color": colors['text_primary'],
+                    "linecolor": colors['border_color'],
+                },
+                "hovermode": "closest",
+                "hoverlabel": {
+                    "bgcolor": colors['bg_secondary'],
+                    "font": {"color": colors['text_primary']},
+                    "bordercolor": colors['border_color']
+                },
+            }
+        }
+        
+        # Additional dark mode specific adjustments
         if theme == "dark":
-            return {
-                "layout": {
-                    "paper_bgcolor": colors['bg_card'],
-                    "plot_bgcolor": colors['bg_card'],
-                    "font": {"color": colors['text_primary']},
-                    "xaxis": {
-                        "gridcolor": colors['border_color'],
-                        "zerolinecolor": colors['border_color'],
-                    },
-                    "yaxis": {
-                        "gridcolor": colors['border_color'],
-                        "zerolinecolor": colors['border_color'],
-                    },
-                }
-            }
-        else:
-            return {
-                "layout": {
-                    "paper_bgcolor": colors['bg_card'],
-                    "plot_bgcolor": colors['bg_card'],
-                    "font": {"color": colors['text_primary']},
-                }
-            }
+            base_config["layout"]["colorway"] = [
+                "#4da6ff", "#ff6b6b", "#4ecdc4", "#45b7d1",
+                "#ffd93d", "#a29bfe", "#fd79a8", "#fdcb6e"
+            ]
+        
+        return base_config
+    
+    @staticmethod
+    def apply_chart_theme(fig):
+        """Apply current theme to a Plotly figure.
+        
+        Args:
+            fig: Plotly figure object
+            
+        Returns:
+            Updated figure with theme applied
+        """
+        theme_config = ThemeManager.get_chart_theme()
+        fig.update_layout(**theme_config["layout"])
+        return fig
     
     @staticmethod
     def get_pygwalker_theme() -> str:
