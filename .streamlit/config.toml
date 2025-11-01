@@ -13,5 +13,5 @@ font = "sans serif"
 
 [server]
 # Enable file watcher for development
+# Note: enableXsrfProtection requires CORS to be enabled
 enableXsrfProtection = true
-enableCORS = false
