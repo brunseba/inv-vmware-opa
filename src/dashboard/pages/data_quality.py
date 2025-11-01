@@ -9,6 +9,11 @@ import pandas as pd
 from src.models import VirtualMachine
 from src.dashboard.utils.pagination import PaginationHelper
 from src.dashboard.utils.errors import DataValidator
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
+
 
 
 def render(db_url: str):
@@ -186,6 +191,8 @@ def _render_summary_report(session, columns, total_vms, show_charts):
                 range_color=[0, 100]
             )
             fig.update_layout(yaxis={'categoryorder':'total ascending'})
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
         
         with col2:
@@ -204,6 +211,8 @@ def _render_summary_report(session, columns, total_vms, show_charts):
                 xaxis_type='log',
                 xaxis_title='Unique Values (log scale)'
             )
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
 
 
@@ -335,6 +344,8 @@ def _render_detailed_report(session, columns, total_vms):
             )
             fig.update_traces(textposition='outside')
             fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
             
         elif viz_type == "Pie Chart":
@@ -345,6 +356,8 @@ def _render_detailed_report(session, columns, total_vms):
                 title=f'Top {limit} Values Distribution'
             )
             fig.update_traces(textposition='inside', textinfo='percent+label')
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
             
         else:  # Treemap
@@ -356,6 +369,8 @@ def _render_detailed_report(session, columns, total_vms):
                 color='Count',
                 color_continuous_scale='Viridis'
             )
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
         
         # Show null values if any
@@ -461,6 +476,8 @@ def _render_label_quality_report(session, total_vms):
                     'No Labels': '#dc3545'
                 }
             )
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
         
         if vms_no_labels > 0:
@@ -552,6 +569,8 @@ def _render_label_quality_report(session, total_vms):
             )
             fig.update_traces(textposition='outside')
             fig.update_layout(yaxis={'categoryorder':'total ascending'})
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
         else:
             st.info("No label keys found")

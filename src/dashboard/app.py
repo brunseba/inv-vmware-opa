@@ -20,6 +20,7 @@ from utils.state import StateManager, SessionKeys, PageNavigator
 from utils.database import DatabaseManager
 from utils.cache import get_vm_counts, CacheManager
 from utils.errors import ErrorHandler
+from utils.theme import ThemeManager
 
 # Page configuration
 st.set_page_config(
@@ -29,26 +30,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
-        margin-bottom: 1rem;
-    }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # Initialize session state with StateManager
 StateManager.init_state()
+
+# Apply theme styling
+ThemeManager.apply_global_styles()
 
 # Sidebar
 with st.sidebar:
@@ -66,6 +52,11 @@ with st.sidebar:
         </svg>
     </div>
     """, unsafe_allow_html=True)
+    
+    add_vertical_space(1)
+    
+    # Theme toggle
+    ThemeManager.show_theme_toggle(location="sidebar")
     
     add_vertical_space(1)
     
@@ -93,7 +84,7 @@ with st.sidebar:
     
     # === PRIMARY NAVIGATION (Always visible) ===
     st.markdown("### 🏠 Main")
-    if st.button("📊 Overview", key="btn_Overview", use_container_width=True):
+    if st.button("📊 Overview", key="btn_Overview", width="stretch"):
         PageNavigator.navigate_to("Overview")
     
     st.divider()
@@ -101,6 +92,8 @@ with st.sidebar:
     # === EXPLORE & ANALYZE (Collapsible) ===
     with st.expander("🔍 Explore & Analyze", expanded=True):
         explore_pages = [
+            ("🔬 Data Explorer", "Data Explorer"),  # NEW: PyGWalker explorer
+            ("🔬 Advanced Explorer", "Advanced Explorer"),  # NEW: SQL + PyGWalker
             ("🖥️ VM Explorer", "VM Explorer"),
             ("🔎 VM Search", "VM Search"),
             ("📈 Analytics", "Analytics"),
@@ -108,7 +101,7 @@ with st.sidebar:
             ("✅ Data Quality", "Data Quality"),
         ]
         for display_name, page_name in explore_pages:
-            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
     # === INFRASTRUCTURE (Collapsible) ===
@@ -120,7 +113,7 @@ with st.sidebar:
             ("🏷️ Folder Labelling", "Folder Labelling"),
         ]
         for display_name, page_name in infra_pages:
-            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
     # === MIGRATION (Collapsible) ===
@@ -132,7 +125,7 @@ with st.sidebar:
             ("🔄 Migration Scenarios", "Migration Scenarios"),
         ]
         for display_name, page_name in migration_pages:
-            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
     # === MANAGEMENT (Collapsible) ===
@@ -142,7 +135,7 @@ with st.sidebar:
             ("💾 Database Backup", "Database Backup"),
         ]
         for display_name, page_name in mgmt_pages:
-            if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
     # === EXPORT & HELP (Always visible at bottom) ===
@@ -153,7 +146,7 @@ with st.sidebar:
         ("📚 Documentation", "Help"),
     ]
     for display_name, page_name in export_help_pages:
-        if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
+        if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
             PageNavigator.navigate_to(page_name)
     
     # Get the active page
@@ -201,6 +194,14 @@ try:
     elif page == "Folder Analysis":
         from pages import folder_analysis
         folder_analysis.render(st.session_state.db_url)
+        
+    elif page == "Data Explorer":
+        from pages import data_explorer
+        data_explorer.render(st.session_state.db_url)
+        
+    elif page == "Advanced Explorer":
+        from pages import advanced_explorer
+        advanced_explorer.render(st.session_state.db_url)
         
     elif page == "VM Explorer":
         from pages import vm_explorer

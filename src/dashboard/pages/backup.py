@@ -51,7 +51,7 @@ def render(db_url: str):
             with col2:
                 st.write("")
                 st.write("")
-                if st.button("💾 Create Backup", type="primary", key="create_db_backup", use_container_width=True):
+                if st.button("💾 Create Backup", type="primary", key="create_db_backup", width="stretch"):
                     try:
                         from src.services.backup_service import BackupService
                         backup_service = BackupService(session)
@@ -86,7 +86,7 @@ def render(db_url: str):
                             file_name=db_backup_filename,
                             mime="application/octet-stream",
                             type="primary",
-                            use_container_width=True
+                            width="stretch"
                         )
                         
                     except Exception as e:
@@ -164,7 +164,7 @@ def render(db_url: str):
                 add_vertical_space(1)
                 
                 # Restore button with confirmation
-                if st.button("🔄 Restore Database", type="primary", key="restore_db_backup", use_container_width=True):
+                if st.button("🔄 Restore Database", type="primary", key="restore_db_backup", width="stretch"):
                     import tempfile
                     
                     # Double confirmation

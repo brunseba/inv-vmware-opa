@@ -12,6 +12,11 @@ from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.dataframe_explorer import dataframe_explorer
 from src.models import VirtualMachine
 from src.services.label_service import LabelService
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
+
 
 
 def _aggregate_folder_path(folder_path: str, level: int) -> str:
@@ -361,6 +366,8 @@ def render(db_url: str):
                     yaxis={'categoryorder':'total ascending'},
                     height=500
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -377,6 +384,8 @@ def render(db_url: str):
                     showlegend=False,
                     height=500
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         with viz_tab2:
@@ -406,6 +415,8 @@ def render(db_url: str):
                     xaxis_tickangle=-45,
                     height=500
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -427,6 +438,8 @@ def render(db_url: str):
                     yaxis_title='Avg Memory (GB) per VM',
                     height=500
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         with viz_tab3:
@@ -454,6 +467,8 @@ def render(db_url: str):
                     yaxis={'categoryorder':'total ascending'},
                     height=500
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -481,6 +496,8 @@ def render(db_url: str):
                     height=500,
                     yaxis_title='Storage (GB)'
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             # Storage efficiency metrics
@@ -505,6 +522,8 @@ def render(db_url: str):
                 )
                 fig.add_hline(y=100, line_dash="dash", line_color="red", annotation_text="100% Efficiency")
                 fig.update_layout(height=450)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -527,6 +546,8 @@ def render(db_url: str):
                     yaxis={'categoryorder':'total ascending'},
                     height=450
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         with viz_tab4:
@@ -541,6 +562,8 @@ def render(db_url: str):
                 hover_data=['Total_CPUs', 'Total_Memory_GB']
             )
             fig.update_layout(height=600)
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
             
             # Sunburst alternative view
@@ -553,6 +576,8 @@ def render(db_url: str):
                 color_continuous_scale='Oranges'
             )
             fig.update_layout(height=600)
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)

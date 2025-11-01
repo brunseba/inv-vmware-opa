@@ -94,7 +94,7 @@ def render(db_url: str):
         add_vertical_space(1)
         
         # Search button
-        search_button = st.button("🔎 Search", type="primary", use_container_width=True)
+        search_button = st.button("🔎 Search", type="primary", width="stretch")
         
         if search_button or (pattern and len(pattern) >= 2):
             if not pattern:

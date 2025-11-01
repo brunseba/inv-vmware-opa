@@ -71,3 +71,7 @@ Thumbs.db
 inputs/vmware-inv.xlsx
 inputs/IAAS.xlsx
 /data/
+
+# PyGWalker user configurations (keep template)
+/configs/*
+!/configs/data_explorer.json

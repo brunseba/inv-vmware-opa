@@ -7,6 +7,11 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from src.models import VirtualMachine
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
+
 
 
 def render(db_url: str):
@@ -67,6 +72,8 @@ def render(db_url: str):
                     color_continuous_scale='Blues'
                 )
                 fig.update_layout(showlegend=False)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -79,6 +86,8 @@ def render(db_url: str):
                     color_continuous_scale='Greens'
                 )
                 fig.update_layout(showlegend=False)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             # Detailed table
@@ -137,6 +146,8 @@ def render(db_url: str):
                     color_continuous_scale='Viridis'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -154,6 +165,8 @@ def render(db_url: str):
                     xaxis_title='Total vCPUs',
                     yaxis_title='Total Memory (GB)'
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         st.divider()
@@ -183,6 +196,8 @@ def render(db_url: str):
                 color_discrete_sequence=px.colors.qualitative.Set3
             )
             fig.update_layout(yaxis={'categoryorder':'total ascending'})
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
             
             # Host distribution stats

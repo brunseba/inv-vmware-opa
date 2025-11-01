@@ -1,0 +1,17 @@
+[client]
+# Disable automatic page detection from pages/ directory
+# We manage navigation manually in app.py
+showSidebarNavigation = false
+
+[theme]
+# Light theme (default)
+primaryColor = "#1f77b4"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#262730"
+font = "sans serif"
+
+[server]
+# Enable file watcher for development
+# Note: enableXsrfProtection requires CORS to be enabled
+enableXsrfProtection = true

@@ -12,6 +12,11 @@ from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
 from src.models import VirtualMachine
 from io import BytesIO
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
+
 
 
 def calculate_replication_time(storage_gib: float, bandwidth_mbps: float, efficiency: float = 0.8) -> float:
@@ -686,6 +691,8 @@ def render(db_url: str):
                     yaxis_title='Hours',
                     height=400
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -702,6 +709,8 @@ def render(db_url: str):
                     color_continuous_scale='Blues'
                 )
                 fig.update_layout(showlegend=False, height=400)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         with tab2:
@@ -748,6 +757,8 @@ def render(db_url: str):
                 # Use array order for y-axis (already sorted by BatchNumber)
                 fig.update_yaxes(categoryorder='array', categoryarray=df_batch_timeline['Batch'].tolist())
                 fig.update_layout(height=max(300, len(migration_batches) * 40))
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             add_vertical_space(1)
@@ -788,6 +799,8 @@ def render(db_url: str):
                 )
                 fig.update_yaxes(categoryorder='total ascending')
                 fig.update_layout(height=600)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
                 
                 if len(gantt_data) > 50:
@@ -825,6 +838,8 @@ def render(db_url: str):
                     hovertemplate='<b>%{label}</b><br>Storage: %{value:.1f} GiB<br>Percent: %{percent}<extra></extra>'
                 )
                 fig.update_layout(height=450)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -839,6 +854,8 @@ def render(db_url: str):
                     labels={'Storage_GiB': 'Storage (GiB)'}
                 )
                 fig.update_layout(showlegend=False, height=450)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             add_vertical_space(1)
@@ -861,6 +878,8 @@ def render(db_url: str):
                 showlegend=False,
                 height=350
             )
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
             
             # Show storage statistics
@@ -910,6 +929,8 @@ def render(db_url: str):
                     labels={'Storage_GiB': 'Storage (GiB)'}
                 )
                 fig.update_layout(showlegend=False, height=500)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -928,6 +949,8 @@ def render(db_url: str):
                     }
                 )
                 fig.update_layout(height=500)
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         with tab4:
@@ -993,6 +1016,8 @@ def render(db_url: str):
                 yaxis_title='Bandwidth (Mbps)',
                 height=400
             )
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
             
             # Performance metrics
@@ -1053,6 +1078,8 @@ def render(db_url: str):
                         yaxis={'categoryorder':'total ascending'},
                         height=500
                     )
+                    fig = ThemeManager.apply_chart_theme(fig)
+
                     st.plotly_chart(fig, width='stretch')
                 
                 with col2:
@@ -1073,6 +1100,8 @@ def render(db_url: str):
                         yaxis={'categoryorder':'total ascending'},
                         height=500
                     )
+                    fig = ThemeManager.apply_chart_theme(fig)
+
                     st.plotly_chart(fig, width='stretch')
                 
                 # Folder metrics table
