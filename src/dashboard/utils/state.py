@@ -247,7 +247,7 @@ class PageNavigator:
     
     PAGES = {
         "dashboards": ["Overview", "Resources", "Infrastructure", "Folder Analysis"],
-        "analysis": ["VM Explorer", "VM Search", "Analytics", "Comparison", "Data Quality"],
+        "analysis": ["Data Explorer", "VM Explorer", "VM Search", "Analytics", "Comparison", "Data Quality"],
         "tools": ["Folder Labelling"],
         "migration": ["Migration Targets", "Strategy Configuration", "Migration Planning", "Migration Scenarios"],
         "system": ["Data Import", "Database Backup", "PDF Export", "Help"],
