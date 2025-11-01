@@ -4,8 +4,12 @@
 showSidebarNavigation = false
 
 [theme]
-# Use system theme preference
-base = "light"
+# Light theme (default)
+primaryColor = "#1f77b4"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#262730"
+font = "sans serif"
 
 [server]
 # Enable file watcher for development

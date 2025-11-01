@@ -203,12 +203,20 @@ def execute_and_visualize(db_url: str, query: str):
             
             try:
                 import pygwalker as pyg
+                import sys
+                from pathlib import Path
+                sys.path.insert(0, str(Path(__file__).parent.parent))
+                from utils.theme import ThemeManager
+                
+                # Get current theme
+                theme = ThemeManager.get_pygwalker_theme()
+                
                 pyg.walk(
                     df,
                     env='Streamlit',
                     spec="./configs/advanced_explorer.json",
                     use_kernel_calc=True,
-                    dark='media'
+                    dark=theme
                 )
             except ImportError:
                 st.error("PyGWalker not installed. Install with: `uv pip install pygwalker`")

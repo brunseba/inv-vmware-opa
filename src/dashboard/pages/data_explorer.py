@@ -162,15 +162,21 @@ def load_and_render_explorer(db_url: str, limit: int, include_templates: bool, p
             
             try:
                 import pygwalker as pyg
+                import sys
+                from pathlib import Path
+                sys.path.insert(0, str(Path(__file__).parent.parent))
+                from utils.theme import ThemeManager
+                
+                # Get current theme
+                theme = ThemeManager.get_pygwalker_theme()
                 
                 # Render PyGWalker with Streamlit
-                # This automatically creates the interactive explorer
                 pyg.walk(
                     df,
                     env='Streamlit',
                     spec="./configs/data_explorer.json",
-                    use_kernel_calc=True,  # Use DuckDB for better performance
-                    dark='media'  # Auto dark mode based on theme
+                    use_kernel_calc=True,
+                    dark=theme
                 )
                 
             except ImportError:

@@ -20,6 +20,7 @@ from utils.state import StateManager, SessionKeys, PageNavigator
 from utils.database import DatabaseManager
 from utils.cache import get_vm_counts, CacheManager
 from utils.errors import ErrorHandler
+from utils.theme import ThemeManager
 
 # Page configuration
 st.set_page_config(
@@ -29,26 +30,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
-        margin-bottom: 1rem;
-    }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # Initialize session state with StateManager
 StateManager.init_state()
+
+# Apply theme styling
+ThemeManager.apply_global_styles()
 
 # Sidebar
 with st.sidebar:
@@ -66,6 +52,11 @@ with st.sidebar:
         </svg>
     </div>
     """, unsafe_allow_html=True)
+    
+    add_vertical_space(1)
+    
+    # Theme toggle
+    ThemeManager.show_theme_toggle(location="sidebar")
     
     add_vertical_space(1)
     
