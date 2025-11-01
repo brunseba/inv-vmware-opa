@@ -106,7 +106,7 @@ def load_and_render_explorer(db_url: str, limit: int, include_templates: bool, p
                 session.close()
                 return
             
-            # Prepare DataFrame
+            # Prepare DataFrame with time-series support
             df = pd.DataFrame([{
                 'VM_Name': vm.vm or 'Unknown',
                 'CPUs': vm.cpus or 0,
@@ -122,7 +122,12 @@ def load_and_render_explorer(db_url: str, limit: int, include_templates: bool, p
                 'OS': (vm.os_config or 'Unknown')[:50],
                 'Is_Template': bool(vm.template),
                 'Primary_IP': vm.primary_ip_address or 'N/A',
-                'DNS_Name': vm.dns_name or 'N/A'
+                'DNS_Name': vm.dns_name or 'N/A',
+                # Time-series fields (Phase 3)
+                'Creation_Date': vm.creation_date if vm.creation_date else None,
+                'Power_On_Date': vm.poweron if vm.poweron else None,
+                'Last_Backup': vm.nb_last_backup if vm.nb_last_backup else None,
+                'Imported_At': vm.imported_at if hasattr(vm, 'imported_at') else None
             } for vm in vms])
             
             session.close()

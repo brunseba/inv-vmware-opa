@@ -102,6 +102,7 @@ with st.sidebar:
     with st.expander("🔍 Explore & Analyze", expanded=True):
         explore_pages = [
             ("🔬 Data Explorer", "Data Explorer"),  # NEW: PyGWalker explorer
+            ("🔬 Advanced Explorer", "Advanced Explorer"),  # NEW: SQL + PyGWalker
             ("🖥️ VM Explorer", "VM Explorer"),
             ("🔎 VM Search", "VM Search"),
             ("📈 Analytics", "Analytics"),
@@ -206,6 +207,10 @@ try:
     elif page == "Data Explorer":
         from pages import data_explorer
         data_explorer.render(st.session_state.db_url)
+        
+    elif page == "Advanced Explorer":
+        from pages import advanced_explorer
+        advanced_explorer.render(st.session_state.db_url)
         
     elif page == "VM Explorer":
         from pages import vm_explorer
