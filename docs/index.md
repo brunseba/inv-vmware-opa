@@ -24,6 +24,7 @@ A Python CLI tool for managing VMware inventory data from Excel exports into a s
 - **🏷️ Folder Labelling**: Complete label management UI with inheritance and bulk operations
 - **📊 Data Quality**: Field completeness analysis, recommendations, and label quality reporting
 - **💾 Database Backup**: Dedicated backup/restore page with download capability
+- **🚀 Migration Planning**: Multi-target migration planning with 6Rs framework, cost estimation, and duration modeling
 
 ### PDF Export
 - **📄 Professional Reports**: Generate comprehensive PDF reports with 20+ visualizations

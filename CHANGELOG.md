@@ -1,5 +1,26 @@
 ## Unreleased
 
+## v0.6.2 (2025-11-01)
+
+### Fix
+
+- fix(ui): migrate use_container_width to width parameter and fix duration calculation (0ba8712)
+- fix(models): add __init__.py and fix imports in UI pages (3e956fb)
+- fix(ui): register migration pages in PageNavigator (beae752)
+
+### Feat
+
+- feat(ui): add migration targets and scenarios UI pages (3e96a11)
+- feat(migration): add multi-target migration planning with 6Rs framework (3380bd0)
+
+### Improvements
+
+- Replace deprecated `use_container_width` parameter with `width` across all Streamlit components
+- Fix duration calculation to show live-calculated values instead of stale database values
+- Add column descriptions info bubble for better UX clarity in scenarios table
+- Separate migration and runtime cost displays for clearer cost analysis
+- Enhance replication duration calculation with multi-phase modeling
+
 ## v0.6.0 (2025-10-30)
 
 ### Feat
