@@ -318,8 +318,11 @@ def serve(port: int, wait: int):
         console.print("[green]✓ Server stopped[/green]")
     
     except FileNotFoundError:
-        console.print("[red]❌ Streamlit not found. Install it first:[/red]")
+        console.print("[red]❌ Streamlit not found in PATH[/red]")
+        console.print("\nInstall streamlit:")
         console.print("  pip install streamlit")
+        console.print("  # OR install with dashboard dependencies:")
+        console.print("  pipx install --force '.[dashboard]'")
         raise click.Abort()
 
 
@@ -452,6 +455,21 @@ def auto(port: int, output: str, theme: str, wait_server: int, wait_page: int):
     try:
         # Start server
         console.print("\n[cyan]1/3 Starting dashboard server...[/cyan]")
+        
+        # Check if streamlit is available
+        try:
+            import streamlit
+        except ImportError:
+            console.print("\n[red]❌ Streamlit not installed[/red]")
+            console.print("\n[yellow]The 'auto' command requires streamlit to be available.[/yellow]")
+            console.print("\nInstall options:")
+            console.print("  1. Install with dashboard dependencies:")
+            console.print("     pipx install --force '.[dashboard,screenshots]'")
+            console.print("\n  2. Use 'capture' command with running server:")
+            console.print("     # Terminal 1: streamlit run src/dashboard/app.py")
+            console.print("     # Terminal 2: vmware-screenshot capture --all")
+            raise click.Abort()
+        
         process = subprocess.Popen(
             [
                 "streamlit", "run",

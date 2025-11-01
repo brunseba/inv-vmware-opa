@@ -64,7 +64,13 @@ python3 tools/screenshot_cli.py --help
 
 1. **Chrome Browser**: Must be installed on your system
 2. **ChromeDriver**: Automatically managed by `webdriver-manager`
-3. **Running Dashboard**: Dashboard must be running locally
+3. **Running Dashboard**: Dashboard must be running locally (except for `auto` command)
+
+### Important Notes
+
+- The **`capture`** command requires a running dashboard server
+- The **`auto`** command requires `streamlit` to be installed (dashboard dependencies)
+- For `auto` command, install with: `pipx install '.[dashboard,screenshots]'`
 
 ## Usage
 
