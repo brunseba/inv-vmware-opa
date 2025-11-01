@@ -65,7 +65,6 @@ Changelog = "https://github.com/brunseba/inv-vmware-opa/blob/main/CHANGELOG.md"
 vmware-inv = "src.cli:cli"
 vmware-dashboard = "src.dashboard.app:main"
 vmware-report = "src.report_generator:main"
-screenshot-cli = "tools.screenshot_cli:cli"
 
 [project.entry-points."mkdocs.plugins"]
 # Reserve for future mkdocs plugin if needed

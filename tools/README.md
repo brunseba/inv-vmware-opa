@@ -12,12 +12,51 @@ Automated screenshot capture tool for VMware Inventory Dashboard documentation u
 
 ## Installation
 
+### Option 1: Using UV (Recommended)
+
 ```bash
+# Install with uv (handles dependencies automatically)
+uv pip install -r tools/requirements-screenshots.txt
+
+# Run directly
+./screenshot-cli --help
+```
+
+### Option 2: Using Virtual Environment
+
+```bash
+# Create and activate venv
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
 # Install dependencies
 pip install -r tools/requirements-screenshots.txt
 
-# Or using uv
-uv pip install -r tools/requirements-screenshots.txt
+# Run CLI
+./screenshot-cli --help
+```
+
+### Option 3: Using pipx (Isolated)
+
+```bash
+# Install pipx if not already installed
+brew install pipx  # macOS
+# OR: python3 -m pip install --user pipx
+
+# Install CLI in isolated environment
+cd tools
+pipx install -r requirements-screenshots.txt
+cd ..
+
+# Run from anywhere
+screenshot-cli --help
+```
+
+### Option 4: Direct Python Call
+
+```bash
+# No installation needed, but dependencies must be available
+python3 tools/screenshot_cli.py --help
 ```
 
 ## Prerequisites
