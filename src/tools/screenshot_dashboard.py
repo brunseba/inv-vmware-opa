@@ -64,7 +64,11 @@ class DashboardScreenshotter:
             self.chrome_options.add_argument("--headless=new")
         self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--disable-dev-shm-usage")
+        # Enable software rendering for WebGL in headless mode
         self.chrome_options.add_argument("--disable-gpu")
+        self.chrome_options.add_argument("--enable-webgl")
+        self.chrome_options.add_argument("--ignore-gpu-blocklist")
+        self.chrome_options.add_argument("--enable-unsafe-swiftshader")  # Software WebGL
         self.chrome_options.add_argument("--window-size=1920,1080")
         
         # Disable automation detection
