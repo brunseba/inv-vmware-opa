@@ -270,6 +270,16 @@
     "author": "Christian Heimes"
   },
   {
+    "name": "editorconfig",
+    "version": "0.17.1",
+    "license": "PSF-2.0",
+    "license_classifiers": [
+      "License :: OSI Approved :: Python Software Foundation License"
+    ],
+    "home_page": "",
+    "author": "EditorConfig Team"
+  },
+  {
     "name": "entrypoints",
     "version": "0.4",
     "license": "See classifiers",
@@ -298,6 +308,16 @@
     ],
     "home_page": "",
     "author": ""
+  },
+  {
+    "name": "execnet",
+    "version": "2.1.1",
+    "license": "See classifiers",
+    "license_classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ],
+    "home_page": "",
+    "author": "holger krekel and others"
   },
   {
     "name": "faker",
@@ -430,6 +450,14 @@
     ],
     "home_page": "https://github.com/jmespath/jmespath.py",
     "author": "James Saryerwinnie"
+  },
+  {
+    "name": "jsbeautifier",
+    "version": "1.15.4",
+    "license": "MIT",
+    "license_classifiers": [],
+    "home_page": "https://beautifier.io",
+    "author": "Liam Newman, Einar Lielmanis, et al."
   },
   {
     "name": "jsonpointer",
@@ -598,6 +626,16 @@
     "author": ""
   },
   {
+    "name": "mkdocs-mermaid2-plugin",
+    "version": "1.2.3",
+    "license": "MIT",
+    "license_classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ],
+    "home_page": "",
+    "author": "Laurent Franceschetti"
+  },
+  {
     "name": "mkdocs-with-pdf",
     "version": "0.9.3",
     "license": "MIT",
@@ -609,7 +647,7 @@
   },
   {
     "name": "narwhals",
-    "version": "2.9.0",
+    "version": "2.10.0",
     "license": "See classifiers",
     "license_classifiers": [
       "License :: OSI Approved :: MIT License"
@@ -744,11 +782,21 @@
   },
   {
     "name": "protobuf",
-    "version": "6.31.1",
+    "version": "6.33.0",
     "license": "3-Clause BSD License",
     "license_classifiers": [],
     "home_page": "https://developers.google.com/protocol-buffers/",
     "author": "protobuf@googlegroups.com"
+  },
+  {
+    "name": "py-cpuinfo",
+    "version": "9.0.0",
+    "license": "MIT",
+    "license_classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ],
+    "home_page": "https://github.com/workhorsy/py-cpuinfo",
+    "author": "Matthew Brennan Jones"
   },
   {
     "name": "py-serializable",
@@ -762,7 +810,7 @@
   },
   {
     "name": "pyarrow",
-    "version": "22.0.0",
+    "version": "21.0.0",
     "license": "Apache Software License",
     "license_classifiers": [
       "License :: OSI Approved :: Apache Software License"
@@ -869,12 +917,59 @@
     "author": "Holger Krekel, Bruno Oliveira, Ronny Pfannschmidt, Floris Bruynooghe, Brianna Laugher, Florian Bruhin, Others (See AUTHORS)"
   },
   {
+    "name": "pytest-benchmark",
+    "version": "5.2.0",
+    "license": "See classifiers",
+    "license_classifiers": [],
+    "home_page": "",
+    "author": ""
+  },
+  {
     "name": "pytest-cov",
     "version": "7.0.0",
     "license": "See classifiers",
     "license_classifiers": [
       "License :: OSI Approved :: MIT License"
     ],
+    "home_page": "",
+    "author": ""
+  },
+  {
+    "name": "pytest-faker",
+    "version": "2.0.0",
+    "license": "MIT license",
+    "license_classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ],
+    "home_page": "https://github.com/pytest-dev/pytest-faker",
+    "author": "Anatoly Bubenkov, Oleg Pidsadnyi and others"
+  },
+  {
+    "name": "pytest-mock",
+    "version": "3.15.1",
+    "license": "MIT",
+    "license_classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ],
+    "home_page": "",
+    "author": ""
+  },
+  {
+    "name": "pytest-timeout",
+    "version": "2.4.0",
+    "license": "MIT",
+    "license_classifiers": [
+      "License :: DFSG approved",
+      "License :: OSI Approved :: MIT License"
+    ],
+    "home_page": "https://github.com/pytest-dev/pytest-timeout",
+    "author": "Floris Bruynooghe"
+  },
+  {
+    "name": "pytest-xdist",
+    "version": "3.8.0",
+    "license": "See classifiers",
+    "license_classifiers": [],
     "home_page": "",
     "author": ""
   },
@@ -1091,7 +1186,7 @@
   },
   {
     "name": "streamlit",
-    "version": "1.50.0",
+    "version": "1.51.0",
     "license": "Apache License 2.0",
     "license_classifiers": [
       "License :: OSI Approved :: Apache Software License"

@@ -1,0 +1,10 @@
+Package: jsbeautifier
+Version: 1.15.4
+License: MIT
+Homepage: https://beautifier.io
+
+================================================================================
+
+No license text available in package metadata.
+Please refer to the package homepage for license information:
+https://beautifier.io

@@ -2,7 +2,7 @@
 
 This directory contains license information for all third-party dependencies used in this project.
 
-Total dependencies: 148
+Total dependencies: 158
 
 ## Dependency List
 
@@ -41,9 +41,11 @@ All rights ... |
 | cyclonedx-bom | 7.2.0 | Apache-2.0 |
 | cyclonedx-python-lib | 11.4.0 | Apache-2.0 |
 | defusedxml | 0.7.1 | PSFL |
+| editorconfig | 0.17.1 | PSF-2.0 |
 | entrypoints | 0.4 | See classifiers |
 | et-xmlfile | 2.0.0 | MIT |
 | exceptiongroup | 1.3.0 | See classifiers |
+| execnet | 2.1.1 | See classifiers |
 | faker | 37.12.0 | MIT License |
 | favicon | 0.7.0 | MIT |
 | filelock | 3.20.0 | See classifiers |
@@ -58,6 +60,7 @@ All rights ... |
 | isoduration | 20.11.0 | UNKNOWN |
 | jinja2 | 3.1.6 | See classifiers |
 | jmespath | 1.0.1 | MIT |
+| jsbeautifier | 1.15.4 | MIT |
 | jsonpointer | 3.0.0 | Modified BSD License |
 | jsonschema | 4.25.1 | See classifiers |
 | jsonschema-specifications | 2025.9.1 | See classifiers |
@@ -78,8 +81,9 @@ All rights ... |
 | mkdocs-git-revision-date-localized-plugin | 1.4.7 | MIT |
 | mkdocs-material | 9.6.22 | See classifiers |
 | mkdocs-material-extensions | 1.3.1 | See classifiers |
+| mkdocs-mermaid2-plugin | 1.2.3 | MIT |
 | mkdocs-with-pdf | 0.9.3 | MIT |
-| narwhals | 2.9.0 | See classifiers |
+| narwhals | 2.10.0 | See classifiers |
 | numpy | 2.2.6 | Copyright (c) 2005-2024, NumPy Developers.
  All ri... |
 | openpyxl | 3.1.5 | MIT |
@@ -98,9 +102,10 @@ All rights ... |
 Copyright (c) 2016-2024 Plotly Techno... |
 | pluggy | 1.6.0 | MIT |
 | prometheus-client | 0.23.1 | See classifiers |
-| protobuf | 6.31.1 | 3-Clause BSD License |
+| protobuf | 6.33.0 | 3-Clause BSD License |
+| py-cpuinfo | 9.0.0 | MIT |
 | py-serializable | 2.1.0 | Apache-2.0 |
-| pyarrow | 22.0.0 | Apache Software License |
+| pyarrow | 21.0.0 | Apache Software License |
 | pycparser | 2.23 | BSD-3-Clause |
 | pydeck | 0.9.1 | Apache License 2.0 |
 | pydyf | 0.11.0 | See classifiers |
@@ -111,7 +116,12 @@ Copyright (c) 2016-2024 Plotly Techno... |
 | pyparsing | 3.2.5 | See classifiers |
 | pyphen | 0.17.2 | See classifiers |
 | pytest | 8.4.2 | MIT |
+| pytest-benchmark | 5.2.0 | See classifiers |
 | pytest-cov | 7.0.0 | See classifiers |
+| pytest-faker | 2.0.0 | MIT license |
+| pytest-mock | 3.15.1 | MIT |
+| pytest-timeout | 2.4.0 | MIT |
+| pytest-xdist | 3.8.0 | See classifiers |
 | python-dateutil | 2.9.0.post0 | Dual License |
 | pytz | 2025.2 | MIT |
 | pyyaml | 6.0.3 | MIT |
@@ -134,7 +144,7 @@ Copyright (c) 2016-2024 Plotly Techno... |
 | sqlalchemy | 2.0.44 | MIT |
 | st-annotated-text | 4.0.2 | Apache 2 |
 | st-theme | 1.2.3 | MIT License |
-| streamlit | 1.50.0 | Apache License 2.0 |
+| streamlit | 1.51.0 | Apache License 2.0 |
 | streamlit-avatar | 0.1.3 | See classifiers |
 | streamlit-camera-input-live | 0.2.0 | See classifiers |
 | streamlit-card | 1.0.2 | See classifiers |
@@ -543,6 +553,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
+### editorconfig 0.17.1
+
+**License:** PSF-2.0
+
+**License Classifiers:**
+- License :: OSI Approved :: Python Software Foundation License
+
+**Author:** EditorConfig Team
+
+---
+
 ### entrypoints 0.4
 
 **License:** See classifiers
@@ -575,6 +596,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 **License Classifiers:**
 - License :: OSI Approved :: MIT License
+
+---
+
+### execnet 2.1.1
+
+**License:** See classifiers
+
+**License Classifiers:**
+- License :: OSI Approved :: MIT License
+
+**Author:** holger krekel and others
 
 ---
 
@@ -729,6 +761,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **Home Page:** https://github.com/jmespath/jmespath.py
 
 **Author:** James Saryerwinnie
+
+---
+
+### jsbeautifier 1.15.4
+
+**License:** MIT
+
+**Home Page:** https://beautifier.io
+
+**Author:** Liam Newman, Einar Lielmanis, et al.
 
 ---
 
@@ -1268,6 +1310,17 @@ to indicate the copyright and license terms:
 
 ---
 
+### mkdocs-mermaid2-plugin 1.2.3
+
+**License:** MIT
+
+**License Classifiers:**
+- License :: OSI Approved :: MIT License
+
+**Author:** Laurent Franceschetti
+
+---
+
 ### mkdocs-with-pdf 0.9.3
 
 **License:** MIT
@@ -1281,7 +1334,7 @@ to indicate the copyright and license terms:
 
 ---
 
-### narwhals 2.9.0
+### narwhals 2.10.0
 
 **License:** See classifiers
 
@@ -3657,13 +3710,26 @@ THE SOFTWARE.
 
 ---
 
-### protobuf 6.31.1
+### protobuf 6.33.0
 
 **License:** 3-Clause BSD License
 
 **Home Page:** https://developers.google.com/protocol-buffers/
 
 **Author:** protobuf@googlegroups.com
+
+---
+
+### py-cpuinfo 9.0.0
+
+**License:** MIT
+
+**License Classifiers:**
+- License :: OSI Approved :: MIT License
+
+**Home Page:** https://github.com/workhorsy/py-cpuinfo
+
+**Author:** Matthew Brennan Jones
 
 ---
 
@@ -3678,7 +3744,7 @@ THE SOFTWARE.
 
 ---
 
-### pyarrow 22.0.0
+### pyarrow 21.0.0
 
 **License:** Apache Software License
 
@@ -3787,12 +3853,60 @@ THE SOFTWARE.
 
 ---
 
+### pytest-benchmark 5.2.0
+
+**License:** See classifiers
+
+---
+
 ### pytest-cov 7.0.0
 
 **License:** See classifiers
 
 **License Classifiers:**
 - License :: OSI Approved :: MIT License
+
+---
+
+### pytest-faker 2.0.0
+
+**License:** MIT license
+
+**License Classifiers:**
+- License :: OSI Approved :: MIT License
+
+**Home Page:** https://github.com/pytest-dev/pytest-faker
+
+**Author:** Anatoly Bubenkov, Oleg Pidsadnyi and others
+
+---
+
+### pytest-mock 3.15.1
+
+**License:** MIT
+
+**License Classifiers:**
+- License :: OSI Approved :: MIT License
+
+---
+
+### pytest-timeout 2.4.0
+
+**License:** MIT
+
+**License Classifiers:**
+- License :: DFSG approved
+- License :: OSI Approved :: MIT License
+
+**Home Page:** https://github.com/pytest-dev/pytest-timeout
+
+**Author:** Floris Bruynooghe
+
+---
+
+### pytest-xdist 3.8.0
+
+**License:** See classifiers
 
 ---
 
@@ -4046,7 +4160,7 @@ THE SOFTWARE.
 
 ---
 
-### streamlit 1.50.0
+### streamlit 1.51.0
 
 **License:** Apache License 2.0
 

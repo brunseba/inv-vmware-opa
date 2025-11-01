@@ -1,0 +1,12 @@
+Package: streamlit
+Version: 1.51.0
+License: Apache License 2.0
+License Classifiers:
+  - License :: OSI Approved :: Apache Software License
+Homepage: https://streamlit.io
+
+================================================================================
+
+No license text available in package metadata.
+Please refer to the package homepage for license information:
+https://streamlit.io
