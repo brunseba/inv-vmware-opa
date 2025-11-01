@@ -461,7 +461,7 @@ def _render_label_quality_report(session, total_vms):
                     'No Labels': '#dc3545'
                 }
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         if vms_no_labels > 0:
             st.warning(f"⚠️ {vms_no_labels:,} VMs ({vms_no_labels/total_vms*100:.1f}%) have no labels assigned")
@@ -527,7 +527,7 @@ def _render_label_quality_report(session, total_vms):
                     'VM Coverage %': '{:.1f}%'
                 }),
                 hide_index=True,
-                use_container_width=True
+                width='stretch'
             )
             
             # Export (current page)
@@ -552,7 +552,7 @@ def _render_label_quality_report(session, total_vms):
             )
             fig.update_traces(textposition='outside')
             fig.update_layout(yaxis={'categoryorder':'total ascending'})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("No label keys found")
     
@@ -639,7 +639,7 @@ def _render_label_quality_report(session, total_vms):
                 subset=['Severity']
             )
             
-            st.dataframe(styled_issues, hide_index=True, use_container_width=True)
+            st.dataframe(styled_issues, hide_index=True, width='stretch')
             
             # Summary
             high_issues = len(df_issues[df_issues['Severity'] == 'High'])
@@ -727,7 +727,7 @@ def _render_label_quality_report(session, total_vms):
                     'Coverage %': '{:.1f}%'
                 }),
                 hide_index=True,
-                use_container_width=True
+                width='stretch'
             )
             
             # Export (current page)

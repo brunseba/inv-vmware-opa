@@ -1095,7 +1095,7 @@ def render(db_url: str):
                     data=csv_folder,
                     file_name=f"migration_folder_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
-                    use_container_width=False
+                    width='content'
                 )
         
         add_vertical_space(2)

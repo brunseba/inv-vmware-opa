@@ -249,7 +249,8 @@ class PageNavigator:
         "dashboards": ["Overview", "Resources", "Infrastructure", "Folder Analysis"],
         "analysis": ["VM Explorer", "VM Search", "Analytics", "Comparison", "Data Quality"],
         "tools": ["Folder Labelling"],
-        "system": ["Data Import", "Database Backup", "Migration Planning", "PDF Export", "Help"],
+        "migration": ["Migration Targets", "Strategy Configuration", "Migration Planning", "Migration Scenarios"],
+        "system": ["Data Import", "Database Backup", "PDF Export", "Help"],
     }
     
     @staticmethod

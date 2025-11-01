@@ -1,6 +1,7 @@
 site_name: VMware Inventory OPA
-site_description: VMware inventory management CLI tool
+site_description: VMware inventory management CLI tool with migration planning
 site_author: brun_s
+version: v0.6.2
 repo_url: https://github.com/brun_s/inv-vmware-opa
 repo_name: inv-vmware-opa
 

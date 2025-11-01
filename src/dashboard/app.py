@@ -126,7 +126,10 @@ with st.sidebar:
     # === MIGRATION (Collapsible) ===
     with st.expander("🚀 Migration", expanded=False):
         migration_pages = [
+            ("🎯 Migration Targets", "Migration Targets"),
+            ("⚙️ Strategy Configuration", "Strategy Configuration"),
             ("📋 Migration Planning", "Migration Planning"),
+            ("🔄 Migration Scenarios", "Migration Scenarios"),
         ]
         for display_name, page_name in migration_pages:
             if st.button(display_name, key=f"btn_{page_name}", use_container_width=True):
@@ -231,9 +234,21 @@ try:
         from pages import data_quality
         data_quality.render(st.session_state.db_url)
         
+    elif page == "Migration Targets":
+        from pages import migration_targets
+        migration_targets.render(st.session_state.db_url)
+        
+    elif page == "Strategy Configuration":
+        from pages import strategy_config
+        strategy_config.render(st.session_state.db_url)
+        
     elif page == "Migration Planning":
         from pages import migration_planning
         migration_planning.render(st.session_state.db_url)
+        
+    elif page == "Migration Scenarios":
+        from pages import migration_scenarios
+        migration_scenarios.render(st.session_state.db_url)
         
     elif page == "PDF Export":
         from pages import pdf_export

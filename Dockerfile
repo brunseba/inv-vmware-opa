@@ -9,6 +9,7 @@ FROM python:3.12-slim AS builder
 WORKDIR /build
 
 # Install build dependencies
+# hadolint ignore=DL3008
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc \
@@ -21,11 +22,9 @@ COPY pyproject.toml uv.lock ./
 COPY src ./src
 COPY README.md ./
 
-# Install uv package manager
-RUN pip install --no-cache-dir uv
-
-# Install the application and its dependencies (including dashboard extras)
-RUN uv pip install --system --no-cache ".[dashboard]"
+# Install uv package manager and application dependencies
+RUN pip install --no-cache-dir uv==0.5.18 && \
+    uv pip install --system --no-cache ".[dashboard]"
 
 # ============================================================================
 # Stage 2: Runtime - Slim final image
@@ -35,7 +34,7 @@ FROM python:3.12-slim
 # OpenContainers labels
 LABEL org.opencontainers.image.title="VMware Inventory Dashboard" \
       org.opencontainers.image.description="Interactive web dashboard for VMware vSphere inventory analysis with RVTools support" \
-      org.opencontainers.image.version="0.6.0" \
+      org.opencontainers.image.version="0.6.1" \
       org.opencontainers.image.authors="brunseba" \
       org.opencontainers.image.url="https://github.com/brunseba/inv-vmware-opa" \
       org.opencontainers.image.documentation="https://github.com/brunseba/inv-vmware-opa/blob/main/README.md" \
@@ -46,10 +45,11 @@ LABEL org.opencontainers.image.title="VMware Inventory Dashboard" \
 
 # Set labels for better Docker Hub integration
 LABEL maintainer="sebastien.brun@lepervier.org" \
-      version="0.6.0" \
+      version="0.6.1" \
       description="VMware vSphere Inventory Dashboard"
 
 # Install runtime dependencies only
+# hadolint ignore=DL3008
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libpq5 \
@@ -58,7 +58,7 @@ RUN apt-get update && \
 
 # Create non-root user for security
 RUN groupadd -r vmwareinv && \
-    useradd -r -g vmwareinv -u 10000 -d /app -s /sbin/nologin vmwareinv
+    useradd -r -g vmwareinv -u 1000 -d /app -s /sbin/nologin vmwareinv
 
 # Set working directory
 WORKDIR /app

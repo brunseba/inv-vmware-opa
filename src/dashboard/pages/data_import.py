@@ -92,13 +92,13 @@ def render(db_url: str):
                 add_vertical_space(1)
                 
                 # Preview button
-                if st.button("👁️ Preview Data", type="secondary", use_container_width=True):
+                if st.button("👁️ Preview Data", type="secondary", width='stretch'):
                     try:
                         import pandas as pd
                         df = pd.read_excel(tmp_path, sheet_name=selected_sheet, nrows=10)
                         
                         st.write(f"**Preview (first 10 rows from '{selected_sheet}'):**")
-                        st.dataframe(df, use_container_width=True)
+                        st.dataframe(df, width='stretch')
                         
                         st.info(f"📊 Total columns: {len(df.columns)} | Preview rows: {len(df)}")
                     except Exception as e:
@@ -107,7 +107,7 @@ def render(db_url: str):
                 add_vertical_space(1)
                 
                 # Import button
-                if st.button("🚀 Import Data", type="primary", use_container_width=True):
+                if st.button("🚀 Import Data", type="primary", width='stretch'):
                     with st.spinner("Importing data... This may take a few minutes for large files."):
                         try:
                             # Load data
@@ -264,9 +264,164 @@ def render(db_url: str):
                 
                 import pandas as pd
                 df_tables = pd.DataFrame(table_data)
-                st.dataframe(df_tables, use_container_width=True, hide_index=True)
+                st.dataframe(df_tables, width='stretch', hide_index=True)
             else:
                 st.warning("⚠️ No tables found. Import data to create database structure.")
+            
+            add_vertical_space(2)
+            
+            # Data Model Diagram
+            st.write("**🗺️ Data Model & Relationships:**")
+            
+            with st.expander("📊 View Database Schema Diagram", expanded=False):
+                st.markdown("""
+                ### Entity Relationship Diagram
+                
+                The database consists of several interconnected tables:
+                """)
+                
+                # Create rendered HTML diagram using mermaid.js
+                import streamlit.components.v1 as components
+                
+                mermaid_html = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+                    <script>
+                        mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+                    </script>
+                </head>
+                <body>
+                    <div class="mermaid">
+                    erDiagram
+                        VIRTUAL_MACHINES ||--o{ VM_LABELS : "has"
+                        LABELS ||--o{ VM_LABELS : "assigned_to"
+                        LABELS ||--o{ FOLDER_LABELS : "assigned_to"
+                        MIGRATION_TARGETS ||--o{ MIGRATION_SCENARIOS : "defines"
+                        MIGRATION_SCENARIOS ||--o{ MIGRATION_WAVES : "contains"
+                        MIGRATION_STRATEGY_CONFIGS ||--o{ MIGRATION_SCENARIOS : "uses"
+                        
+                        VIRTUAL_MACHINES {
+                            int id PK
+                            string vm
+                            string powerstate
+                            int cpus
+                            int memory
+                            string datacenter
+                            string cluster
+                            string folder
+                            float provisioned_mib
+                            float in_use_mib
+                        }
+                        
+                        LABELS {
+                            int id PK
+                            string key
+                            string value
+                            string description
+                            string color
+                        }
+                        
+                        VM_LABELS {
+                            int id PK
+                            int vm_id FK
+                            int label_id FK
+                            datetime assigned_at
+                            string assigned_by
+                        }
+                        
+                        FOLDER_LABELS {
+                            int id PK
+                            string folder_path
+                            int label_id FK
+                            datetime assigned_at
+                        }
+                        
+                        MIGRATION_TARGETS {
+                            int id PK
+                            string name
+                            string platform_type
+                            string region
+                            int bandwidth_mbps
+                            float compute_cost_per_vcpu
+                            float memory_cost_per_gb
+                            float storage_cost_per_gb
+                        }
+                        
+                        MIGRATION_SCENARIOS {
+                            int id PK
+                            string name
+                            int target_id FK
+                            string strategy
+                            int vm_count
+                            int total_vcpus
+                            float total_memory_gb
+                            float total_storage_gb
+                            float estimated_migration_cost
+                            float estimated_runtime_cost_monthly
+                        }
+                        
+                        MIGRATION_WAVES {
+                            int id PK
+                            int scenario_id FK
+                            int wave_number
+                            string wave_name
+                            json vm_ids
+                            string status
+                        }
+                        
+                        MIGRATION_STRATEGY_CONFIGS {
+                            int id PK
+                            string strategy
+                            float hours_per_vm
+                            float labor_rate_per_hour
+                            float compute_multiplier
+                            float memory_multiplier
+                            float storage_multiplier
+                        }
+                        
+                        SCHEMA_VERSIONS {
+                            int id PK
+                            string version
+                            string description
+                            datetime applied_at
+                            boolean is_current
+                        }
+                    </div>
+                </body>
+                </html>
+                """
+                
+                # Render the mermaid diagram
+                components.html(mermaid_html, height=800, scrolling=True)
+                
+                st.markdown("""
+                ### Table Descriptions
+                
+                #### Core Inventory
+                - **VIRTUAL_MACHINES**: Main VM inventory with resource details
+                - **LABELS**: User-defined labels/tags for categorization
+                - **VM_LABELS**: Many-to-many relationship between VMs and labels
+                - **FOLDER_LABELS**: Labels assigned to entire folder paths
+                
+                #### Migration Planning
+                - **MIGRATION_TARGETS**: Destination platforms (AWS, Azure, GCP, etc.)
+                - **MIGRATION_SCENARIOS**: Migration plans with cost and resource estimates
+                - **MIGRATION_WAVES**: Phased migration execution groups
+                - **MIGRATION_STRATEGY_CONFIGS**: Cost/labor parameters for 6Rs strategies
+                
+                #### System
+                - **SCHEMA_VERSIONS**: Database version tracking for migrations
+                
+                ### Key Relationships
+                
+                1. **VM Labelling**: VMs can have multiple labels through VM_LABELS junction table
+                2. **Folder Labelling**: Entire folder paths can be labeled for bulk categorization
+                3. **Migration Scenarios**: Link VMs, targets, and strategies with cost estimates
+                4. **Migration Waves**: Group VMs into phased migration batches
+                5. **Strategy Configuration**: Define reusable cost parameters for migration strategies
+                """)
             
             add_vertical_space(2)
             
