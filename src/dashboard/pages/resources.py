@@ -10,6 +10,11 @@ from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
 from src.models import VirtualMachine
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
+
 
 
 def render(db_url: str):
@@ -114,6 +119,8 @@ def render(db_url: str):
                     yaxis_title="VM Count",
                     showlegend=False
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         with col2:
@@ -132,6 +139,8 @@ def render(db_url: str):
                     yaxis_title="VM Count",
                     showlegend=False
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
@@ -162,6 +171,8 @@ def render(db_url: str):
                     color_continuous_scale='Blues'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         with col2:
@@ -181,6 +192,8 @@ def render(db_url: str):
                     color_continuous_scale='Reds'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
@@ -229,6 +242,8 @@ def render(db_url: str):
             color_discrete_sequence=px.colors.qualitative.Set2
         )
         fig.update_layout(showlegend=False, yaxis_title="Storage (GB)")
+        fig = ThemeManager.apply_chart_theme(fig)
+
         st.plotly_chart(fig, width='stretch')
         
     except Exception as e:

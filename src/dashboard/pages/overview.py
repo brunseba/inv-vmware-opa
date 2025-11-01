@@ -10,6 +10,10 @@ from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
 from src.models import VirtualMachine
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
 
 
 def render(db_url: str):
@@ -129,6 +133,7 @@ def render(db_url: str):
                     color_discrete_sequence=px.colors.qualitative.Set3
                 )
                 fig.update_traces(textposition='inside', textinfo='percent+label')
+                fig = ThemeManager.apply_chart_theme(fig)
                 st.plotly_chart(fig, width='stretch')
         
         with col2:
@@ -150,6 +155,7 @@ def render(db_url: str):
                     color_continuous_scale='Blues'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+                fig = ThemeManager.apply_chart_theme(fig)
                 st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
@@ -181,6 +187,7 @@ def render(db_url: str):
                     color_continuous_scale='Viridis'
                 )
                 fig.update_layout(showlegend=False)
+                fig = ThemeManager.apply_chart_theme(fig)
                 st.plotly_chart(fig, width='stretch')
         
         with col2:
@@ -204,6 +211,7 @@ def render(db_url: str):
                     color_continuous_scale='Oranges'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+                fig = ThemeManager.apply_chart_theme(fig)
                 st.plotly_chart(fig, width='stretch')
         
         add_vertical_space(2)
@@ -241,12 +249,13 @@ def render(db_url: str):
                 help="Number of unique ESXi hosts running your VMs"
             )
         
-        # Apply styling to infrastructure metrics
+        # Apply styling to infrastructure metrics (theme-aware)
+        colors = ThemeManager.get_colors()
         style_metric_cards(
-            background_color="#1f1f1f",
-            border_left_color="#9370db",
-            border_color="#2e2e2e",
-            box_shadow="#1f1f1f"
+            background_color=colors['bg_card'],
+            border_left_color=colors['accent_color'],
+            border_color=colors['border_color'],
+            box_shadow=colors['shadow']
         )
         
     except Exception as e:

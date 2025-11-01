@@ -15,6 +15,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.models import VirtualMachine, MigrationTarget, MigrationScenario, MigrationStrategy, MigrationWave, Base, Label
 from src.services.migration_scenarios import MigrationScenarioService
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
+
 
 
 def render(db_url: str):
@@ -502,6 +507,8 @@ def render_scenarios_list(service: MigrationScenarioService, session):
                             names="Category",
                             title="Migration Costs"
                         )
+                        fig = ThemeManager.apply_chart_theme(fig)
+
                         st.plotly_chart(fig1, width="stretch")
             
             with col2:
@@ -520,6 +527,8 @@ def render_scenarios_list(service: MigrationScenarioService, session):
                             names="Category",
                             title="Monthly Runtime Costs"
                         )
+                        fig = ThemeManager.apply_chart_theme(fig)
+
                         st.plotly_chart(fig2, width="stretch")
         
         # Risk factors
@@ -937,6 +946,8 @@ def render_compare_scenarios(service: MigrationScenarioService):
             color="Platform",
             title="Cost Comparison"
         )
+        fig = ThemeManager.apply_chart_theme(fig)
+
         st.plotly_chart(fig_cost, width='stretch')
     
     with col2:
@@ -948,6 +959,8 @@ def render_compare_scenarios(service: MigrationScenarioService):
             color="Risk Level",
             title="Duration Comparison"
         )
+        fig = ThemeManager.apply_chart_theme(fig)
+
         st.plotly_chart(fig_duration, width='stretch')
     
     add_vertical_space(2)
@@ -968,6 +981,8 @@ def render_compare_scenarios(service: MigrationScenarioService):
             polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
             title="Multi-Criteria Comparison"
         )
+        fig = ThemeManager.apply_chart_theme(fig)
+
         st.plotly_chart(fig_radar, width='stretch')
 
 

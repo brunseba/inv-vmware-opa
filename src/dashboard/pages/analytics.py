@@ -7,6 +7,11 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from src.models import VirtualMachine
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
+
 
 
 def render(db_url: str):
@@ -67,6 +72,8 @@ def render_builtin_analytics(db_url: str):
                     xaxis_title='vCPUs',
                     yaxis_title='Memory (GB)'
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -84,6 +91,8 @@ def render_builtin_analytics(db_url: str):
                     color_continuous_scale='Teal'
                 )
                 fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         st.divider()
@@ -118,6 +127,8 @@ def render_builtin_analytics(db_url: str):
                 xaxis_title='Month',
                 yaxis_title='VMs Created'
             )
+            fig = ThemeManager.apply_chart_theme(fig)
+
             st.plotly_chart(fig, width='stretch')
         else:
             st.info("No creation date information available")
@@ -152,6 +163,8 @@ def render_builtin_analytics(db_url: str):
                     color='Count',
                     color_continuous_scale='Viridis'
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -163,6 +176,8 @@ def render_builtin_analytics(db_url: str):
                     color='CPUs',
                     color_continuous_scale='Plasma'
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         st.divider()
@@ -206,6 +221,8 @@ def render_builtin_analytics(db_url: str):
                     xaxis_tickangle=-45,
                     yaxis_title='VMs per Host'
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:
@@ -224,6 +241,8 @@ def render_builtin_analytics(db_url: str):
                     xaxis_title='Total vCPUs',
                     yaxis_title='Total Memory (GB)'
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
         
         st.divider()
@@ -251,6 +270,8 @@ def render_builtin_analytics(db_url: str):
                     title='VMs by Environment',
                     color_discrete_sequence=px.colors.qualitative.Pastel
                 )
+                fig = ThemeManager.apply_chart_theme(fig)
+
                 st.plotly_chart(fig, width='stretch')
             
             with col2:

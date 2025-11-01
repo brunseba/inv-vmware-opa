@@ -7,6 +7,11 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from src.models import VirtualMachine
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.theme import ThemeManager
+
 
 
 def render(db_url: str):
@@ -105,6 +110,8 @@ def _compare_datacenters(session):
             text='Total VMs'
         )
         fig.update_traces(textposition='outside')
+        fig = ThemeManager.apply_chart_theme(fig)
+
         st.plotly_chart(fig, width='stretch')
     
     with col2:
@@ -115,6 +122,8 @@ def _compare_datacenters(session):
             title='Resource Comparison',
             barmode='group'
         )
+        fig = ThemeManager.apply_chart_theme(fig)
+
         st.plotly_chart(fig, width='stretch')
     
     # Radar chart for overall comparison
@@ -146,6 +155,8 @@ def _compare_datacenters(session):
         title='Datacenter Profile Comparison (% of max)'
     )
     fig.update_traces(fill='toself')
+    fig = ThemeManager.apply_chart_theme(fig)
+
     st.plotly_chart(fig, width='stretch')
 
 
@@ -211,6 +222,8 @@ def _compare_clusters(session):
             barmode='group',
             color_discrete_sequence=['#1f77b4', '#2ca02c']
         )
+        fig = ThemeManager.apply_chart_theme(fig)
+
         st.plotly_chart(fig, width='stretch')
     
     with col2:
@@ -223,6 +236,8 @@ def _compare_clusters(session):
             hover_data=['Hosts'],
             title='Resource Allocation Profile'
         )
+        fig = ThemeManager.apply_chart_theme(fig)
+
         st.plotly_chart(fig, width='stretch')
 
 
@@ -295,5 +310,8 @@ def _compare_hosts(session):
         barmode='group',
         xaxis_tickangle=-45
     )
+    
+    fig = ThemeManager.apply_chart_theme(fig)
+
     
     st.plotly_chart(fig, width='stretch')
