@@ -1,0 +1,253 @@
+# Dashboard Screenshot Tool
+
+Automated screenshot capture tool for VMware Inventory Dashboard documentation using Selenium.
+
+## Features
+
+- 🎯 **Automated Capture**: Captures screenshots of all dashboard pages automatically
+- 🌙 **Theme Support**: Takes screenshots in both light and dark modes
+- 📸 **Full Page**: Option to capture full-page scrolling screenshots
+- 🖥️ **Headless Mode**: Runs without opening a browser window
+- 🎨 **High Quality**: 1920x1080 resolution screenshots
+
+## Installation
+
+```bash
+# Install dependencies
+pip install -r tools/requirements-screenshots.txt
+
+# Or using uv
+uv pip install -r tools/requirements-screenshots.txt
+```
+
+## Prerequisites
+
+1. **Chrome Browser**: Must be installed on your system
+2. **ChromeDriver**: Automatically managed by `webdriver-manager`
+3. **Running Dashboard**: Dashboard must be running locally
+
+## Usage
+
+### Start Dashboard First
+
+```bash
+# Terminal 1: Start the dashboard
+streamlit run src/dashboard/app.py --server.port 8501
+```
+
+### Basic Usage
+
+```bash
+# Terminal 2: Capture all pages in both themes
+python tools/screenshot_dashboard.py
+```
+
+### Advanced Options
+
+```bash
+# Capture specific page
+python tools/screenshot_dashboard.py --page "Overview"
+
+# Capture only dark mode
+python tools/screenshot_dashboard.py --theme dark
+
+# Custom URL and output directory
+python tools/screenshot_dashboard.py \
+  --url http://localhost:8502 \
+  --output docs/images/v0.7.0
+
+# Run in visible mode (see browser)
+python tools/screenshot_dashboard.py --headless=false
+```
+
+## Command-Line Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--url` | Dashboard URL | `http://localhost:8501` |
+| `--output` | Output directory | `docs/images/screenshots` |
+| `--headless` | Run without UI | `True` |
+| `--page` | Specific page to capture | All pages |
+| `--theme` | Theme(s) to capture | `both` |
+
+## Output
+
+Screenshots are saved as PNG files with naming pattern:
+- `{page_name}_light.png` - Light mode screenshot
+- `{page_name}_dark.png` - Dark mode screenshot
+
+Example output:
+```
+docs/images/screenshots/
+├── overview_light.png
+├── overview_dark.png
+├── data_explorer_light.png
+├── data_explorer_dark.png
+├── advanced_explorer_light.png
+├── advanced_explorer_dark.png
+├── analytics_light.png
+├── analytics_dark.png
+└── ...
+```
+
+## Pages Captured
+
+The tool automatically captures screenshots of:
+
+1. **Overview** - Dashboard home page
+2. **Data Explorer** - PyGWalker interactive explorer
+3. **Advanced Explorer** - SQL query explorer
+4. **Analytics** - Built-in analytics and charts
+5. **Resources** - Resource allocation views
+6. **Infrastructure** - Infrastructure topology
+7. **Folder Analysis** - Folder-based analysis
+
+## Customization
+
+### Add Custom Pages
+
+Edit `capture_dashboard_tour()` method in the script:
+
+```python
+pages = [
+    "Overview",
+    "Data Explorer",
+    "Your Custom Page",  # Add here
+]
+```
+
+### Adjust Wait Times
+
+Modify wait times for slow-loading pages:
+
+```python
+def wait_for_streamlit(self, timeout: int = 10):  # Increase timeout
+    # ...
+    time.sleep(2)  # Increase wait time
+```
+
+### Custom Resolutions
+
+Change browser window size:
+
+```python
+self.chrome_options.add_argument("--window-size=2560,1440")  # 2K resolution
+```
+
+## Troubleshooting
+
+### Browser Not Found
+```bash
+# Install Chrome
+# macOS: brew install --cask google-chrome
+# Linux: sudo apt-get install google-chrome-stable
+```
+
+### ChromeDriver Issues
+```bash
+# Clear webdriver cache
+rm -rf ~/.wdm/
+
+# Reinstall
+pip uninstall selenium webdriver-manager
+pip install selenium webdriver-manager
+```
+
+### Dashboard Not Loading
+```bash
+# Check if dashboard is running
+curl http://localhost:8501
+
+# Check correct port
+ps aux | grep streamlit
+```
+
+### Theme Toggle Not Working
+- Ensure theme toggle button is visible in sidebar
+- Check button selector in `toggle_theme()` method
+- Try increasing wait time after theme toggle
+
+## Integration with CI/CD
+
+### GitHub Actions Example
+
+```yaml
+name: Documentation Screenshots
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r tools/requirements-screenshots.txt
+      
+      - name: Start dashboard
+        run: |
+          streamlit run src/dashboard/app.py &
+          sleep 10
+      
+      - name: Capture screenshots
+        run: python tools/screenshot_dashboard.py
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: docs/images/screenshots/
+```
+
+## Best Practices
+
+1. **Always test locally first** before running in CI/CD
+2. **Use headless mode** for automated environments
+3. **Increase timeouts** if pages load slowly
+4. **Verify screenshots** after capture for quality
+5. **Version screenshots** by output directory (e.g., `docs/images/v0.7.0/`)
+
+## Advanced Features
+
+### Full Page Screenshots
+
+```python
+# Capture full scrollable page
+screenshotter.capture_screenshot("page_name", full_page=True)
+```
+
+### Custom Workflows
+
+```python
+from tools.screenshot_dashboard import DashboardScreenshotter
+
+# Create custom capture workflow
+screenshotter = DashboardScreenshotter(
+    base_url="http://localhost:8501",
+    output_dir="custom/path"
+)
+
+screenshotter.start_browser()
+screenshotter.driver.get("http://localhost:8501")
+screenshotter.wait_for_streamlit()
+
+# Custom navigation and capture
+screenshotter.navigate_to_page("Overview")
+screenshotter.capture_screenshot("custom_overview")
+
+screenshotter.stop_browser()
+```
+
+## License
+
+Part of the inv-vmware-opa project. See main LICENSE file.

@@ -75,3 +75,9 @@ inputs/IAAS.xlsx
 # PyGWalker user configurations (keep template)
 /configs/*
 !/configs/data_explorer.json
+
+# Screenshot tool outputs
+/docs/images/screenshots/
+
+# Selenium/WebDriver cache
+.wdm/
