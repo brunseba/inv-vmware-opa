@@ -1,0 +1,13 @@
+[client]
+# Disable automatic page detection from pages/ directory
+# We manage navigation manually in app.py
+showSidebarNavigation = false
+
+[theme]
+# Use system theme preference
+base = "light"
+
+[server]
+# Enable file watcher for development
+enableXsrfProtection = true
+enableCORS = false
