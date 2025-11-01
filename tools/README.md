@@ -28,16 +28,33 @@ uv pip install -r tools/requirements-screenshots.txt
 
 ## Usage
 
-### Start Dashboard First
+### Option 1: CLI (Recommended)
+
+The easiest way to use the tool is via the `screenshot-cli` command:
+
+```bash
+# Capture all pages automatically
+screenshot-cli capture --all
+
+# Capture specific page
+screenshot-cli capture --page "Overview" --theme dark
+
+# Fully automated (starts server, captures, stops)
+screenshot-cli auto
+
+# List available pages
+screenshot-cli pages
+
+# View captured screenshots
+screenshot-cli list
+```
+
+### Option 2: Python Script
 
 ```bash
 # Terminal 1: Start the dashboard
 streamlit run src/dashboard/app.py --server.port 8501
-```
 
-### Basic Usage
-
-```bash
 # Terminal 2: Capture all pages in both themes
 python tools/screenshot_dashboard.py
 ```
@@ -60,7 +77,99 @@ python tools/screenshot_dashboard.py \
 python tools/screenshot_dashboard.py --headless=false
 ```
 
-## Command-Line Options
+## CLI Commands
+
+### `screenshot-cli capture`
+
+Capture dashboard screenshots.
+
+**Options:**
+- `--url` - Dashboard URL (default: http://localhost:8501)
+- `--output, -o` - Output directory (default: docs/images/screenshots)
+- `--page, -p` - Specific page to capture
+- `--theme, -t` - Theme(s): light, dark, both (default: both)
+- `--all, -a` - Capture all pages (tour mode)
+- `--headless/--no-headless` - Run browser in headless mode (default: True)
+- `--wait, -w` - Wait time after page load in seconds (default: 2)
+
+**Examples:**
+```bash
+# Capture all pages
+screenshot-cli capture --all
+
+# Specific page, dark mode only
+screenshot-cli capture --page "Data Explorer" --theme dark
+
+# Custom output directory
+screenshot-cli capture --all --output docs/images/v0.7.0
+
+# Visible browser (not headless)
+screenshot-cli capture --all --no-headless
+```
+
+### `screenshot-cli auto`
+
+Fully automated: start server, capture, stop server.
+
+**Options:**
+- `--port, -p` - Dashboard port (default: 8501)
+- `--output, -o` - Output directory (default: docs/images/screenshots)
+- `--theme, -t` - Theme(s) to capture (default: both)
+- `--wait-server` - Seconds to wait for server start (default: 5)
+- `--wait-page` - Seconds to wait after page load (default: 2)
+
+**Examples:**
+```bash
+# One command to rule them all
+screenshot-cli auto
+
+# Custom output
+screenshot-cli auto --output docs/images/release-0.7.0
+```
+
+### `screenshot-cli serve`
+
+Start the dashboard server.
+
+**Options:**
+- `--port, -p` - Port to run on (default: 8501)
+- `--wait, -w` - Seconds to wait before ready (default: 5)
+
+**Examples:**
+```bash
+# Start on default port
+screenshot-cli serve
+
+# Custom port
+screenshot-cli serve --port 8502
+```
+
+### `screenshot-cli list`
+
+List captured screenshots.
+
+**Options:**
+- `--output, -o` - Screenshots directory (default: docs/images/screenshots)
+
+**Examples:**
+```bash
+# List all screenshots
+screenshot-cli list
+
+# List from custom directory
+screenshot-cli list --output docs/images/v0.7.0
+```
+
+### `screenshot-cli pages`
+
+Show available dashboard pages.
+
+**Examples:**
+```bash
+screenshot-cli pages
+```
+
+## Python Script Command-Line Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
