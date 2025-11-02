@@ -10,7 +10,7 @@ from .commands.anonymize import anonymize
 
 
 @click.group()
-@click.version_option(version="0.6.0")
+@click.version_option(version="0.8.0")
 def cli():
     """VMware inventory management CLI."""
     pass
