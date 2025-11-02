@@ -33,6 +33,26 @@ st.set_page_config(
 # Initialize session state with StateManager
 StateManager.init_state()
 
+# Check for query parameter navigation (e.g., ?page=Data_Explorer)
+# This enables direct URL navigation for screenshot tools and bookmarking
+try:
+    query_params = st.query_params
+    if "page" in query_params:
+        # Convert underscore format to space format (e.g., Data_Explorer -> Data Explorer)
+        page_param = query_params["page"]
+        page_name = page_param.replace("_", " ")
+        
+        # Special case: "Help" maps to "Help" page (not "Documentation")
+        if page_name == "Help":
+            pass  # Keep as-is
+        
+        # If valid page, set it in session state
+        if PageNavigator.is_valid_page(page_name):
+            StateManager.set(SessionKeys.CURRENT_PAGE, page_name)
+except Exception as e:
+    # Silently ignore query param errors to not break the app
+    pass
+
 # Apply theme styling
 ThemeManager.apply_global_styles()
 

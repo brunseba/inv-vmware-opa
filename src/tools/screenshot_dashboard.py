@@ -120,21 +120,134 @@ class DashboardScreenshotter:
             print(f"⚠ Error toggling theme: {e}")
             return False
     
-    def navigate_to_page(self, page_name: str):
-        """Navigate to a specific dashboard page."""
+    def navigate_to_page(self, page_name: str, use_uri: bool = True):
+        """Navigate to a specific dashboard page.
+        
+        Args:
+            page_name: Name of the page (e.g., "Data Explorer")
+            use_uri: If True, use direct URI navigation (faster and more reliable)
+        """
+        if use_uri:
+            # Use direct URI navigation based on API-ENDPOINTS.md
+            return self.navigate_to_page_uri(page_name)
+        
+        # Fallback to UI button navigation
         try:
-            # Find and click the navigation button
+            # First, try to find and expand any collapsed expanders
+            expanders = self.driver.find_elements(By.CSS_SELECTOR, "[data-testid='stExpander']")
+            for expander in expanders:
+                try:
+                    # Check if expander is collapsed by looking for the summary element
+                    summary = expander.find_element(By.TAG_NAME, "summary")
+                    # Try to click it to expand (if already expanded, this is harmless)
+                    summary.click()
+                    time.sleep(0.5)  # Brief wait for expansion animation
+                except:
+                    pass  # Expander might already be expanded or not clickable
+            
+            # Now find and click the navigation button
             buttons = self.driver.find_elements(By.CSS_SELECTOR, "button")
             for button in buttons:
                 if page_name.lower() in button.text.lower():
-                    button.click()
-                    time.sleep(2)  # Wait for page to load
-                    return True
+                    try:
+                        # Check if button is visible and clickable
+                        if not button.is_displayed():
+                            continue
+                        
+                        # Scroll to button to ensure it's in viewport
+                        self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", button)
+                        time.sleep(0.5)
+                        
+                        # Try JavaScript click if regular click fails
+                        try:
+                            button.click()
+                        except Exception:
+                            # Fallback to JavaScript click
+                            self.driver.execute_script("arguments[0].click();", button)
+                        
+                        time.sleep(2)  # Wait for page to load
+                        return True
+                    except Exception as click_error:
+                        # Try next matching button
+                        continue
+            
             print(f"⚠ Navigation button for '{page_name}' not found")
             return False
         except Exception as e:
             print(f"⚠ Error navigating to page: {e}")
             return False
+    
+    def navigate_to_page_uri(self, page_name: str) -> bool:
+        """Navigate to page using direct URI (based on API-ENDPOINTS.md).
+        
+        This is faster and more reliable than clicking through the UI.
+        
+        Args:
+            page_name: Name of the page (e.g., "Data Explorer")
+            
+        Returns:
+            True if navigation succeeded, False otherwise
+        """
+        try:
+            # Convert page name to URI format (spaces to underscores)
+            page_param = page_name.replace(" ", "_")
+            
+            # Build URI
+            page_uri = f"{self.base_url}/?page={page_param}"
+            
+            # Navigate directly
+            self.driver.get(page_uri)
+            
+            # Wait for Streamlit to load
+            if self.wait_for_streamlit(timeout=10):
+                print(f"✓ Navigated to {page_name} via URI")
+                return True
+            else:
+                print(f"⚠ Failed to load {page_name} via URI")
+                return False
+                
+        except Exception as e:
+            print(f"⚠ Error navigating to {page_name} via URI: {e}")
+            return False
+    
+    @staticmethod
+    def get_all_pages_from_api_endpoints() -> List[Tuple[str, str]]:
+        """Get all 20 pages from API-ENDPOINTS.md documentation.
+        
+        Returns:
+            List of (page_name, uri) tuples
+        """
+        pages = [
+            # Main Navigation (1 page)
+            "Overview",
+            # Explore & Analyze (7 pages)
+            "Data Explorer",
+            "Advanced Explorer",
+            "VM Explorer",
+            "VM Search",
+            "Analytics",
+            "Comparison",
+            "Data Quality",
+            # Infrastructure (4 pages)
+            "Resources",
+            "Infrastructure",
+            "Folder Analysis",
+            "Folder Labelling",
+            # Migration (4 pages)
+            "Migration Targets",
+            "Strategy Configuration",
+            "Migration Planning",
+            "Migration Scenarios",
+            # Management (2 pages)
+            "Data Import",
+            "Database Backup",
+            # Export & Help (2 pages)
+            "PDF Export",
+            "Help",  # Maps to "Documentation" page
+        ]
+        
+        # Convert to (name, uri_param) tuples
+        return [(page, page.replace(" ", "_")) for page in pages]
     
     def capture_screenshot(self, filename: str, full_page: bool = False) -> Path:
         """
@@ -199,25 +312,26 @@ class DashboardScreenshotter:
             filename = f"{page_name.lower().replace(' ', '_')}_{theme}"
             self.capture_screenshot(filename)
     
-    def capture_dashboard_tour(self):
-        """Capture a complete tour of the dashboard."""
-        pages = [
-            "Overview",
-            "Data Explorer",
-            "Advanced Explorer",
-            "Analytics",
-            "Resources",
-            "Infrastructure",
-            "Folder Analysis",
-        ]
+    def capture_dashboard_tour(self, use_uri: bool = True):
+        """Capture a complete tour of the dashboard.
+        
+        Captures all 20 pages from API-ENDPOINTS.md documentation.
+        
+        Args:
+            use_uri: If True, use direct URI navigation (faster and more reliable)
+        """
+        # Get all 20 pages from API-ENDPOINTS.md
+        pages = [name for name, _ in self.get_all_pages_from_api_endpoints()]
         
         print("\n📸 Starting dashboard tour...")
+        print(f"   Pages: {len(pages)} total (from API-ENDPOINTS.md)")
+        print(f"   Navigation method: {'Direct URI' if use_uri else 'UI buttons'}")
         
         for page in pages:
             print(f"\n📄 Capturing: {page}")
             
             # Navigate to page
-            if self.navigate_to_page(page):
+            if self.navigate_to_page(page, use_uri=use_uri):
                 # Capture in light mode
                 self.capture_screenshot(f"{page.lower().replace(' ', '_')}_light")
                 

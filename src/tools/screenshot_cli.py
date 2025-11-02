@@ -87,6 +87,12 @@ def cli():
     help="Wait time after page load (seconds)",
     show_default=True
 )
+@click.option(
+    "--use-uri/--use-ui",
+    default=True,
+    help="Use direct URI navigation (faster) or UI button clicks",
+    show_default=True
+)
 def capture(
     url: str,
     output: str,
@@ -94,7 +100,8 @@ def capture(
     theme: str,
     capture_all: bool,
     headless: bool,
-    wait: int
+    wait: int,
+    use_uri: bool
 ):
     """Capture dashboard screenshots.
     
@@ -113,7 +120,8 @@ def capture(
         "[bold cyan]📸 VMware Dashboard Screenshot Tool[/bold cyan]\n"
         f"URL: {url}\n"
         f"Output: {output}\n"
-        f"Theme: {theme}",
+        f"Theme: {theme}\n"
+        f"Navigation: {'Direct URI' if use_uri else 'UI Buttons'}",
         border_style="cyan"
     ))
     
@@ -173,15 +181,9 @@ def capture(
             
             # Capture screenshots
             if capture_all:
-                pages = [
-                    "Overview",
-                    "Data Explorer",
-                    "Advanced Explorer",
-                    "Analytics",
-                    "Resources",
-                    "Infrastructure",
-                    "Folder Analysis",
-                ]
+                # Get all 20 pages from API-ENDPOINTS.md
+                pages = [name for name, _ in screenshotter.get_all_pages_from_api_endpoints()]
+                
                 total_screenshots = len(pages) * (2 if theme == "both" else 1)
                 
                 task = progress.add_task(
@@ -190,7 +192,7 @@ def capture(
                 )
                 
                 for pg in pages:
-                    if screenshotter.navigate_to_page(pg):
+                    if screenshotter.navigate_to_page(pg, use_uri=use_uri):
                         themes = ["light", "dark"] if theme == "both" else [theme]
                         
                         for t in themes:
@@ -216,7 +218,7 @@ def capture(
                     total=len(themes_list)
                 )
                 
-                if screenshotter.navigate_to_page(page):
+                if screenshotter.navigate_to_page(page, use_uri=use_uri):
                     for t in themes_list:
                         if t == "dark":
                             screenshotter.toggle_theme()
@@ -484,22 +486,75 @@ def auto(port: int, output: str, theme: str, wait_server: int, wait_page: int):
         time.sleep(wait_server)
         console.print("[green]✓ Server started[/green]")
         
-        # Capture screenshots
-        console.print(f"\n[cyan]2/3 Capturing screenshots...[/cyan]")
-        ctx = click.Context(capture)
-        ctx.invoke(
-            capture,
-            url=f"http://localhost:{port}",
-            output=output,
-            page=None,
-            theme=theme,
-            capture_all=True,
-            headless=True,
-            wait=wait_page
+        # Load pages from API-ENDPOINTS.md
+        console.print(f"\n[cyan]2/4 Loading page list from API-ENDPOINTS.md...[/cyan]")
+        
+        url = f"http://localhost:{port}"
+        output_path = Path(output)
+        output_path.mkdir(parents=True, exist_ok=True)
+        
+        screenshotter = DashboardScreenshotter(
+            base_url=url,
+            output_dir=output_path,
+            headless=True
         )
         
+        # Get all 20 pages from API-ENDPOINTS.md (same list as 'pages' command)
+        pages_list = [name for name, _ in screenshotter.get_all_pages_from_api_endpoints()]
+        console.print(f"[green]✓ Loaded {len(pages_list)} pages from API-ENDPOINTS.md[/green]")
+        
+        # Capture screenshots for all pages
+        console.print(f"\n[cyan]3/4 Capturing screenshots for {len(pages_list)} pages...[/cyan]")
+        
+        total_screenshots = len(pages_list) * (2 if theme == "both" else 1)
+        
+        try:
+            screenshotter.start_browser()
+            screenshotter.driver.get(url)
+            
+            if not screenshotter.wait_for_streamlit(timeout=10):
+                console.print("[red]❌ Failed to load dashboard[/red]")
+                raise click.Abort()
+            
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console
+            ) as progress:
+                task = progress.add_task(
+                    f"[cyan]Capturing {total_screenshots} screenshots...",
+                    total=total_screenshots
+                )
+                
+                for pg in pages_list:
+                    # Use URI navigation (default, fast)
+                    if screenshotter.navigate_to_page(pg, use_uri=True):
+                        themes_list = ["light", "dark"] if theme == "both" else [theme]
+                        
+                        for t in themes_list:
+                            if t == "dark" and theme == "both":
+                                screenshotter.toggle_theme()
+                                time.sleep(1)
+                            
+                            filename = f"{pg.lower().replace(' ', '_')}_{t}"
+                            screenshotter.capture_screenshot(filename)
+                            progress.advance(task)
+                            
+                            if t == "dark" and theme == "both":
+                                screenshotter.toggle_theme()
+                                time.sleep(1)
+                    else:
+                        console.print(f"[yellow]⚠ Skipping '{pg}' - navigation failed[/yellow]")
+                        # Advance progress for skipped pages
+                        progress.advance(task, advance=2 if theme == "both" else 1)
+                
+                progress.update(task, description="[green]✓ All screenshots captured")
+        
+        finally:
+            screenshotter.stop_browser()
+        
         # Stop server
-        console.print("\n[cyan]3/3 Stopping server...[/cyan]")
+        console.print("\n[cyan]4/4 Stopping server...[/cyan]")
         process.terminate()
         process.wait(timeout=5)
         console.print("[green]✓ Server stopped[/green]")
@@ -519,34 +574,185 @@ def auto(port: int, output: str, theme: str, wait_server: int, wait_page: int):
 
 
 @cli.command()
-def pages():
+@click.option(
+    "--url",
+    default="http://localhost:8501",
+    help="Dashboard URL to discover pages from",
+    show_default=True
+)
+@click.option(
+    "--live",
+    is_flag=True,
+    help="Discover pages from live dashboard (requires dashboard to be running)"
+)
+def pages(url: str, live: bool):
     """List all available dashboard pages.
     
-    Shows which pages can be captured.
+    Shows which pages can be captured. Use --live to discover from running dashboard.
+    
+    Examples:
+    
+        # Show default pages list
+        screenshot-cli pages
+        
+        # Discover pages from running dashboard (opens collapsed menus)
+        screenshot-cli pages --live
     """
-    available_pages = [
-        ("Overview", "Dashboard home page with key metrics"),
-        ("Data Explorer", "PyGWalker interactive data exploration"),
-        ("Advanced Explorer", "SQL query explorer with visualization"),
-        ("Analytics", "Built-in analytics and charts"),
-        ("Resources", "Resource allocation and utilization"),
-        ("Infrastructure", "Infrastructure topology and details"),
-        ("Folder Analysis", "Folder-based inventory analysis"),
-        ("VM Explorer", "Virtual machine explorer and search"),
-        ("Comparison", "VM comparison and analysis"),
-        ("Data Quality", "Data quality metrics and validation"),
-    ]
+    if live:
+        # Discover pages from live dashboard
+        console.print(Panel.fit(
+            f"[bold cyan]🔍 Discovering Pages from Dashboard[/bold cyan]\n"
+            f"URL: {url}",
+            border_style="cyan"
+        ))
+        
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            task = progress.add_task("[cyan]Checking dashboard...", total=None)
+            
+            # Check if dashboard is running
+            import requests
+            try:
+                requests.get(url, timeout=5)
+                progress.update(task, description="[green]✓ Dashboard is running")
+                progress.stop_task(task)
+            except requests.exceptions.RequestException:
+                progress.stop()
+                console.print(f"[red]❌ Dashboard not accessible at {url}[/red]")
+                console.print("\n[yellow]Start the dashboard first:[/yellow]")
+                console.print("  streamlit run src/dashboard/app.py")
+                raise click.Abort()
+            
+            # Start browser and discover pages
+            task = progress.add_task("[cyan]Starting browser...", total=None)
+            
+            screenshotter = DashboardScreenshotter(
+                base_url=url,
+                output_dir=Path("/tmp"),
+                headless=True
+            )
+            
+            try:
+                screenshotter.start_browser()
+                progress.update(task, description="[green]✓ Browser started")
+                progress.stop_task(task)
+                
+                # Load dashboard
+                task = progress.add_task("[cyan]Loading dashboard...", total=None)
+                screenshotter.driver.get(url)
+                
+                if not screenshotter.wait_for_streamlit(timeout=10):
+                    progress.stop()
+                    console.print("[red]❌ Failed to load dashboard[/red]")
+                    raise click.Abort()
+                
+                progress.update(task, description="[green]✓ Dashboard loaded")
+                progress.stop_task(task)
+                
+                # Expand all collapsed expanders
+                task = progress.add_task("[cyan]Expanding menus...", total=None)
+                expanders = screenshotter.driver.find_elements(By.CSS_SELECTOR, "[data-testid='stExpander']")
+                for expander in expanders:
+                    try:
+                        summary = expander.find_element(By.TAG_NAME, "summary")
+                        summary.click()
+                        time.sleep(0.3)
+                    except:
+                        pass
+                
+                progress.update(task, description="[green]✓ Menus expanded")
+                progress.stop_task(task)
+                
+                # Discover all navigation buttons
+                task = progress.add_task("[cyan]Discovering pages...", total=None)
+                buttons = screenshotter.driver.find_elements(By.CSS_SELECTOR, "button")
+                
+                discovered_pages = []
+                for button in buttons:
+                    text = button.text.strip()
+                    # Filter out common UI buttons and empty text
+                    if text and text not in ["🌙", "☀️", ""] and len(text) > 1:
+                        # Check if it looks like a navigation button
+                        if not text.startswith("▶") and not text.startswith("▼"):
+                            discovered_pages.append(text)
+                
+                # Remove duplicates and sort
+                discovered_pages = sorted(set(discovered_pages))
+                
+                progress.update(task, description=f"[green]✓ Found {len(discovered_pages)} pages")
+                progress.stop_task(task)
+                
+            finally:
+                screenshotter.stop_browser()
+        
+        # Display discovered pages
+        console.print()
+        table = Table(
+            title=f"Discovered Dashboard Pages ({len(discovered_pages)} found)",
+            show_header=True,
+            header_style="bold cyan"
+        )
+        table.add_column("#", style="dim", width=4)
+        table.add_column("Page Name", style="cyan")
+        
+        for i, page in enumerate(discovered_pages, 1):
+            table.add_row(str(i), page)
+        
+        console.print(table)
+        console.print("\n[green]✅ Discovery complete![/green]")
+        console.print("\n[yellow]💡 Tip:[/yellow] Use the exact page name with --page option")
+        console.print("   Example: screenshot-cli capture --page \"Data Explorer\"")
     
-    table = Table(title="Available Dashboard Pages", show_header=True, header_style="bold cyan")
-    table.add_column("Page Name", style="cyan", no_wrap=True)
-    table.add_column("Description", style="white")
-    
-    for page, description in available_pages:
-        table.add_row(page, description)
-    
-    console.print(table)
-    console.print("\n[yellow]💡 Tip:[/yellow] Use the exact page name with --page option")
-    console.print("   Example: screenshot-cli capture --page \"Data Explorer\"")
+    else:
+        # Show default/known pages from API-ENDPOINTS.md
+        available_pages = [
+            # Main Navigation (1 page)
+            ("Overview", "Main dashboard with key metrics and visualizations", "http://localhost:8501/?page=Overview"),
+            # Explore & Analyze (7 pages)
+            ("Data Explorer", "PyGWalker-based interactive data exploration", "http://localhost:8501/?page=Data_Explorer"),
+            ("Advanced Explorer", "SQL query interface with PyGWalker visualization", "http://localhost:8501/?page=Advanced_Explorer"),
+            ("VM Explorer", "Detailed VM inspection and analysis", "http://localhost:8501/?page=VM_Explorer"),
+            ("VM Search", "Advanced VM search and filtering", "http://localhost:8501/?page=VM_Search"),
+            ("Analytics", "Resource allocation and OS analysis", "http://localhost:8501/?page=Analytics"),
+            ("Comparison", "Side-by-side datacenter/cluster comparisons", "http://localhost:8501/?page=Comparison"),
+            ("Data Quality", "Field completeness and data quality analysis", "http://localhost:8501/?page=Data_Quality"),
+            # Infrastructure (4 pages)
+            ("Resources", "Resource metrics and allocation", "http://localhost:8501/?page=Resources"),
+            ("Infrastructure", "Infrastructure topology and details", "http://localhost:8501/?page=Infrastructure"),
+            ("Folder Analysis", "Folder-level resource and storage analytics", "http://localhost:8501/?page=Folder_Analysis"),
+            ("Folder Labelling", "Label management and assignment", "http://localhost:8501/?page=Folder_Labelling"),
+            # Migration (4 pages)
+            ("Migration Targets", "Define and manage migration targets", "http://localhost:8501/?page=Migration_Targets"),
+            ("Strategy Configuration", "Configure migration strategies", "http://localhost:8501/?page=Strategy_Configuration"),
+            ("Migration Planning", "Plan and schedule migrations", "http://localhost:8501/?page=Migration_Planning"),
+            ("Migration Scenarios", "Create and analyze migration scenarios", "http://localhost:8501/?page=Migration_Scenarios"),
+            # Management (2 pages)
+            ("Data Import", "Import data from Excel files", "http://localhost:8501/?page=Data_Import"),
+            ("Database Backup", "Backup and restore database", "http://localhost:8501/?page=Database_Backup"),
+            # Export & Help (2 pages)
+            ("PDF Export", "Generate PDF reports", "http://localhost:8501/?page=PDF_Export"),
+            ("Help", "Built-in help and documentation", "http://localhost:8501/?page=Help"),
+        ]
+        
+        table = Table(
+            title=f"Dashboard Pages from API-ENDPOINTS.md ({len(available_pages)} total)",
+            show_header=True,
+            header_style="bold cyan"
+        )
+        table.add_column("Page Name", style="cyan", no_wrap=True)
+        table.add_column("Description", style="white")
+        table.add_column("URI", style="dim")
+        
+        for page, description, uri in available_pages:
+            table.add_row(page, description, uri)
+        
+        console.print(table)
+        console.print("\n[yellow]💡 Tip:[/yellow] Use --live to discover all pages from running dashboard")
+        console.print("   Example: screenshot-cli pages --live")
+        console.print("\n[yellow]Note:[/yellow] Some pages may be in collapsed menu sections")
 
 
 if __name__ == "__main__":
