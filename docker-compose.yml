@@ -2,13 +2,15 @@ services:
   vmware-inventory:
     build:
       context: .
-      dockerfile: Dockerfile
+      # Use DOCKERFILE env var to select variant (Dockerfile=slim, Dockerfile.full=full)
+      dockerfile: ${DOCKERFILE:-Dockerfile}
       args:
         - BUILDKIT_INLINE_CACHE=1
         - APP_VERSION=${APP_VERSION:-latest}
         - BUILD_DATE=${BUILD_DATE}
         - VCS_REF=${VCS_REF}
-    image: vmware-inventory-dashboard:${APP_VERSION:-latest}
+    # Image name includes variant (slim or full)
+    image: vmware-inventory-dashboard:${IMAGE_TAG:-latest}
     container_name: ${CONTAINER_NAME}
     
     # Port mapping

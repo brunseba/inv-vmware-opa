@@ -180,13 +180,15 @@ def load_and_render_explorer(db_url: str, limit: int, include_templates: bool, p
                 )
                 
             except ImportError:
-                st.error("""
-                ❌ **PyGWalker not installed**
+                st.warning("""
+                ⚠️ **Advanced Explorer Not Available**
                 
-                Please install the required dependencies:
+                PyGWalker is not installed. To enable interactive exploration:
                 ```bash
-                uv pip install pygwalker streamlit-pygwalker
+                pip install inv-vmware-opa[dashboard-advanced]
                 ```
+                
+                **Note:** This adds ~190MB (includes Jupyter, data analysis tools)
                 """)
                 
                 # Fallback to simple dataframe view

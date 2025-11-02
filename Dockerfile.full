@@ -22,9 +22,9 @@ COPY pyproject.toml uv.lock ./
 COPY src ./src
 COPY README.md ./
 
-# Install uv package manager and application dependencies
+# Install uv package manager and application dependencies WITH pygwalker
 RUN pip install --no-cache-dir uv==0.5.18 && \
-    uv pip install --system --no-cache ".[dashboard]"
+    uv pip install --system --no-cache ".[dashboard,dashboard-advanced,reports]"
 
 # ============================================================================
 # Stage 2: Runtime - Slim final image
@@ -37,8 +37,8 @@ ARG BUILD_DATE
 ARG VCS_REF
 
 # OpenContainers labels
-LABEL org.opencontainers.image.title="VMware Inventory Dashboard" \
-      org.opencontainers.image.description="Interactive web dashboard for VMware vSphere inventory analysis with RVTools support" \
+LABEL org.opencontainers.image.title="VMware Inventory Dashboard (Full)" \
+      org.opencontainers.image.description="Interactive web dashboard for VMware vSphere inventory analysis with RVTools support - Full version with advanced features" \
       org.opencontainers.image.version="${APP_VERSION}" \
       org.opencontainers.image.authors="brunseba" \
       org.opencontainers.image.url="https://github.com/brunseba/inv-vmware-opa" \
@@ -50,8 +50,8 @@ LABEL org.opencontainers.image.title="VMware Inventory Dashboard" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}"
 LABEL maintainer="sebastien.brun@lepervier.org" \
-      description="VMware vSphere Inventory Dashboard - Slim" \
-      variant="slim"
+      description="VMware vSphere Inventory Dashboard - Full" \
+      variant="full"
 
 # Install runtime dependencies only
 # hadolint ignore=DL3008

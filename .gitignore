@@ -44,6 +44,10 @@ docs/_build/
 *.sqlite
 *.sqlite3
 
+# Generated data files
+mapping.json
+.benchmarks/
+
 # IDE
 .vscode/
 .idea/

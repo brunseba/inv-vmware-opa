@@ -382,7 +382,14 @@ def render_custom_explorer(db_url: str):
                         dark='media'
                     )
                 except ImportError:
-                    st.error("PyGWalker not installed. Install with: `uv pip install pygwalker`")
+                    st.warning("""
+                    ⚠️ **Custom Explorer Not Available**
+                    
+                    To enable custom analytics:
+                    ```bash
+                    pip install inv-vmware-opa[dashboard-advanced]
+                    ```
+                    """)
                     st.dataframe(df, width='stretch', height=600)
                 except Exception as e:
                     st.error(f"Error rendering explorer: {e}")

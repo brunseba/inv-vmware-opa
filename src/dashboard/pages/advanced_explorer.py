@@ -219,7 +219,16 @@ def execute_and_visualize(db_url: str, query: str):
                     dark=theme
                 )
             except ImportError:
-                st.error("PyGWalker not installed. Install with: `uv pip install pygwalker`")
+                st.warning("""
+                ⚠️ **Advanced Explorer Not Available**
+                
+                PyGWalker is not installed. To enable advanced exploration features:
+                ```bash
+                pip install inv-vmware-opa[dashboard-advanced]
+                ```
+                
+                **Showing basic data view below:**
+                """)
                 st.dataframe(df, width='stretch', height=600)
             except Exception as e:
                 st.error(f"Error rendering explorer: {e}")

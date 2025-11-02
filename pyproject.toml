@@ -37,6 +37,7 @@ dependencies = [
     "sqlalchemy>=2.0.44,<3.0.0",
     "xlsxwriter>=3.2.0,<4.0.0",
     "tabulate>=0.9.0,<1.0.0",
+    "rich>=13.0.0,<14.0.0",
 ]
 
 [project.optional-dependencies]
@@ -45,7 +46,9 @@ dashboard = [
     "plotly>=5.24.0,<7.0.0",
     "streamlit-extras>=0.7.8,<1.0.0",
     "watchdog>=6.0.0,<7.0.0",
-    "pygwalker>=0.4.0,<1.0.0",
+]
+dashboard-advanced = [
+    "pygwalker>=0.4.0,<1.0.0",  # Advanced data exploration (adds ~190MB: Jupyter, Snowflake, AWS deps)
 ]
 reports = [
     "reportlab>=4.4.4,<5.0.0",
@@ -59,7 +62,7 @@ screenshots = [
     "rich>=13.0.0,<14.0.0",
     "requests>=2.32.0,<3.0.0",
 ]
-all = ["inv-vmware-opa[dashboard,reports,screenshots]"]
+all = ["inv-vmware-opa[dashboard,dashboard-advanced,reports,screenshots]"]
 
 [project.urls]
 Homepage = "https://github.com/brunseba/inv-vmware-opa"
