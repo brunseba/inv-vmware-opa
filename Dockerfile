@@ -31,21 +31,25 @@ RUN pip install --no-cache-dir uv==0.5.18 && \
 # ============================================================================
 FROM python:3.12-slim
 
+# Build arguments for version and metadata
+ARG APP_VERSION=dev
+ARG BUILD_DATE
+ARG VCS_REF
+
 # OpenContainers labels
 LABEL org.opencontainers.image.title="VMware Inventory Dashboard" \
       org.opencontainers.image.description="Interactive web dashboard for VMware vSphere inventory analysis with RVTools support" \
-      org.opencontainers.image.version="0.6.1" \
+      org.opencontainers.image.version="${APP_VERSION}" \
       org.opencontainers.image.authors="brunseba" \
       org.opencontainers.image.url="https://github.com/brunseba/inv-vmware-opa" \
       org.opencontainers.image.documentation="https://github.com/brunseba/inv-vmware-opa/blob/main/README.md" \
       org.opencontainers.image.source="https://github.com/brunseba/inv-vmware-opa" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.vendor="SparrowHawkOfHills" \
-      org.opencontainers.image.base.name="python:3.12-slim"
-
-# Set labels for better Docker Hub integration
+      org.opencontainers.image.base.name="python:3.12-slim" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}"
 LABEL maintainer="sebastien.brun@lepervier.org" \
-      version="0.6.1" \
       description="VMware vSphere Inventory Dashboard"
 
 # Install runtime dependencies only

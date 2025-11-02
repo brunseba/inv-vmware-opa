@@ -5,7 +5,10 @@ services:
       dockerfile: Dockerfile
       args:
         - BUILDKIT_INLINE_CACHE=1
-    image: vmware-inventory-dashboard:${APP_VERSION}
+        - APP_VERSION=${APP_VERSION:-latest}
+        - BUILD_DATE=${BUILD_DATE}
+        - VCS_REF=${VCS_REF}
+    image: vmware-inventory-dashboard:${APP_VERSION:-latest}
     container_name: ${CONTAINER_NAME}
     
     # Port mapping

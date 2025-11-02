@@ -2,9 +2,20 @@
 
 Interactive web-based dashboard for analyzing VMware vSphere inventory data using Streamlit and Plotly.
 
+![Dashboard Overview](images/v0.7.0/overview_light.png)
+
 ## Overview
 
 The VMware Inventory Dashboard provides a rich, interactive web interface for exploring and analyzing your VMware infrastructure. It features multiple specialized pages for different aspects of your inventory.
+
+**20 Specialized Pages** organized in 5 categories:
+- 🔍 **Explore & Analyze** (7 pages) - Data exploration and analytics
+- 🏗️ **Infrastructure** (4 pages) - Topology and resource management
+- 🚀 **Migration** (4 pages) - Migration planning and execution
+- ⚙️ **Management** (2 pages) - Data import and backup
+- 📄 **Export & Help** (2 pages) - Reports and documentation
+
+> 💡 **Tip:** For a complete visual tour with all screenshots, see the [Visual Guide](visual-guide.md).
 
 ## Getting Started
 
@@ -29,6 +40,8 @@ The dashboard will automatically open at `http://localhost:8501`.
 ## Pages
 
 ### 📊 Overview Page
+
+![Overview Page](images/v0.7.0/overview_light.png)
 
 High-level view of your VMware infrastructure:
 
@@ -61,6 +74,8 @@ Hierarchical view of your VMware infrastructure:
 - **Capacity Planning**: Resource utilization trends
 
 ### 🔍 VM Explorer
+
+![VM Explorer](images/v0.7.0/vm_explorer_light.png)
 
 Advanced search and detailed VM inspection:
 
@@ -108,6 +123,8 @@ Side-by-side infrastructure comparison:
 
 ### 📁 Folder Analysis
 
+![Folder Analysis](images/v0.7.0/folder_analysis_light.png)
+
 Comprehensive folder-level analytics:
 
 - **Folder Distribution**: VM counts per folder
@@ -131,7 +148,9 @@ Data completeness and quality metrics:
 - **Missing Data Analysis**: Identify incomplete records
 - **Recommendations**: Suggestions for data quality improvement
 
-### 📥 Data Import & Database Management
+### 📅 Data Import & Database Management
+
+![Data Import](images/v0.7.0/data_import_light.png)
 
 Comprehensive interface for loading data and managing the database directly from the web UI:
 
@@ -219,6 +238,8 @@ Comprehensive interface for loading data and managing the database directly from
 ```
 
 ### 🏷️ Folder Labelling
+
+![Folder Labelling](images/v0.7.0/folder_labelling_light.png)
 
 Comprehensive labelling system for organizing and categorizing VMs:
 
@@ -310,6 +331,8 @@ Two approaches for labelling individual VMs:
 ```
 
 ### 📄 PDF Export
+
+![PDF Export](images/v0.7.0/pdf_export_light.png)
 
 Generate comprehensive PDF reports:
 
