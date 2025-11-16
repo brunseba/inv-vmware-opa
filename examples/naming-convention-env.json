@@ -1,0 +1,47 @@
+{
+  "name": "Environment-Based Naming",
+  "pattern": "<ENV><SEP1><TYPE><SEP2><NUMBER>",
+  "description": "Environment-based naming like DEV-VM-2979, PROD-APP-1234",
+  "fields": [
+    {
+      "field_name": "environment",
+      "position": 0,
+      "length": 4,
+      "description": "Environment code",
+      "possible_values": ["DEV ", "PROD", "TEST", "STAG"],
+      "is_required": true
+    },
+    {
+      "field_name": "separator1",
+      "position": 1,
+      "length": 1,
+      "description": "First separator",
+      "possible_values": ["-"],
+      "is_required": true
+    },
+    {
+      "field_name": "type",
+      "position": 2,
+      "length": 2,
+      "description": "VM type or category",
+      "possible_values": ["VM", "AP", "DB", "WE"],
+      "is_required": true
+    },
+    {
+      "field_name": "separator2",
+      "position": 3,
+      "length": 1,
+      "description": "Second separator",
+      "possible_values": ["-"],
+      "is_required": true
+    },
+    {
+      "field_name": "number",
+      "position": 4,
+      "length": 4,
+      "description": "Sequential number",
+      "is_required": true,
+      "validation_regex": "^[0-9]{4}$"
+    }
+  ]
+}

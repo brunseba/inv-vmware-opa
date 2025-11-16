@@ -1,0 +1,31 @@
+{
+  "name": "Simple VM Naming",
+  "pattern": "<prefix><sep1><type><sep2><number>",
+  "description": "Simple VM naming pattern like vm-001, vm-002",
+  "fields": [
+    {
+      "field_name": "prefix",
+      "position": 0,
+      "length": 2,
+      "description": "VM prefix identifier",
+      "possible_values": ["vm", "VM"],
+      "is_required": true
+    },
+    {
+      "field_name": "separator1",
+      "position": 1,
+      "length": 1,
+      "description": "First separator",
+      "possible_values": ["-"],
+      "is_required": true
+    },
+    {
+      "field_name": "number",
+      "position": 2,
+      "length": 3,
+      "description": "Sequential number",
+      "is_required": true,
+      "validation_regex": "^[0-9]{3}$"
+    }
+  ]
+}
