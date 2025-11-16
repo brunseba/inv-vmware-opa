@@ -148,6 +148,15 @@ with st.sidebar:
             if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
                 PageNavigator.navigate_to(page_name)
     
+    # === NAMING (Collapsible) ===
+    with st.expander("🏷️ Naming", expanded=False):
+        naming_pages = [
+            ("📝 Convention Manager", "Naming Convention Manager"),
+        ]
+        for display_name, page_name in naming_pages:
+            if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
+                PageNavigator.navigate_to(page_name)
+    
     # === MANAGEMENT (Collapsible) ===
     with st.expander("⚙️ Management", expanded=False):
         mgmt_pages = [
@@ -278,6 +287,10 @@ try:
     elif page == "Help":
         from pages import help
         help.render(st.session_state.db_url)
+        
+    elif page == "Naming Convention Manager":
+        from pages import naming_convention_manager
+        naming_convention_manager.render(st.session_state.db_url)
         
 except Exception as e:
     st.error(f"❌ Error loading page: {str(e)}")
