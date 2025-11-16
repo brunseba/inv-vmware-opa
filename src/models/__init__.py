@@ -23,6 +23,13 @@ from src.models.migration_target import (
 )
 from src.models.schema_version import SchemaVersion
 
+# Import naming convention models
+from src.models.naming_convention import (
+    NamingConvention,
+    NamingConventionField,
+    VMNamingAnalysis
+)
+
 __all__ = [
     "Base",
     "VirtualMachine",
@@ -36,4 +43,7 @@ __all__ = [
     "MigrationStrategyConfig",
     "PlatformType",
     "MigrationStrategy",
+    "NamingConvention",
+    "NamingConventionField",
+    "VMNamingAnalysis",
 ]
