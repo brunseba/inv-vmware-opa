@@ -7,6 +7,7 @@ from pathlib import Path
 from .loader import load_excel_to_db
 from .commands.label import label
 from .commands.anonymize import anonymize
+from .commands.naming_convention import naming_convention
 
 
 @click.group()
@@ -19,6 +20,7 @@ def cli():
 # Register command groups
 cli.add_command(label)
 cli.add_command(anonymize)
+cli.add_command(naming_convention)
 
 
 @cli.command()
