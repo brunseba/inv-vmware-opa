@@ -1,0 +1,88 @@
+name: Release & Changelog
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to generate changelog for'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  generate-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install git-cliff
+        run: |
+          wget https://github.com/orhun/git-cliff/releases/download/v2.6.1/git-cliff-2.6.1-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf git-cliff-2.6.1-x86_64-unknown-linux-gnu.tar.gz
+          sudo mv git-cliff-2.6.1/git-cliff /usr/local/bin/
+          chmod +x /usr/local/bin/git-cliff
+
+      - name: Get current tag
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate CHANGELOG
+        run: |
+          git-cliff --output CHANGELOG.md
+
+      - name: Update mkdocs.yml with version
+        run: |
+          TAG=${{ steps.get_tag.outputs.tag }}
+          VERSION=${TAG#v}
+          sed -i "s/^site_name:.*/site_name: inv-vmware-opa $VERSION/" mkdocs.yml || true
+
+      - name: Update docs/index.md with version
+        run: |
+          TAG=${{ steps.get_tag.outputs.tag }}
+          VERSION=${TAG#v}
+          if [ -f docs/index.md ]; then
+            sed -i "1s/.*/# inv-vmware-opa $VERSION/" docs/index.md || true
+          fi
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit changes
+        run: |
+          git add CHANGELOG.md mkdocs.yml docs/index.md
+          git diff --staged --quiet || git commit -m "docs: update changelog and version for ${{ steps.get_tag.outputs.tag }}"
+          git push origin HEAD:main || echo "No changes to commit"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          name: Release ${{ steps.get_tag.outputs.tag }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
