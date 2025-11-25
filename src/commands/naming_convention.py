@@ -600,3 +600,190 @@ def migration_groups(convention_id: int, db_url: str, group_by: tuple, format: s
         raise click.Abort()
     finally:
         session.close()
+
+
+@naming_convention.command(name="export")
+@click.argument("convention_id", type=int)
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(path_type=Path),
+    help="Output file path (defaults to convention_<id>.json)",
+)
+def export_convention(convention_id: int, db_url: str, output: Optional[Path]):
+    """Export a naming convention to JSON file."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from src.services.naming_convention_service import NamingConventionService
+
+    engine = create_engine(db_url, echo=False)
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+
+    try:
+        service = NamingConventionService(session)
+
+        # Get the convention
+        convention = service.get_convention(convention_id)
+        if not convention:
+            click.echo(f"❌ Convention with ID {convention_id} not found.")
+            raise click.Abort()
+
+        # Prepare export data
+        export_data = {
+            "name": convention.name,
+            "pattern": convention.pattern,
+            "description": convention.description,
+            "is_active": convention.is_active,
+            "fields": [],
+        }
+
+        # Export fields
+        for field in sorted(convention.fields, key=lambda f: f.position):
+            field_data = {
+                "field_name": field.field_name,
+                "position": field.position,
+                "length": field.length,
+                "is_required": field.is_required,
+                "description": field.description,
+            }
+
+            # Add optional fields if they exist
+            if field.possible_values:
+                field_data["possible_values"] = field.possible_values
+            if field.validation_regex:
+                field_data["validation_regex"] = field.validation_regex
+
+            export_data["fields"].append(field_data)
+
+        # Determine output file
+        if not output:
+            output = Path(f"convention_{convention_id}.json")
+
+        # Write to file
+        with open(output, "w") as f:
+            json.dump(export_data, f, indent=2)
+
+        click.echo(f"\n✅ Exported naming convention '{convention.name}' to {output}")
+        click.echo(f"   Fields: {len(export_data['fields'])}")
+        click.echo(f"   Pattern: {export_data['pattern']}")
+        click.echo()
+
+    except Exception as e:
+        click.echo(f"❌ Error: {e}", err=True)
+        raise click.Abort()
+    finally:
+        session.close()
+
+
+@naming_convention.command(name="import")
+@click.argument("input_file", type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.option(
+    "--overwrite-name",
+    help="Override the convention name from the file",
+)
+@click.option(
+    "--skip-existing",
+    is_flag=True,
+    help="Skip import if a convention with the same name already exists",
+)
+def import_convention(input_file: Path, db_url: str, overwrite_name: Optional[str], skip_existing: bool):
+    """Import a naming convention from JSON file."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from src.services.naming_convention_service import (
+        NamingConventionService,
+        NamingConventionError,
+        PatternValidationError,
+    )
+
+    engine = create_engine(db_url, echo=False)
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+
+    try:
+        service = NamingConventionService(session)
+
+        # Load JSON file
+        click.echo(f"\n📥 Importing naming convention from {input_file}")
+        with open(input_file, "r") as f:
+            data = json.load(f)
+
+        # Validate required fields
+        if "name" not in data or "pattern" not in data or "fields" not in data:
+            click.echo("❌ Invalid convention file: missing 'name', 'pattern', or 'fields'")
+            raise click.Abort()
+
+        name = overwrite_name if overwrite_name else data["name"]
+        pattern = data["pattern"]
+        description = data.get("description")
+        is_active = data.get("is_active", True)
+        fields = data["fields"]
+
+        # Check if convention with same name exists
+        existing_conventions = service.list_conventions(active_only=False)
+        name_exists = any(c.name == name for c in existing_conventions)
+
+        if name_exists:
+            if skip_existing:
+                click.echo(f"⚠️  Convention '{name}' already exists. Skipping import.")
+                return
+            else:
+                if not click.confirm(
+                    f"⚠️  Convention '{name}' already exists. Continue and create a duplicate?", default=False
+                ):
+                    click.echo("❌ Import cancelled.")
+                    raise click.Abort()
+
+        # Validate fields
+        if not fields or not isinstance(fields, list):
+            click.echo("❌ Invalid convention file: 'fields' must be a non-empty list")
+            raise click.Abort()
+
+        click.echo(f"\n   Name:        {name}")
+        click.echo(f"   Pattern:     {pattern}")
+        click.echo(f"   Fields:      {len(fields)}")
+        click.echo(f"   Active:      {is_active}")
+        if description:
+            click.echo(f"   Description: {description}")
+
+        # Create convention
+        click.echo("\n💾 Creating naming convention...")
+        convention = service.create_convention(
+            name=name, pattern=pattern, fields=fields, description=description
+        )
+        
+        # Update is_active if it's different from default (True)
+        if not is_active:
+            service.update_convention(convention.id, is_active=is_active)
+            convention = service.get_convention(convention.id)
+
+        click.echo(f"\n✅ Successfully imported naming convention (ID: {convention.id})")
+        click.echo()
+
+    except PatternValidationError as e:
+        click.echo(f"\n❌ Validation Error: {e}", err=True)
+        raise click.Abort()
+    except NamingConventionError as e:
+        click.echo(f"\n❌ Error: {e}", err=True)
+        raise click.Abort()
+    except json.JSONDecodeError as e:
+        click.echo(f"\n❌ Invalid JSON file: {e}", err=True)
+        raise click.Abort()
+    except Exception as e:
+        click.echo(f"\n❌ Error: {e}", err=True)
+        raise click.Abort()
+    finally:
+        session.close()
