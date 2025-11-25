@@ -1,3 +1,7 @@
+[logger]
+# Suppress ScriptRunContext warnings (these are harmless)
+level = "error"
+
 [client]
 # Disable automatic page detection from pages/ directory
 # We manage navigation manually in app.py
