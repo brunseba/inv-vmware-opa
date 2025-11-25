@@ -427,6 +427,134 @@ def analyze_inventory(
         session.close()
 
 
+@naming_convention.command(name="analyze-multi")
+@click.argument("convention_ids", nargs=-1, type=int, required=True)
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.option(
+    "--datacenter",
+    help="Filter VMs by datacenter",
+)
+@click.option(
+    "--cluster",
+    help="Filter VMs by cluster",
+)
+@click.option(
+    "--batch-size",
+    default=100,
+    type=int,
+    help="Number of VMs to process per batch",
+)
+@click.option(
+    "--test-all",
+    is_flag=True,
+    help="Test all conventions even if VM matches earlier one",
+)
+def analyze_inventory_multi(
+    convention_ids: tuple,
+    db_url: str,
+    datacenter: Optional[str],
+    cluster: Optional[str],
+    batch_size: int,
+    test_all: bool,
+):
+    """Analyze VM inventory against multiple naming conventions."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from src.services.naming_convention_service import NamingConventionService
+
+    if not convention_ids:
+        click.echo("❌ Please provide at least one convention ID")
+        raise click.Abort()
+
+    engine = create_engine(db_url, echo=False)
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+
+    try:
+        service = NamingConventionService(session)
+
+        # Validate and display conventions
+        click.echo(f"\n🔍 Analyzing VM inventory with {len(convention_ids)} conventions:\n")
+        conventions = []
+        for conv_id in convention_ids:
+            convention = service.get_convention(conv_id)
+            if not convention:
+                click.echo(f"❌ Convention with ID {conv_id} not found.")
+                raise click.Abort()
+            conventions.append(convention)
+            click.echo(f"   [{conv_id}] {convention.name}")
+            click.echo(f"       Pattern: {convention.pattern}")
+
+        click.echo()
+
+        # Build filters
+        vm_filter = {}
+        if datacenter:
+            vm_filter["datacenter"] = datacenter
+            click.echo(f"   Filter: datacenter = {datacenter}")
+        if cluster:
+            vm_filter["cluster"] = cluster
+            click.echo(f"   Filter: cluster = {cluster}")
+
+        if vm_filter:
+            click.echo()
+
+        # Perform analysis
+        stop_on_first = not test_all
+        click.echo(f"   Mode: {'Test all conventions' if test_all else 'Stop on first match'}\n")
+
+        with click.progressbar(length=100, label="Analyzing VMs") as bar:
+            stats = service.analyze_vm_inventory_multi(
+                convention_ids=list(convention_ids),
+                vm_filter=vm_filter if vm_filter else None,
+                batch_size=batch_size,
+                stop_on_first_match=stop_on_first,
+            )
+            bar.update(100)
+
+        click.echo(f"\n✅ Analysis complete!")
+        click.echo(f"\n📊 Overall Results:")
+        click.echo(f"   Total VMs:          {stats['total']}")
+        click.echo(
+            f"   Matched:            {stats['matched']} "
+            f"({stats['matched']/stats['total']*100:.1f}%)"
+            if stats["total"] > 0
+            else "   Matched:            0"
+        )
+        click.echo(
+            f"   Unmatched:          {stats['unmatched']} "
+            f"({stats['unmatched']/stats['total']*100:.1f}%)"
+            if stats["total"] > 0
+            else "   Unmatched:          0"
+        )
+
+        if stats["multiple_matches"] > 0:
+            click.echo(f"   Multiple matches:   {stats['multiple_matches']}")
+
+        click.echo(f"\n   Records created:    {stats['records_created']}")
+        click.echo(f"   Records updated:    {stats['records_updated']}")
+
+        click.echo(f"\n📊 By Convention:")
+        for conv_id in convention_ids:
+            convention = next(c for c in conventions if c.id == conv_id)
+            match_count = stats["by_convention"][conv_id]
+            match_pct = (match_count / stats["total"] * 100) if stats["total"] > 0 else 0
+            click.echo(f"   [{conv_id}] {convention.name:30s} {match_count:4d} ({match_pct:.1f}%)")
+
+        click.echo()
+
+    except Exception as e:
+        click.echo(f"\n❌ Error: {e}", err=True)
+        raise click.Abort()
+    finally:
+        session.close()
+
+
 @naming_convention.command(name="export")
 @click.argument("convention_id", type=int)
 @click.argument("output_file", type=click.Path(path_type=Path))

@@ -422,6 +422,132 @@ class NamingConventionService:
         logger.info(f"Analysis complete: {stats}")
         return stats
     
+    def analyze_vm_inventory_multi(
+        self,
+        convention_ids: List[int],
+        vm_filter: Optional[Dict] = None,
+        batch_size: int = 100,
+        stop_on_first_match: bool = True
+    ) -> Dict[str, any]:
+        """Analyze VM inventory against multiple naming conventions.
+        
+        Args:
+            convention_ids: List of convention IDs to use for analysis
+            vm_filter: Optional filters for VMs (e.g., {'datacenter': 'DC1'})
+            batch_size: Number of VMs to process per batch
+            stop_on_first_match: If True, stop testing conventions after first valid match
+            
+        Returns:
+            Dictionary with statistics:
+            - total: Total VMs analyzed
+            - matched: Number of VMs with at least one valid match
+            - unmatched: Number of VMs with no valid matches
+            - by_convention: Dict mapping convention_id to match count
+            - multiple_matches: Number of VMs matching multiple conventions
+            - records_created: Total analysis records created
+            - records_updated: Total analysis records updated
+            
+        Raises:
+            NamingConventionError: If any convention not found
+        """
+        logger.info(
+            f"Analyzing VM inventory with {len(convention_ids)} conventions: {convention_ids}"
+        )
+        
+        # Validate all conventions exist
+        conventions = []
+        for conv_id in convention_ids:
+            convention = self.get_convention(conv_id)
+            if not convention:
+                raise NamingConventionError(f"Convention with ID {conv_id} not found")
+            conventions.append(convention)
+        
+        # Build VM query
+        query = self.session.query(VirtualMachine)
+        
+        if vm_filter:
+            for key, value in vm_filter.items():
+                if hasattr(VirtualMachine, key):
+                    query = query.filter(getattr(VirtualMachine, key) == value)
+        
+        total_vms = query.count()
+        logger.info(f"Found {total_vms} VMs to analyze against {len(conventions)} conventions")
+        
+        stats = {
+            'total': total_vms,
+            'matched': 0,
+            'unmatched': 0,
+            'by_convention': {conv_id: 0 for conv_id in convention_ids},
+            'multiple_matches': 0,
+            'records_created': 0,
+            'records_updated': 0
+        }
+        
+        # Process VMs in batches
+        offset = 0
+        while offset < total_vms:
+            vms = query.limit(batch_size).offset(offset).all()
+            
+            for vm in vms:
+                vm_matched = False
+                match_count = 0
+                
+                # Try each convention
+                for convention in conventions:
+                    # Parse VM name against this convention
+                    is_valid, field_values, errors = self.parse_vm_name(vm.vm, convention)
+                    
+                    if is_valid:
+                        vm_matched = True
+                        match_count += 1
+                        stats['by_convention'][convention.id] += 1
+                    
+                    # Check if analysis record exists
+                    existing = self.session.query(VMNamingAnalysis).filter_by(
+                        vm_id=vm.id,
+                        convention_id=convention.id
+                    ).first()
+                    
+                    if existing:
+                        # Update existing record
+                        existing.vm_name = vm.vm
+                        existing.field_values = field_values
+                        existing.is_valid = is_valid
+                        existing.validation_errors = {'errors': errors} if errors else None
+                        existing.analyzed_at = datetime.utcnow()
+                        stats['records_updated'] += 1
+                    else:
+                        # Create new record
+                        analysis = VMNamingAnalysis(
+                            vm_id=vm.id,
+                            convention_id=convention.id,
+                            vm_name=vm.vm,
+                            field_values=field_values,
+                            is_valid=is_valid,
+                            validation_errors={'errors': errors} if errors else None
+                        )
+                        self.session.add(analysis)
+                        stats['records_created'] += 1
+                    
+                    # Stop on first match if requested
+                    if stop_on_first_match and is_valid:
+                        break
+                
+                # Update match statistics
+                if vm_matched:
+                    stats['matched'] += 1
+                    if match_count > 1:
+                        stats['multiple_matches'] += 1
+                else:
+                    stats['unmatched'] += 1
+            
+            self.session.commit()
+            offset += batch_size
+            logger.debug(f"Processed {offset}/{total_vms} VMs")
+        
+        logger.info(f"Multi-convention analysis complete: {stats}")
+        return stats
+    
     def query_vms_by_field(
         self,
         convention_id: int,
