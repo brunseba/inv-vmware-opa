@@ -76,6 +76,71 @@ def render_conventions_list(service: NamingConventionService, session):
 
     add_vertical_space(1)
 
+    # Multi-convention analysis section
+    if len(conventions) > 1:
+        with st.expander("🔀 Multi-Convention Analysis", expanded=False):
+            st.caption("Analyze VMs against multiple conventions simultaneously")
+            
+            # Convention selection
+            selected_conventions = []
+            cols_per_row = 3
+            for i in range(0, len(conventions), cols_per_row):
+                cols = st.columns(cols_per_row)
+                for j, col in enumerate(cols):
+                    idx = i + j
+                    if idx < len(conventions):
+                        conv = conventions[idx]
+                        with col:
+                            if st.checkbox(
+                                f"{conv.name}",
+                                key=f"multi_select_{conv.id}",
+                                help=f"Pattern: {conv.pattern}"
+                            ):
+                                selected_conventions.append(conv.id)
+            
+            add_vertical_space(1)
+            
+            # Analysis options
+            col1, col2 = st.columns(2)
+            with col1:
+                test_all = st.checkbox(
+                    "Test all conventions",
+                    value=False,
+                    key="multi_test_all",
+                    help="Test all conventions even if VM matches earlier one"
+                )
+            with col2:
+                batch_size = st.number_input(
+                    "Batch size",
+                    min_value=10,
+                    max_value=1000,
+                    value=100,
+                    key="multi_batch_size",
+                    help="Number of VMs to process per batch"
+                )
+            
+            add_vertical_space(1)
+            
+            # Analyze button
+            if st.button(
+                "🔍 Analyze with Selected Conventions",
+                disabled=len(selected_conventions) < 2,
+                type="primary",
+                use_container_width=True
+            ):
+                if len(selected_conventions) < 2:
+                    st.warning("⚠️ Please select at least 2 conventions")
+                else:
+                    analyze_multi_conventions(
+                        service,
+                        selected_conventions,
+                        conventions,
+                        test_all,
+                        batch_size
+                    )
+
+    add_vertical_space(1)
+
     # Display conventions as cards
     for convention in conventions:
         with st.expander(
@@ -182,6 +247,95 @@ def analyze_convention(service: NamingConventionService, convention: NamingConve
 
         except Exception as e:
             st.error(f"❌ Analysis failed: {e}")
+
+
+def analyze_multi_conventions(
+    service: NamingConventionService,
+    selected_ids: list,
+    all_conventions: list,
+    test_all: bool,
+    batch_size: int
+):
+    """Analyze VMs with multiple conventions."""
+    # Get convention names
+    conv_names = [c.name for c in all_conventions if c.id in selected_ids]
+    
+    with st.spinner(f"Analyzing VMs with {len(selected_ids)} conventions..."):
+        try:
+            stats = service.analyze_vm_inventory_multi(
+                convention_ids=selected_ids,
+                vm_filter=None,
+                batch_size=batch_size,
+                stop_on_first_match=not test_all
+            )
+            
+            st.success("✅ Multi-Convention Analysis Complete!")
+            
+            # Overall statistics
+            st.markdown("### 📊 Overall Results")
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total VMs", stats["total"])
+            with col2:
+                matched_pct = (stats["matched"] / stats["total"] * 100) if stats["total"] > 0 else 0
+                st.metric("Matched", f"{stats['matched']} ({matched_pct:.1f}%)")
+            with col3:
+                unmatched_pct = (stats["unmatched"] / stats["total"] * 100) if stats["total"] > 0 else 0
+                st.metric("Unmatched", f"{stats['unmatched']} ({unmatched_pct:.1f}%)")
+            with col4:
+                if stats["multiple_matches"] > 0:
+                    st.metric("Multiple Matches", stats["multiple_matches"])
+                else:
+                    st.metric("Records Created", stats["records_created"])
+            
+            add_vertical_space(1)
+            
+            # Records statistics
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("🆕 Records Created", stats["records_created"])
+            with col2:
+                st.metric("🔄 Records Updated", stats["records_updated"])
+            
+            add_vertical_space(1)
+            
+            # Per-convention results
+            st.markdown("### 📊 Results by Convention")
+            
+            # Prepare data for chart
+            conv_data = []
+            for conv_id in selected_ids:
+                conv = next((c for c in all_conventions if c.id == conv_id), None)
+                if conv:
+                    match_count = stats["by_convention"][conv_id]
+                    match_pct = (match_count / stats["total"] * 100) if stats["total"] > 0 else 0
+                    conv_data.append({
+                        "Convention": conv.name,
+                        "Matches": match_count,
+                        "Percentage": match_pct
+                    })
+            
+            # Display as table
+            conv_df = pd.DataFrame(conv_data)
+            st.dataframe(conv_df, use_container_width=True, hide_index=True)
+            
+            # Display as bar chart
+            if conv_data:
+                import plotly.express as px
+                fig = px.bar(
+                    conv_df,
+                    x="Convention",
+                    y="Matches",
+                    text="Percentage",
+                    title="Matches by Convention",
+                    labels={"Matches": "Number of Matches", "Convention": "Naming Convention"}
+                )
+                fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+                st.plotly_chart(fig, use_container_width=True)
+            
+        except Exception as e:
+            st.error(f"❌ Multi-convention analysis failed: {e}")
+            st.exception(e)
 
 
 def render_create_convention(service: NamingConventionService):
