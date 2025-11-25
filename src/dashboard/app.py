@@ -332,13 +332,12 @@ except Exception as e:
 
 def main():
     """Entry point for vmware-dashboard command."""
+    # This function is called by the console script entry point.
+    # When called, we launch streamlit to run this file.
+    # The actual app code runs at module level above.
     import sys
     from streamlit.web import cli as stcli
 
-    # Get the path to this file
+    # Set sys.argv to simulate 'streamlit run app.py'
     sys.argv = ["streamlit", "run", __file__]
     sys.exit(stcli.main())
-
-
-if __name__ == "__main__":
-    main()
