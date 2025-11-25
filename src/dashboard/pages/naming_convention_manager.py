@@ -426,13 +426,9 @@ def render_edit_convention(service: NamingConventionService, convention_id: int)
                 if field.possible_values and isinstance(field.possible_values, list):
                     possible_vals = ", ".join(field.possible_values)
 
-                st.text_input(
-                    "Possible Values (comma-separated)", value=possible_vals, key=f"edit_vals_{i}"
-                )
+                st.text_input("Possible Values (comma-separated)", value=possible_vals, key=f"edit_vals_{i}")
 
-                st.text_input(
-                    "Validation Regex", value=field.validation_regex or "", key=f"edit_regex_{i}"
-                )
+                st.text_input("Validation Regex", value=field.validation_regex or "", key=f"edit_regex_{i}")
 
     add_vertical_space(2)
 

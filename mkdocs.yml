@@ -67,6 +67,7 @@ nav:
   - User Guide:
       - CLI Commands: user-guide/cli-commands.md
       - Dashboard: user-guide/dashboard.md
+      - Visual Guide: user-guide/visual-guide.md
       - PDF Export: user-guide/pdf-export.md
       - Backup & Restore: user-guide/backup-restore.md
   - Features:
