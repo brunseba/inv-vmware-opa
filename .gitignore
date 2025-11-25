@@ -38,6 +38,7 @@ env/
 # MkDocs
 site/
 docs/_build/
+docs/export/*.docx
 
 # Database files
 *.db
@@ -85,3 +86,8 @@ inputs/IAAS.xlsx
 
 # Selenium/WebDriver cache
 .wdm/
+
+# Temporary and generated files
+*.err
+output.csv
+inputs/
