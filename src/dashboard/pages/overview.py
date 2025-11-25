@@ -12,8 +12,9 @@ from streamlit_extras.add_vertical_space import add_vertical_space
 from src.models import VirtualMachine
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.theme import ThemeManager
+from src.dashboard.utils.theme import ThemeManager
 
 
 def render(db_url: str):
@@ -21,243 +22,224 @@ def render(db_url: str):
     colored_header(
         label="📊 VMware Inventory Overview",
         description="Comprehensive view of your virtual infrastructure",
-        color_name="blue-70"
+        color_name="blue-70",
     )
-    
+
     try:
         from sqlalchemy import inspect
-        
+
         engine = create_engine(db_url, echo=False)
         SessionLocal = sessionmaker(bind=engine)
         session = SessionLocal()
-        
+
         # Check if virtual_machines table exists
         inspector = inspect(engine)
-        if 'virtual_machines' not in inspector.get_table_names():
+        if "virtual_machines" not in inspector.get_table_names():
             st.info("📊 **No database tables found**")
-            st.write("""It looks like this is a fresh database. To get started:
-            
+            st.write(
+                """It looks like this is a fresh database. To get started:
+
 1. **Navigate to Data Import**: Go to Management > Data Import in the sidebar
 2. **Upload Your File**: Click to upload your VMware inventory Excel file (RVTools export)
 3. **Import Data**: Select the sheet and click "Import Data"
 4. **Return Here**: Come back to see your infrastructure overview
-            
+
             Alternatively, you can load data via CLI:
             ```bash
             vmware-inv load <excel_file> --clear
             ```
-            """)
-            
+            """
+            )
+
             # Show helpful links
             col1, col2 = st.columns(2)
             with col1:
                 st.page_link("pages/data_import.py", label="📥 Go to Data Import", icon="📥")
             return
-        
+
         # Check if data exists
         total_vms = session.query(func.count(VirtualMachine.id)).scalar()
-        
+
         if total_vms == 0:
             st.warning("⚠️ No data found in database. Please load data first.")
             st.write("Navigate to **Management > Data Import** to upload your inventory file.")
             return
-        
+
         # Data quality indicators
         null_dns = session.query(func.count(VirtualMachine.id)).filter(VirtualMachine.dns_name.is_(None)).scalar() or 0
-        null_ip = session.query(func.count(VirtualMachine.id)).filter(VirtualMachine.primary_ip_address.is_(None)).scalar() or 0
+        null_ip = (
+            session.query(func.count(VirtualMachine.id)).filter(VirtualMachine.primary_ip_address.is_(None)).scalar()
+            or 0
+        )
         if null_dns or null_ip:
             st.info(f"Data quality: {null_dns} VMs missing DNS name, {null_ip} VMs missing IP address")
 
         # Key metrics
         col1, col2, col3, col4 = st.columns(4)
-        
+
         with col1:
             st.metric(
                 label="Total VMs",
                 value=f"{total_vms:,}",
                 delta=None,
-                help="Total count of all virtual machines in the inventory"
+                help="Total count of all virtual machines in the inventory",
             )
-        
+
         with col2:
-            powered_on = session.query(func.count(VirtualMachine.id)).filter(
-                VirtualMachine.powerstate == "poweredOn"
-            ).scalar()
+            powered_on = (
+                session.query(func.count(VirtualMachine.id)).filter(VirtualMachine.powerstate == "poweredOn").scalar()
+            )
             st.metric(
                 label="Powered On",
                 value=f"{powered_on:,}",
                 delta=f"{(powered_on/total_vms*100):.1f}%" if total_vms > 0 else "0%",
-                help="Number and percentage of VMs currently in powered-on state"
+                help="Number and percentage of VMs currently in powered-on state",
             )
-        
+
         with col3:
             total_cpus = session.query(func.sum(VirtualMachine.cpus)).scalar() or 0
             st.metric(
                 label="Total vCPUs",
                 value=f"{int(total_cpus):,}",
-                help="Total number of virtual CPUs allocated across all VMs"
+                help="Total number of virtual CPUs allocated across all VMs",
             )
-        
+
         with col4:
             total_memory_mb = session.query(func.sum(VirtualMachine.memory)).scalar() or 0
             total_memory_gb = total_memory_mb / 1024
             st.metric(
                 label="Total Memory",
                 value=f"{total_memory_gb:,.0f} GB",
-                help="Total memory allocated across all VMs (in gigabytes)"
+                help="Total memory allocated across all VMs (in gigabytes)",
             )
-        
+
         # Charts row 1
         colored_header(
             label="Power and Distribution Analysis",
             description="VM power states and datacenter distribution",
-            color_name="green-70"
+            color_name="green-70",
         )
-        
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.markdown("#### 🔋 Power State Distribution")
             st.caption("Shows the distribution of VMs by power state (powered on, off, suspended)")
-            power_states = session.query(
-                VirtualMachine.powerstate,
-                func.count(VirtualMachine.id).label('count')
-            ).group_by(VirtualMachine.powerstate).all()
-            
+            power_states = (
+                session.query(VirtualMachine.powerstate, func.count(VirtualMachine.id).label("count"))
+                .group_by(VirtualMachine.powerstate)
+                .all()
+            )
+
             if power_states:
-                df_power = pd.DataFrame(power_states, columns=['State', 'Count'])
+                df_power = pd.DataFrame(power_states, columns=["State", "Count"])
                 fig = px.pie(
-                    df_power,
-                    values='Count',
-                    names='State',
-                    color_discrete_sequence=px.colors.qualitative.Set3
+                    df_power, values="Count", names="State", color_discrete_sequence=px.colors.qualitative.Set3
                 )
-                fig.update_traces(textposition='inside', textinfo='percent+label')
+                fig.update_traces(textposition="inside", textinfo="percent+label")
                 fig = ThemeManager.apply_chart_theme(fig)
-                st.plotly_chart(fig, width='stretch')
-        
+                st.plotly_chart(fig, width="stretch")
+
         with col2:
             st.markdown("#### 🏢 VMs by Datacenter")
             st.caption("Top 10 datacenters by VM count - useful for capacity planning")
-            datacenters = session.query(
-                VirtualMachine.datacenter,
-                func.count(VirtualMachine.id).label('count')
-            ).group_by(VirtualMachine.datacenter).order_by(func.count(VirtualMachine.id).desc()).limit(10).all()
-            
+            datacenters = (
+                session.query(VirtualMachine.datacenter, func.count(VirtualMachine.id).label("count"))
+                .group_by(VirtualMachine.datacenter)
+                .order_by(func.count(VirtualMachine.id).desc())
+                .limit(10)
+                .all()
+            )
+
             if datacenters:
-                df_dc = pd.DataFrame(datacenters, columns=['Datacenter', 'Count'])
+                df_dc = pd.DataFrame(datacenters, columns=["Datacenter", "Count"])
                 fig = px.bar(
-                    df_dc,
-                    x='Count',
-                    y='Datacenter',
-                    orientation='h',
-                    color='Count',
-                    color_continuous_scale='Blues'
+                    df_dc, x="Count", y="Datacenter", orientation="h", color="Count", color_continuous_scale="Blues"
                 )
-                fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+                fig.update_layout(showlegend=False, yaxis={"categoryorder": "total ascending"})
                 fig = ThemeManager.apply_chart_theme(fig)
-                st.plotly_chart(fig, width='stretch')
-        
+                st.plotly_chart(fig, width="stretch")
+
         add_vertical_space(2)
-        
+
         # Charts row 2
         colored_header(
             label="Cluster and Operating System Insights",
             description="Top clusters and OS distribution",
-            color_name="orange-70"
+            color_name="orange-70",
         )
-        
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.markdown("#### 📦 Top 10 Clusters by VM Count")
             st.caption("Clusters with the highest VM density - helps identify resource concentration")
-            clusters = session.query(
-                VirtualMachine.cluster,
-                func.count(VirtualMachine.id).label('count')
-            ).group_by(VirtualMachine.cluster).order_by(func.count(VirtualMachine.id).desc()).limit(10).all()
-            
+            clusters = (
+                session.query(VirtualMachine.cluster, func.count(VirtualMachine.id).label("count"))
+                .group_by(VirtualMachine.cluster)
+                .order_by(func.count(VirtualMachine.id).desc())
+                .limit(10)
+                .all()
+            )
+
             if clusters:
-                df_clusters = pd.DataFrame(clusters, columns=['Cluster', 'Count'])
-                fig = px.bar(
-                    df_clusters,
-                    x='Cluster',
-                    y='Count',
-                    color='Count',
-                    color_continuous_scale='Viridis'
-                )
+                df_clusters = pd.DataFrame(clusters, columns=["Cluster", "Count"])
+                fig = px.bar(df_clusters, x="Cluster", y="Count", color="Count", color_continuous_scale="Viridis")
                 fig.update_layout(showlegend=False)
                 fig = ThemeManager.apply_chart_theme(fig)
-                st.plotly_chart(fig, width='stretch')
-        
+                st.plotly_chart(fig, width="stretch")
+
         with col2:
             st.markdown("#### 💻 OS Configuration Distribution")
             st.caption("Top 10 operating systems - useful for license planning and security updates")
-            os_config = session.query(
-                VirtualMachine.os_config,
-                func.count(VirtualMachine.id).label('count')
-            ).filter(VirtualMachine.os_config.isnot(None)).group_by(
-                VirtualMachine.os_config
-            ).order_by(func.count(VirtualMachine.id).desc()).limit(10).all()
-            
+            os_config = (
+                session.query(VirtualMachine.os_config, func.count(VirtualMachine.id).label("count"))
+                .filter(VirtualMachine.os_config.isnot(None))
+                .group_by(VirtualMachine.os_config)
+                .order_by(func.count(VirtualMachine.id).desc())
+                .limit(10)
+                .all()
+            )
+
             if os_config:
-                df_os = pd.DataFrame(os_config, columns=['OS', 'Count'])
-                fig = px.bar(
-                    df_os,
-                    x='Count',
-                    y='OS',
-                    orientation='h',
-                    color='Count',
-                    color_continuous_scale='Oranges'
-                )
-                fig.update_layout(showlegend=False, yaxis={'categoryorder':'total ascending'})
+                df_os = pd.DataFrame(os_config, columns=["OS", "Count"])
+                fig = px.bar(df_os, x="Count", y="OS", orientation="h", color="Count", color_continuous_scale="Oranges")
+                fig.update_layout(showlegend=False, yaxis={"categoryorder": "total ascending"})
                 fig = ThemeManager.apply_chart_theme(fig)
-                st.plotly_chart(fig, width='stretch')
-        
+                st.plotly_chart(fig, width="stretch")
+
         add_vertical_space(2)
-        
+
         # Infrastructure summary
         colored_header(
             label="Infrastructure Summary",
             description="Overall infrastructure resource distribution",
-            color_name="violet-70"
+            color_name="violet-70",
         )
-        
+
         col1, col2, col3 = st.columns(3)
-        
+
         with col1:
             dc_count = session.query(func.count(func.distinct(VirtualMachine.datacenter))).scalar()
-            st.metric(
-                "Datacenters", 
-                dc_count,
-                help="Number of unique datacenters in your infrastructure"
-            )
-        
+            st.metric("Datacenters", dc_count, help="Number of unique datacenters in your infrastructure")
+
         with col2:
             cluster_count = session.query(func.count(func.distinct(VirtualMachine.cluster))).scalar()
-            st.metric(
-                "Clusters", 
-                cluster_count,
-                help="Number of unique clusters across all datacenters"
-            )
-        
+            st.metric("Clusters", cluster_count, help="Number of unique clusters across all datacenters")
+
         with col3:
             host_count = session.query(func.count(func.distinct(VirtualMachine.host))).scalar()
-            st.metric(
-                "Hosts", 
-                host_count,
-                help="Number of unique ESXi hosts running your VMs"
-            )
-        
+            st.metric("Hosts", host_count, help="Number of unique ESXi hosts running your VMs")
+
         # Apply styling to infrastructure metrics (theme-aware)
         colors = ThemeManager.get_colors()
         style_metric_cards(
-            background_color=colors['bg_card'],
-            border_left_color=colors['accent_color'],
-            border_color=colors['border_color'],
-            box_shadow=colors['shadow']
+            background_color=colors["bg_card"],
+            border_left_color=colors["accent_color"],
+            border_color=colors["border_color"],
+            box_shadow=colors["shadow"],
         )
-        
+
     except Exception as e:
         st.error(f"❌ Error loading data: {str(e)}")
     finally:
