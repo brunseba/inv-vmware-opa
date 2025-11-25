@@ -214,112 +214,112 @@ try:
     db_url = StateManager.get(SessionKeys.DB_URL)
 
     if page == "Overview":
-        from pages import overview
+        from src.dashboard.pages import overview
 
         overview.render(db_url)
 
     elif page == "Resources":
-        from pages import resources
+        from src.dashboard.pages import resources
 
         resources.render(st.session_state.db_url)
 
     elif page == "Infrastructure":
-        from pages import infrastructure
+        from src.dashboard.pages import infrastructure
 
         infrastructure.render(st.session_state.db_url)
 
     elif page == "Folder Analysis":
-        from pages import folder_analysis
+        from src.dashboard.pages import folder_analysis
 
         folder_analysis.render(st.session_state.db_url)
 
     elif page == "Data Explorer":
-        from pages import data_explorer
+        from src.dashboard.pages import data_explorer
 
         data_explorer.render(st.session_state.db_url)
 
     elif page == "Advanced Explorer":
-        from pages import advanced_explorer
+        from src.dashboard.pages import advanced_explorer
 
         advanced_explorer.render(st.session_state.db_url)
 
     elif page == "VM Explorer":
-        from pages import vm_explorer
+        from src.dashboard.pages import vm_explorer
 
         vm_explorer.render(st.session_state.db_url)
 
     elif page == "VM Search":
-        from pages import vm_search
+        from src.dashboard.pages import vm_search
 
         vm_search.render(st.session_state.db_url)
 
     elif page == "Folder Labelling":
-        from pages import folder_labelling
+        from src.dashboard.pages import folder_labelling
 
         folder_labelling.render(st.session_state.db_url)
 
     elif page == "Data Import":
-        from pages import data_import
+        from src.dashboard.pages import data_import
 
         data_import.render(st.session_state.db_url)
 
     elif page == "Database Backup":
-        from pages import backup
+        from src.dashboard.pages import backup
 
         backup.render(st.session_state.db_url)
 
     elif page == "Analytics":
-        from pages import analytics
+        from src.dashboard.pages import analytics
 
         analytics.render(st.session_state.db_url)
 
     elif page == "Comparison":
-        from pages import comparison
+        from src.dashboard.pages import comparison
 
         comparison.render(st.session_state.db_url)
 
     elif page == "Data Quality":
-        from pages import data_quality
+        from src.dashboard.pages import data_quality
 
         data_quality.render(st.session_state.db_url)
 
     elif page == "Migration Targets":
-        from pages import migration_targets
+        from src.dashboard.pages import migration_targets
 
         migration_targets.render(st.session_state.db_url)
 
     elif page == "Strategy Configuration":
-        from pages import strategy_config
+        from src.dashboard.pages import strategy_config
 
         strategy_config.render(st.session_state.db_url)
 
     elif page == "Migration Planning":
-        from pages import migration_planning
+        from src.dashboard.pages import migration_planning
 
         migration_planning.render(st.session_state.db_url)
 
     elif page == "Migration Scenarios":
-        from pages import migration_scenarios
+        from src.dashboard.pages import migration_scenarios
 
         migration_scenarios.render(st.session_state.db_url)
 
     elif page == "PDF Export":
-        from pages import pdf_export
+        from src.dashboard.pages import pdf_export
 
         pdf_export.render(st.session_state.db_url)
 
     elif page == "Help":
-        from pages import help
+        from src.dashboard.pages import help
 
         help.render(st.session_state.db_url)
 
     elif page == "Naming Convention Manager":
-        from pages import naming_convention_manager
+        from src.dashboard.pages import naming_convention_manager
 
         naming_convention_manager.render(st.session_state.db_url)
 
     elif page == "Naming Analysis":
-        from pages import naming_analysis
+        from src.dashboard.pages import naming_analysis
 
         naming_analysis.render(st.session_state.db_url)
 
