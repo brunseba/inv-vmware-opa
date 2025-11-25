@@ -37,27 +37,84 @@ def render(db_url: str):
 
         add_vertical_space(1)
 
-        # Convention selector
-        col1, col2 = st.columns([3, 1])
+        # Convention selector with multi-select option
+        col1, col2, col3 = st.columns([3, 1, 1])
 
         with col1:
-            convention_names = {f"{c.name} ({c.pattern})": c.id for c in conventions}
-            selected_name = st.selectbox(
-                "Select Naming Convention",
-                options=list(convention_names.keys()),
-                help="Choose a convention to view analysis results",
+            # Toggle between single and multi-convention mode
+            analysis_mode = st.radio(
+                "Analysis Mode",
+                options=["Single Convention", "Multi-Convention"],
+                horizontal=True,
+                help="Choose single or multi-convention analysis"
             )
-            selected_convention_id = convention_names[selected_name]
 
-        with col2:
-            if st.button("🔄 Refresh Analysis", use_container_width=True):
-                with st.spinner("Re-analyzing VMs..."):
-                    stats = service.analyze_vm_inventory(selected_convention_id)
-                    st.success(f"✅ Analyzed {stats['total']} VMs")
-                    st.rerun()
+        if analysis_mode == "Single Convention":
+            with col2:
+                convention_names = {f"{c.name} ({c.pattern})": c.id for c in conventions}
+                selected_name = st.selectbox(
+                    "Select Convention",
+                    options=list(convention_names.keys()),
+                    help="Choose a convention to view analysis results",
+                    label_visibility="collapsed"
+                )
+                selected_convention_id = convention_names[selected_name]
 
-        # Get selected convention
-        convention = service.get_convention(selected_convention_id)
+            with col3:
+                if st.button("🔄 Refresh", use_container_width=True):
+                    with st.spinner("Re-analyzing VMs..."):
+                        stats = service.analyze_vm_inventory(selected_convention_id)
+                        st.success(f"✅ Analyzed {stats['total']} VMs")
+                        st.rerun()
+
+            # Get selected convention
+            convention = service.get_convention(selected_convention_id)
+            selected_conventions = [convention]
+        else:
+            # Multi-convention selection
+            with col2:
+                st.caption("Select conventions below")
+            
+            with col3:
+                if st.button("🔄 Refresh All", use_container_width=True):
+                    selected_conv_ids = st.session_state.get('multi_conv_selected', [])
+                    if selected_conv_ids:
+                        with st.spinner("Re-analyzing VMs with multiple conventions..."):
+                            stats = service.analyze_vm_inventory_multi(
+                                convention_ids=selected_conv_ids,
+                                stop_on_first_match=False
+                            )
+                            st.success(f"✅ Analyzed {stats['total']} VMs with {len(selected_conv_ids)} conventions")
+                            st.rerun()
+            
+            add_vertical_space(1)
+            
+            # Multi-select conventions
+            selected_conventions = []
+            st.markdown("**Select Conventions:**")
+            cols_per_row = 3
+            for i in range(0, len(conventions), cols_per_row):
+                cols = st.columns(cols_per_row)
+                for j, col in enumerate(cols):
+                    idx = i + j
+                    if idx < len(conventions):
+                        conv = conventions[idx]
+                        with col:
+                            if st.checkbox(
+                                f"{conv.name}",
+                                key=f"analysis_multi_select_{conv.id}",
+                                help=f"Pattern: {conv.pattern}"
+                            ):
+                                selected_conventions.append(conv)
+            
+            # Store selected IDs in session state for refresh
+            st.session_state['multi_conv_selected'] = [c.id for c in selected_conventions]
+            
+            if not selected_conventions:
+                st.warning("⚠️ Please select at least one convention to view statistics")
+                return
+            
+            convention = selected_conventions[0]  # Use first for compatibility
 
         add_vertical_space(1)
 
@@ -70,7 +127,10 @@ def render(db_url: str):
 
         # ========== TAB 2: Statistics ==========
         with tab2:
-            render_statistics(service, session, convention)
+            if analysis_mode == "Multi-Convention":
+                render_multi_convention_statistics(service, session, selected_conventions)
+            else:
+                render_statistics(service, session, convention)
 
         # ========== TAB 3: Export ==========
         with tab3:
@@ -313,6 +373,153 @@ def render_statistics(service: NamingConventionService, session, convention):
                 st.metric("Unique Values", len(value_counts))
                 st.metric("Most Common", sorted_values[0][0] if sorted_values else "N/A")
                 st.metric("Count", sorted_values[0][1] if sorted_values else 0)
+
+            add_vertical_space(1)
+
+
+def render_multi_convention_statistics(service: NamingConventionService, session, conventions: list):
+    """Render multi-convention statistics tab."""
+    add_vertical_space(1)
+
+    colored_header(
+        label="Multi-Convention Field Value Distribution",
+        description=f"Compare field value distributions across {len(conventions)} conventions",
+        color_name="green-70"
+    )
+
+    # Get all common field names across selected conventions
+    all_field_names = set()
+    for convention in conventions:
+        for field in convention.fields:
+            all_field_names.add(field.field_name)
+
+    if not all_field_names:
+        st.info("No fields found in selected conventions")
+        return
+
+    # Get analyses for all conventions
+    all_analyses_by_convention = {}
+    total_valid_vms = 0
+
+    for convention in conventions:
+        analyses = (
+            session.query(VMNamingAnalysis)
+            .filter(VMNamingAnalysis.convention_id == convention.id, VMNamingAnalysis.is_valid == True)
+            .all()
+        )
+        all_analyses_by_convention[convention.id] = analyses
+        total_valid_vms += len(analyses)
+
+    if total_valid_vms == 0:
+        st.info("No valid analyses found to generate statistics")
+        return
+
+    st.success(f"📊 Statistics based on {total_valid_vms:,} valid VMs across {len(conventions)} conventions")
+
+    add_vertical_space(1)
+
+    # Summary statistics by convention
+    st.markdown("### 📈 Convention Summary")
+    summary_data = []
+    for convention in conventions:
+        analyses = all_analyses_by_convention[convention.id]
+        summary_data.append({
+            "Convention": convention.name,
+            "Pattern": convention.pattern,
+            "Valid VMs": len(analyses),
+            "Percentage": f"{(len(analyses) / total_valid_vms * 100):.1f}%" if total_valid_vms > 0 else "0%"
+        })
+
+    st.dataframe(pd.DataFrame(summary_data), use_container_width=True, hide_index=True)
+
+    add_vertical_space(2)
+
+    # Field-by-field comparison
+    st.markdown("### 🔍 Field Value Distribution by Convention")
+
+    for field_name in sorted(all_field_names):
+        with st.container(border=True):
+            st.markdown(f"### {field_name}")
+
+            # Collect data for this field across all conventions
+            field_data_by_convention = {}
+
+            for convention in conventions:
+                # Check if this convention has this field
+                has_field = any(f.field_name == field_name for f in convention.fields)
+                if not has_field:
+                    continue
+
+                analyses = all_analyses_by_convention[convention.id]
+
+                # Count value occurrences for this convention
+                value_counts = {}
+                for analysis in analyses:
+                    value = analysis.field_values.get(field_name, "")
+                    if value:  # Only count non-empty values
+                        value_counts[value] = value_counts.get(value, 0) + 1
+
+                field_data_by_convention[convention.name] = value_counts
+
+            if not field_data_by_convention:
+                st.caption(f"No data available for field '{field_name}'")
+                continue
+
+            # Create comparison table
+            st.markdown(f"**Value distribution across {len(field_data_by_convention)} convention(s)**")
+
+            # Get all unique values across conventions
+            all_values = set()
+            for value_counts in field_data_by_convention.values():
+                all_values.update(value_counts.keys())
+
+            # Build comparison data
+            comparison_data = []
+            for value in sorted(all_values):
+                row = {"Value": value}
+                for conv_name, value_counts in field_data_by_convention.items():
+                    count = value_counts.get(value, 0)
+                    row[conv_name] = count
+                comparison_data.append(row)
+
+            # Sort by total count across all conventions
+            comparison_data.sort(
+                key=lambda x: sum(x[conv_name] for conv_name in field_data_by_convention.keys() if conv_name in x),
+                reverse=True
+            )
+
+            # Display top 20 values
+            df_comparison = pd.DataFrame(comparison_data[:20])
+            st.dataframe(df_comparison, use_container_width=True, hide_index=True)
+
+            # Visualization with plotly
+            if len(comparison_data) > 0:
+                import plotly.express as px
+                import plotly.graph_objects as go
+
+                # Prepare data for grouped bar chart
+                chart_data = []
+                for row in comparison_data[:10]:  # Top 10 for chart
+                    for conv_name in field_data_by_convention.keys():
+                        if conv_name in row:
+                            chart_data.append({
+                                "Value": row["Value"],
+                                "Convention": conv_name,
+                                "Count": row[conv_name]
+                            })
+
+                if chart_data:
+                    df_chart = pd.DataFrame(chart_data)
+                    fig = px.bar(
+                        df_chart,
+                        x="Value",
+                        y="Count",
+                        color="Convention",
+                        barmode="group",
+                        title=f"Top 10 Values for {field_name}",
+                        labels={"Count": "Number of VMs", "Value": field_name}
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
 
             add_vertical_space(1)
 
