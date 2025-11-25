@@ -160,7 +160,8 @@ def show_convention(convention_id: int, db_url: str):
             click.echo(f"{'-'*60}")
 
             for field in sorted(convention.fields, key=lambda f: f.position):
-                click.echo(f"\n📍 Position {field.position}: {field.field_name}")
+                click.echo(f"\n📍 Position {field.position}: {field.field_name} (ID: {field.id})")
+                click.echo(f"   Convention: {field.convention_id}")
                 click.echo(f"   Length:     {field.length} character(s)")
                 click.echo(f"   Required:   {'Yes' if field.is_required else 'No'}")
 
