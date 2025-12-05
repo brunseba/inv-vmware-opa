@@ -10,8 +10,20 @@ from src.models import SchemaVersion
 
 logger = logging.getLogger(__name__)
 
-# Current application schema version
-CURRENT_SCHEMA_VERSION = "1.4.0"
+# Migration to semver mapping
+# Maps migration number to corresponding application version
+MIGRATION_TO_SEMVER = {
+    "001": "1.2.0",  # Initial labelling system
+    "002": "1.3.0",  # Migration planning tables
+    "003": "1.4.0",  # Naming convention tables
+    "004": "1.5.0",  # Label source tracking
+}
+
+# Current schema - the latest migration number
+CURRENT_SCHEMA_VERSION = "004"
+
+# Current application version in semver
+CURRENT_APP_VERSION = "0.9.0"
 
 
 class SchemaService:
@@ -24,6 +36,54 @@ class SchemaService:
             session: Database session
         """
         self.session = session
+    
+    @staticmethod
+    def migration_to_semver(migration: str) -> str:
+        """Convert migration number to semver.
+        
+        Args:
+            migration: Migration number (e.g., "004")
+            
+        Returns:
+            Semver version (e.g., "1.5.0")
+        """
+        return MIGRATION_TO_SEMVER.get(migration, "unknown")
+    
+    @staticmethod
+    def get_latest_migration() -> str:
+        """Get the latest migration number.
+        
+        Returns:
+            Latest migration number
+        """
+        return CURRENT_SCHEMA_VERSION
+    
+    @staticmethod
+    def compare_versions(v1: str, v2: str) -> int:
+        """Compare two migration version numbers.
+        
+        Args:
+            v1: First version (e.g., "003")
+            v2: Second version (e.g., "004")
+            
+        Returns:
+            -1 if v1 < v2, 0 if v1 == v2, 1 if v1 > v2
+        """
+        try:
+            n1 = int(v1)
+            n2 = int(v2)
+            if n1 < n2:
+                return -1
+            elif n1 > n2:
+                return 1
+            return 0
+        except (ValueError, TypeError):
+            # Fallback to string comparison
+            if v1 < v2:
+                return -1
+            elif v1 > v2:
+                return 1
+            return 0
     
     def get_current_version(self) -> Optional[SchemaVersion]:
         """Get the current schema version from database.
@@ -152,33 +212,63 @@ class SchemaService:
             Dictionary with compatibility information:
             - compatible: bool
             - current_version: str or None
+            - current_semver: str or None
             - expected_version: str
+            - expected_semver: str
             - message: str
         """
         current = self.get_current_version()
+        expected_semver = self.migration_to_semver(CURRENT_SCHEMA_VERSION)
         
         if not current:
             return {
                 'compatible': False,
                 'current_version': None,
+                'current_semver': None,
                 'expected_version': CURRENT_SCHEMA_VERSION,
+                'expected_semver': expected_semver,
                 'message': 'No schema version recorded in database. Schema tracking needs initialization.'
             }
         
-        if current.version != CURRENT_SCHEMA_VERSION:
+        # Get current semver
+        current_semver = self.migration_to_semver(current.version)
+        
+        # Check if versions match
+        comparison = self.compare_versions(current.version, CURRENT_SCHEMA_VERSION)
+        
+        if comparison < 0:
+            # Database is behind
             return {
                 'compatible': False,
                 'current_version': current.version,
+                'current_semver': current_semver,
                 'expected_version': CURRENT_SCHEMA_VERSION,
-                'message': f'Schema version mismatch. Database is at {current.version}, '
-                          f'application expects {CURRENT_SCHEMA_VERSION}. Migration may be required.'
+                'expected_semver': expected_semver,
+                'message': f'Schema version outdated. Database is at migration {current.version} '
+                          f'({current_semver}), application expects {CURRENT_SCHEMA_VERSION} '
+                          f'({expected_semver}). Run schema-upgrade to apply pending migrations.'
+            }
+        elif comparison > 0:
+            # Database is ahead (shouldn't happen normally)
+            return {
+                'compatible': False,
+                'current_version': current.version,
+                'current_semver': current_semver,
+                'expected_version': CURRENT_SCHEMA_VERSION,
+                'expected_semver': expected_semver,
+                'message': f'Schema version ahead of application. Database is at migration {current.version} '
+                          f'({current_semver}), application expects {CURRENT_SCHEMA_VERSION} '
+                          f'({expected_semver}). Please upgrade the application.'
             }
         
+        # Versions match
         return {
             'compatible': True,
             'current_version': current.version,
+            'current_semver': current_semver,
             'expected_version': CURRENT_SCHEMA_VERSION,
-            'message': 'Schema version is compatible'
+            'expected_semver': expected_semver,
+            'message': f'Schema is up to date at migration {CURRENT_SCHEMA_VERSION} ({expected_semver})'
         }
     
     def get_schema_info(self) -> Dict:
@@ -195,7 +285,10 @@ class SchemaService:
         
         return {
             'current_version': current_version.version if current_version else None,
+            'current_semver': compatibility.get('current_semver'),
             'expected_version': CURRENT_SCHEMA_VERSION,
+            'expected_semver': compatibility.get('expected_semver'),
+            'app_version': CURRENT_APP_VERSION,
             'compatible': compatibility['compatible'],
             'tables_count': len(tables),
             'tables': tables,

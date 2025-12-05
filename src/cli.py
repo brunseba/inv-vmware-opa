@@ -926,13 +926,15 @@ def schema_version(db_url: str, history: bool):
         
         # Current status
         if current_version:
-            click.echo(f"Current version:  {current_version.version}")
-            click.echo(f"Applied at:       {current_version.applied_at.strftime('%Y-%m-%d %H:%M:%S')}")
-            click.echo(f"Applied by:       {current_version.applied_by or 'N/A'}")
+            current_semver = schema_service.migration_to_semver(current_version.version)
+            click.echo(f"Current migration: {current_version.version} (schema {current_semver})")
+            click.echo(f"Applied at:        {current_version.applied_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            click.echo(f"Applied by:        {current_version.applied_by or 'N/A'}")
         else:
-            click.echo(f"Current version:  None (uninitialized)")
+            click.echo(f"Current migration: None (uninitialized)")
         
-        click.echo(f"Expected version: {CURRENT_SCHEMA_VERSION}")
+        expected_semver = schema_service.migration_to_semver(CURRENT_SCHEMA_VERSION)
+        click.echo(f"Expected migration: {CURRENT_SCHEMA_VERSION} (schema {expected_semver})")
         
         # Compatibility status
         if compatibility['compatible']:
@@ -1000,9 +1002,13 @@ def schema_info(db_url: str):
         click.echo(f"Database: {db_url}\n")
         
         # Version info
-        click.echo("Version:")
-        click.echo(f"  Current:  {info['current_version'] or 'Not set'}")
-        click.echo(f"  Expected: {info['expected_version']}")
+        click.echo("Schema Version:")
+        if info['current_version']:
+            click.echo(f"  Current:  migration {info['current_version']} (schema {info['current_semver']})")
+        else:
+            click.echo(f"  Current:  Not set")
+        click.echo(f"  Expected: migration {info['expected_version']} (schema {info['expected_semver']})")
+        click.echo(f"  App:      {info['app_version']}")
         click.echo(f"  Status:   {'✅ Compatible' if info['compatible'] else '⚠️  Incompatible'}")
         
         # Tables
@@ -1107,15 +1113,15 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
         
         # Check current schema version
         current_version = schema_service.get_current_version()
-        current_ver_num = None
         
         if current_version:
-            # Extract numeric version (e.g., "1.4.0" -> look for last migration)
-            click.echo(f"Current schema version: {current_version.version}")
-            # Try to determine which migration corresponds to this
-            # For now, assume migrations are tracked separately
+            current_semver = schema_service.migration_to_semver(current_version.version)
+            click.echo(f"Current: migration {current_version.version} (schema {current_semver})")
         else:
-            click.echo("Current schema version: None (uninitialized)")
+            click.echo("Current: None (uninitialized)")
+        
+        expected_semver = schema_service.migration_to_semver(CURRENT_SCHEMA_VERSION)
+        click.echo(f"Latest:  migration {CURRENT_SCHEMA_VERSION} (schema {expected_semver})")
         
         # Check schema_versions table for applied migrations
         try:
@@ -1138,8 +1144,9 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
                 pending_migrations.append(mig)
         
         if not pending_migrations:
+            expected_semver = schema_service.migration_to_semver(CURRENT_SCHEMA_VERSION)
             click.echo(f"\n✅ Database is already up to date!")
-            click.echo(f"Latest version: {CURRENT_SCHEMA_VERSION}")
+            click.echo(f"Current: migration {CURRENT_SCHEMA_VERSION} (schema {expected_semver})")
             return
         
         # Display pending migrations
