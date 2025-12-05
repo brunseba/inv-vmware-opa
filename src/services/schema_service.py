@@ -157,10 +157,7 @@ class SchemaService:
         Returns:
             Created SchemaVersion object
         """
-        # Mark all previous versions as not current
-        self.session.query(SchemaVersion).update({'is_current': False})
-        
-        # Create new version record
+        # Create new version record (is_current will be determined after)
         schema_version = SchemaVersion(
             version=version,
             description=description,
@@ -169,13 +166,37 @@ class SchemaService:
             tables_added=tables_added,
             tables_modified=tables_modified,
             tables_removed=tables_removed,
-            is_current=True,
+            is_current=False,  # Will be updated below
             rollback_available=rollback_available,
             rollback_script=rollback_script,
             notes=notes
         )
         
         self.session.add(schema_version)
+        self.session.flush()  # Flush to get the record in the database
+        
+        # Now determine which version should be marked as current (highest migration number)
+        all_versions = self.session.query(SchemaVersion).all()
+        highest_version = None
+        highest_num = -1
+        
+        for v in all_versions:
+            try:
+                num = int(v.version)
+                if num > highest_num:
+                    highest_num = num
+                    highest_version = v
+            except (ValueError, TypeError):
+                # Skip non-numeric versions
+                pass
+        
+        # Mark all as not current first
+        self.session.query(SchemaVersion).update({'is_current': False})
+        
+        # Mark the highest as current
+        if highest_version:
+            highest_version.is_current = True
+        
         self.session.commit()
         
         logger.info(f"Recorded schema version {version}: {description}")

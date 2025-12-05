@@ -1127,29 +1127,32 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
             click.echo("⚠️  No migrations found in migrations/ directory")
             return
         
-        # Check current schema version
-        current_version = schema_service.get_current_version()
+        # Check schema_versions table for ALL applied migrations
+        try:
+            applied_migrations = set()
+            result = session.execute(text(
+                r"SELECT version FROM schema_versions ORDER BY applied_at"
+            ))
+            for row in result:
+                applied_migrations.add(row[0])
+        except:
+            applied_migrations = set()
         
-        if current_version:
-            current_semver = schema_service.migration_to_semver(current_version.version)
-            click.echo(f"Current: migration {current_version.version} (schema {current_semver})")
+        # Determine the actual latest applied migration (highest number)
+        if applied_migrations:
+            # Get the highest migration number from applied migrations
+            numeric_applied = [int(v) for v in applied_migrations if v.isdigit()]
+            if numeric_applied:
+                latest_applied = f"{max(numeric_applied):03d}"
+                current_semver = schema_service.migration_to_semver(latest_applied)
+                click.echo(f"Current: migration {latest_applied} (schema {current_semver})")
+            else:
+                click.echo(f"Current: {', '.join(sorted(applied_migrations))}")
         else:
             click.echo("Current: None (uninitialized)")
         
         expected_semver = schema_service.migration_to_semver(CURRENT_SCHEMA_VERSION)
         click.echo(f"Latest:  migration {CURRENT_SCHEMA_VERSION} (schema {expected_semver})")
-        
-        # Check schema_versions table for applied migrations
-        try:
-            applied_migrations = set()
-            result = session.execute(text(
-                r"SELECT version FROM schema_versions WHERE migration_script LIKE '%_%.sql' ORDER BY applied_at"
-            ))
-            for row in result:
-                # Extract migration number from version or migration_script
-                applied_migrations.add(row[0])
-        except:
-            applied_migrations = set()
         
         # Determine pending migrations
         pending_migrations = []
