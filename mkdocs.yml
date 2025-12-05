@@ -1,4 +1,4 @@
-site_name: VMware Inventory OPA
+site_name: inv-vmware-opa 0.9.0
 site_description: VMware inventory management CLI tool with migration planning
 site_author: brun_s
 version: v0.8.0

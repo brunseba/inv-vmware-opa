@@ -1,4 +1,4 @@
-# VMware Inventory OPA
+# inv-vmware-opa 0.9.0
 
 A Python CLI tool for managing VMware inventory data from Excel exports into a structured database.
 
