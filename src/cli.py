@@ -11,7 +11,7 @@ from .commands.naming_convention import naming_convention
 
 
 @click.group()
-@click.version_option(version="0.8.0")
+@click.version_option(version="0.9.0")
 def cli():
     """VMware inventory management CLI."""
     pass

@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 try:
     from src import __version__
 except ImportError:
-    __version__ = "0.6.0"  # Fallback
+    __version__ = "0.9.0"  # Fallback
 
 # Import utilities  # noqa: E402
 from src.dashboard.utils.state import StateManager, SessionKeys, PageNavigator  # noqa: E402

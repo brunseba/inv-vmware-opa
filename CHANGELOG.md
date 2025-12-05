@@ -1,5 +1,41 @@
 ## Unreleased
 
+## v0.9.0 (2025-12-05)
+
+### Feat
+
+- feat(ui): add label management UI and VM Label Analysis page (e6892c2)
+- feat(cli): add --auto-label flag to analyze commands (5de7a82)
+- feat(db): add migration 004 for label source tracking (7976d9b)
+- feat(naming): add capability to convert naming convention pattern fields into labels (multiple commits)
+
+### Fix
+
+- fix(ui): resolve ambiguous column error when filtering by ALL labels (ed36038)
+- fix(ui): correct VirtualMachine attribute name (cd0c27a)
+- fix(ui): add VM Label Analysis to valid pages list (aadd570)
+
+### Features
+
+- **Label Generation from Naming Conventions**: Automatically create and apply labels to VMs based on naming convention field values
+  - Service layer: `apply_labels_from_analysis()` method with label format `nc:<convention_name>:<field_name> = <field_value>`
+  - CLI commands: `apply-labels`, `analyze --auto-label`, `analyze-multi --auto-label`
+  - Web UI enhancements: Convention Manager apply labels button, Naming Analysis label management tab, new VM Label Analysis page
+  - Database migration 004: Added label source tracking with `label_source`, `source_convention_id`, `source_field_name`, `auto_created` fields
+  - Successfully tested: 12,276 labels applied from 6,138 VMs with 22 unique labels
+
+- **VM Label Analysis Page**: Comprehensive label analytics with 4 tabs
+  - Label Filter & Search: Multi-select filtering with ANY/ALL/EXCLUDE modes
+  - Label Statistics: Usage stats, category breakdown, top labels chart
+  - Label Coverage: Coverage metrics, unlabeled VMs, labeling trends
+  - Label Analysis: Distribution by datacenter/cluster, correlation analysis
+
+### Improvements
+
+- Enhanced query performance for label filtering using optimized subquery patterns
+- Fixed SQL JOIN ambiguity issues in multi-label filtering (ALL mode)
+- Improved label source tracking for better audit trail and data lineage
+
 ## v0.6.2 (2025-11-01)
 
 ### Fix
