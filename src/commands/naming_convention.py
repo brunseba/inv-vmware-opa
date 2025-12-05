@@ -329,7 +329,7 @@ def delete_convention(convention_id: int, db_url: str):
         click.echo(f"Deleting convention '{convention.name}'...")
         service.delete_convention(convention_id)
 
-        click.echo(f"✅ Convention deleted successfully.")
+        click.echo("✅ Convention deleted successfully.")
 
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
@@ -360,8 +360,18 @@ def delete_convention(convention_id: int, db_url: str):
     type=int,
     help="Number of VMs to process per batch",
 )
+@click.option(
+    "--auto-label",
+    is_flag=True,
+    help="Automatically create and apply labels after analysis",
+)
 def analyze_inventory(
-    convention_id: int, db_url: str, datacenter: Optional[str], cluster: Optional[str], batch_size: int
+    convention_id: int,
+    db_url: str,
+    datacenter: Optional[str],
+    cluster: Optional[str],
+    batch_size: int,
+    auto_label: bool,
 ):
     """Analyze VM inventory against a naming convention."""
     from sqlalchemy import create_engine
@@ -420,6 +430,26 @@ def analyze_inventory(
         click.echo(f"   Updated:       {stats['updated']}")
         click.echo()
 
+        # Apply labels if requested
+        if auto_label and stats["valid"] > 0:
+            click.echo("🏷️  Applying labels from analyzed fields...\n")
+            label_stats = service.apply_labels_from_analysis(
+                convention_id=convention_id,
+                vm_filter=vm_filter if vm_filter else None,
+                overwrite_existing=False,
+                field_filter=None,
+                dry_run=False,
+                assigned_by="cli_auto",
+            )
+            click.echo("✅ Labels applied successfully!")
+            click.echo(f"\n🏷️  Label Results:")
+            click.echo(f"   Labels Created:   {label_stats['labels_created']}")
+            click.echo(f"   Labels Assigned:  {label_stats['labels_assigned']}")
+            click.echo(f"   VMs Labeled:      {label_stats['vms_labeled']}")
+            if label_stats["labels_skipped"] > 0:
+                click.echo(f"   Labels Skipped:   {label_stats['labels_skipped']}")
+            click.echo()
+
     except Exception as e:
         click.echo(f"\n❌ Error: {e}", err=True)
         raise click.Abort()
@@ -454,6 +484,11 @@ def analyze_inventory(
     is_flag=True,
     help="Test all conventions even if VM matches earlier one",
 )
+@click.option(
+    "--auto-label",
+    is_flag=True,
+    help="Automatically create and apply labels after analysis",
+)
 def analyze_inventory_multi(
     convention_ids: tuple,
     db_url: str,
@@ -461,6 +496,7 @@ def analyze_inventory_multi(
     cluster: Optional[str],
     batch_size: int,
     test_all: bool,
+    auto_label: bool,
 ):
     """Analyze VM inventory against multiple naming conventions."""
     from sqlalchemy import create_engine
@@ -521,14 +557,12 @@ def analyze_inventory_multi(
         click.echo(f"\n📊 Overall Results:")
         click.echo(f"   Total VMs:          {stats['total']}")
         click.echo(
-            f"   Matched:            {stats['matched']} "
-            f"({stats['matched']/stats['total']*100:.1f}%)"
+            f"   Matched:            {stats['matched']} " f"({stats['matched']/stats['total']*100:.1f}%)"
             if stats["total"] > 0
             else "   Matched:            0"
         )
         click.echo(
-            f"   Unmatched:          {stats['unmatched']} "
-            f"({stats['unmatched']/stats['total']*100:.1f}%)"
+            f"   Unmatched:          {stats['unmatched']} " f"({stats['unmatched']/stats['total']*100:.1f}%)"
             if stats["total"] > 0
             else "   Unmatched:          0"
         )
@@ -539,7 +573,7 @@ def analyze_inventory_multi(
         click.echo(f"\n   Records created:    {stats['records_created']}")
         click.echo(f"   Records updated:    {stats['records_updated']}")
 
-        click.echo(f"\n📊 By Convention:")
+        click.echo(f"\n📈 By Convention:")
         for conv_id in convention_ids:
             convention = next(c for c in conventions if c.id == conv_id)
             match_count = stats["by_convention"][conv_id]
@@ -547,6 +581,30 @@ def analyze_inventory_multi(
             click.echo(f"   [{conv_id}] {convention.name:30s} {match_count:4d} ({match_pct:.1f}%)")
 
         click.echo()
+
+        # Apply labels if requested (use first convention that has matches)
+        if auto_label and stats["matched"] > 0:
+            # Find the convention with the most matches
+            best_conv_id = max(stats["by_convention"].items(), key=lambda x: x[1])[0]
+            best_convention = next(c for c in conventions if c.id == best_conv_id)
+
+            click.echo("🏷️  Applying labels from convention '{best_convention.name}'...\n")
+            label_stats = service.apply_labels_from_analysis(
+                convention_id=best_conv_id,
+                vm_filter=vm_filter if vm_filter else None,
+                overwrite_existing=False,
+                field_filter=None,
+                dry_run=False,
+                assigned_by="cli_auto_multi",
+            )
+            click.echo("✅ Labels applied successfully!")
+            click.echo(f"\n🏷️  Label Results:")
+            click.echo(f"   Labels Created:   {label_stats['labels_created']}")
+            click.echo(f"   Labels Assigned:  {label_stats['labels_assigned']}")
+            click.echo(f"   VMs Labeled:      {label_stats['vms_labeled']}")
+            if label_stats["labels_skipped"] > 0:
+                click.echo(f"   Labels Skipped:   {label_stats['labels_skipped']}")
+            click.echo()
 
     except Exception as e:
         click.echo(f"\n❌ Error: {e}", err=True)
@@ -605,7 +663,7 @@ def export_analysis(convention_id: int, output_file: Path, db_url: str, format: 
         )
 
         if valid_only:
-            query = query.filter(VMNamingAnalysis.is_valid == True)
+            query = query.filter(VMNamingAnalysis.is_valid.is_(True))
 
         analyses = query.all()
 
@@ -640,7 +698,7 @@ def export_analysis(convention_id: int, output_file: Path, db_url: str, format: 
         elif format == "json":
             df.to_json(output_file, orient="records", indent=2)
 
-        click.echo(f"✅ Exported {len(export_data)} records to {output_file}")
+        click.echo("✅ Exported {len(export_data)} records to {output_file}")
         click.echo()
 
     except Exception as e:
@@ -889,10 +947,8 @@ def import_convention(input_file: Path, db_url: str, overwrite_name: Optional[st
 
         # Create convention
         click.echo("\n💾 Creating naming convention...")
-        convention = service.create_convention(
-            name=name, pattern=pattern, fields=fields, description=description
-        )
-        
+        convention = service.create_convention(name=name, pattern=pattern, fields=fields, description=description)
+
         # Update is_active if it's different from default (True)
         if not is_active:
             service.update_convention(convention.id, is_active=is_active)
@@ -1021,14 +1077,14 @@ def apply_labels(
         click.echo(f"   Labels assigned:      {stats['labels_assigned']}")
         click.echo(f"   VMs labeled:          {stats['vms_labeled']}")
 
-        if stats['labels_removed'] > 0:
+        if stats["labels_removed"] > 0:
             click.echo(f"   Labels removed:       {stats['labels_removed']}")
 
-        if stats['labels_skipped'] > 0:
+        if stats["labels_skipped"] > 0:
             click.echo(f"   Labels skipped:       {stats['labels_skipped']} (already exist)")
 
         # Show label format example
-        if stats['labels_created'] > 0 or stats['labels_assigned'] > 0:
+        if stats["labels_created"] > 0 or stats["labels_assigned"] > 0:
             click.echo(f"\n🏷️  Label Format:")
             example_field = convention.fields[0] if convention.fields else None
             if example_field:
