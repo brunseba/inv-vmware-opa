@@ -11,7 +11,9 @@ from src.models import (
     NamingConvention,
     NamingConventionField,
     VMNamingAnalysis,
-    VirtualMachine
+    VirtualMachine,
+    Label,
+    VMLabel
 )
 
 logger = logging.getLogger(__name__)
@@ -635,6 +637,178 @@ class NamingConventionService:
         result = list(groups.values())
         logger.info(f"Generated {len(result)} migration groups")
         return result
+    
+    def apply_labels_from_analysis(
+        self,
+        convention_id: int,
+        vm_filter: Optional[Dict] = None,
+        overwrite_existing: bool = False,
+        field_filter: Optional[List[str]] = None,
+        dry_run: bool = False,
+        assigned_by: str = "naming_convention"
+    ) -> Dict[str, int]:
+        """Apply labels to VMs based on naming convention field values.
+        
+        Creates labels with format: nc:<convention_name>:<field_name> = <field_value>
+        
+        Args:
+            convention_id: ID of naming convention to process
+            vm_filter: Optional filters for VMs (e.g., {'datacenter': 'DC1'})
+            overwrite_existing: If True, replace existing labels with same key pattern
+            field_filter: List of field names to process (None = all fields)
+            dry_run: If True, don't actually create/apply labels, just return what would happen
+            assigned_by: Username or system name assigning labels
+            
+        Returns:
+            Dictionary with statistics:
+            - labels_created: Number of new label definitions created
+            - labels_assigned: Number of VM-label assignments created
+            - vms_labeled: Number of unique VMs that received labels
+            - labels_removed: Number of labels removed (if overwrite_existing)
+            - labels_skipped: Number of label assignments skipped (already exist)
+            
+        Raises:
+            NamingConventionError: If convention not found
+        """
+        logger.info(f"Applying labels from convention {convention_id}")
+        
+        convention = self.get_convention(convention_id)
+        if not convention:
+            raise NamingConventionError(f"Convention with ID {convention_id} not found")
+        
+        stats = {
+            'labels_created': 0,
+            'labels_assigned': 0,
+            'vms_labeled': 0,
+            'labels_removed': 0,
+            'labels_skipped': 0
+        }
+        
+        # Build query for valid analyses
+        query = self.session.query(VMNamingAnalysis, VirtualMachine).join(
+            VirtualMachine, VMNamingAnalysis.vm_id == VirtualMachine.id
+        ).filter(
+            VMNamingAnalysis.convention_id == convention_id,
+            VMNamingAnalysis.is_valid == True
+        )
+        
+        # Apply VM filters
+        if vm_filter:
+            for key, value in vm_filter.items():
+                if hasattr(VirtualMachine, key):
+                    query = query.filter(getattr(VirtualMachine, key) == value)
+        
+        analyses = query.all()
+        
+        if not analyses:
+            logger.info("No valid analyses found to process")
+            return stats
+        
+        logger.info(f"Processing {len(analyses)} valid VM analyses")
+        
+        # Determine which fields to process
+        fields_to_process = convention.fields
+        if field_filter:
+            fields_to_process = [f for f in convention.fields if f.field_name in field_filter]
+        
+        if not fields_to_process:
+            logger.warning("No fields to process")
+            return stats
+        
+        # Track VMs that receive labels
+        vms_labeled = set()
+        
+        # Process each analysis
+        for analysis, vm in analyses:
+            field_values = analysis.field_values
+            
+            # If overwrite_existing, remove old labels for this convention's fields
+            if overwrite_existing and not dry_run:
+                for field in fields_to_process:
+                    label_key = f"nc:{convention.name}:{field.field_name}"
+                    # Find and remove existing labels with this key
+                    existing_label = self.session.query(Label).filter_by(key=label_key).first()
+                    if existing_label:
+                        vm_label = self.session.query(VMLabel).filter_by(
+                            vm_id=vm.id,
+                            label_id=existing_label.id
+                        ).first()
+                        if vm_label:
+                            self.session.delete(vm_label)
+                            stats['labels_removed'] += 1
+            
+            # Process each field
+            for field in fields_to_process:
+                field_value = field_values.get(field.field_name)
+                
+                # Skip empty or None values
+                if not field_value:
+                    continue
+                
+                # Generate label key and value
+                label_key = f"nc:{convention.name}:{field.field_name}"
+                label_value = str(field_value)
+                
+                # Get or create label definition
+                label = self.session.query(Label).filter_by(
+                    key=label_key,
+                    value=label_value
+                ).first()
+                
+                if not label:
+                    if dry_run:
+                        stats['labels_created'] += 1
+                    else:
+                        # Create new label
+                        label_description = f"Naming convention: {convention.name}, Field: {field.field_name}"
+                        if field.description:
+                            label_description += f" ({field.description})"
+                        
+                        label = Label(
+                            key=label_key,
+                            value=label_value,
+                            description=label_description
+                        )
+                        self.session.add(label)
+                        self.session.flush()  # Get ID
+                        stats['labels_created'] += 1
+                        logger.debug(f"Created label: {label_key}={label_value}")
+                
+                # Check if VM already has this label
+                if not dry_run:
+                    existing_assignment = self.session.query(VMLabel).filter_by(
+                        vm_id=vm.id,
+                        label_id=label.id
+                    ).first()
+                    
+                    if existing_assignment:
+                        stats['labels_skipped'] += 1
+                    else:
+                        # Assign label to VM
+                        vm_label = VMLabel(
+                            vm_id=vm.id,
+                            label_id=label.id,
+                            assigned_by=assigned_by,
+                            inherited_from_folder=False
+                        )
+                        self.session.add(vm_label)
+                        stats['labels_assigned'] += 1
+                        logger.debug(f"Assigned label {label_key}={label_value} to VM {vm.vm}")
+                else:
+                    # In dry-run, just count potential assignments
+                    stats['labels_assigned'] += 1
+                
+                vms_labeled.add(vm.id)
+        
+        stats['vms_labeled'] = len(vms_labeled)
+        
+        if not dry_run:
+            self.session.commit()
+            logger.info(f"Label application complete: {stats}")
+        else:
+            logger.info(f"Dry run complete (no changes made): {stats}")
+        
+        return stats
     
     def _validate_pattern_and_fields(self, pattern: str, fields: List[Dict]) -> None:
         """Validate pattern and field definitions.

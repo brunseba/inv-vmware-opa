@@ -915,3 +915,133 @@ def import_convention(input_file: Path, db_url: str, overwrite_name: Optional[st
         raise click.Abort()
     finally:
         session.close()
+
+
+@naming_convention.command(name="apply-labels")
+@click.argument("convention_id", type=int)
+@click.option(
+    "--db-url",
+    default="sqlite:///data/vmware_inventory.db",
+    help="Database URL",
+    show_default=True,
+)
+@click.option(
+    "--datacenter",
+    help="Filter VMs by datacenter",
+)
+@click.option(
+    "--cluster",
+    help="Filter VMs by cluster",
+)
+@click.option(
+    "--fields",
+    help="Comma-separated list of fields to process (default: all)",
+)
+@click.option(
+    "--overwrite",
+    is_flag=True,
+    help="Replace existing labels with same key pattern",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Preview what would be created without applying",
+)
+def apply_labels(
+    convention_id: int,
+    db_url: str,
+    datacenter: Optional[str],
+    cluster: Optional[str],
+    fields: Optional[str],
+    overwrite: bool,
+    dry_run: bool,
+):
+    """Apply labels to VMs based on naming convention field values."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from src.services.naming_convention_service import NamingConventionService
+
+    engine = create_engine(db_url, echo=False)
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+
+    try:
+        service = NamingConventionService(session)
+
+        # Check if convention exists
+        convention = service.get_convention(convention_id)
+        if not convention:
+            click.echo(f"❌ Convention with ID {convention_id} not found.")
+            raise click.Abort()
+
+        click.echo(f"\n🏷️  Applying labels from convention '{convention.name}'")
+        click.echo(f"   Pattern: {convention.pattern}")
+
+        # Build VM filter
+        vm_filter = {}
+        if datacenter:
+            vm_filter["datacenter"] = datacenter
+            click.echo(f"   Filter: datacenter = {datacenter}")
+        if cluster:
+            vm_filter["cluster"] = cluster
+            click.echo(f"   Filter: cluster = {cluster}")
+
+        # Parse field filter
+        field_filter = None
+        if fields:
+            field_filter = [f.strip() for f in fields.split(",")]
+            click.echo(f"   Fields: {', '.join(field_filter)}")
+        else:
+            click.echo(f"   Fields: All ({len(convention.fields)} fields)")
+
+        if overwrite:
+            click.echo("   Mode: Overwrite existing labels")
+
+        if dry_run:
+            click.echo("\n👁️  DRY RUN - No changes will be made")
+
+        click.echo()
+
+        # Apply labels
+        with click.progressbar(length=100, label="Processing VMs") as bar:
+            stats = service.apply_labels_from_analysis(
+                convention_id=convention_id,
+                vm_filter=vm_filter if vm_filter else None,
+                overwrite_existing=overwrite,
+                field_filter=field_filter,
+                dry_run=dry_run,
+            )
+            bar.update(100)
+
+        # Display results
+        mode_text = "(DRY RUN)" if dry_run else ""
+        click.echo(f"\n✅ Label application complete! {mode_text}")
+        click.echo(f"\n📊 Results:")
+        click.echo(f"   Labels created:       {stats['labels_created']}")
+        click.echo(f"   Labels assigned:      {stats['labels_assigned']}")
+        click.echo(f"   VMs labeled:          {stats['vms_labeled']}")
+
+        if stats['labels_removed'] > 0:
+            click.echo(f"   Labels removed:       {stats['labels_removed']}")
+
+        if stats['labels_skipped'] > 0:
+            click.echo(f"   Labels skipped:       {stats['labels_skipped']} (already exist)")
+
+        # Show label format example
+        if stats['labels_created'] > 0 or stats['labels_assigned'] > 0:
+            click.echo(f"\n🏷️  Label Format:")
+            example_field = convention.fields[0] if convention.fields else None
+            if example_field:
+                click.echo(f"   Key:   nc:{convention.name}:{example_field.field_name}")
+                click.echo(f"   Value: <field value from VM name>")
+
+        if dry_run:
+            click.echo("\n💡 Tip: Run without --dry-run to actually apply labels")
+
+        click.echo()
+
+    except Exception as e:
+        click.echo(f"\n❌ Error: {e}", err=True)
+        raise click.Abort()
+    finally:
+        session.close()
