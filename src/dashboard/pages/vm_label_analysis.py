@@ -178,7 +178,7 @@ def render_label_filter(session, labels):
 
                 vm_data.append(
                     {
-                        "Name": vm.name,
+                        "Name": vm.vm,
                         "Datacenter": vm.datacenter or "",
                         "Cluster": vm.cluster or "",
                         "Power State": vm.powerstate or "",
