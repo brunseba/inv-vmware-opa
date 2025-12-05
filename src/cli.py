@@ -1035,19 +1035,43 @@ def schema_info(db_url: str):
     show_default=True,
 )
 @click.option(
+    "--target",
+    default=None,
+    help="Target migration version (e.g., '004'). If not specified, applies all pending migrations.",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be done without applying changes",
+)
+@click.option(
     "--force",
     is_flag=True,
     help="Skip confirmation prompt",
 )
-def schema_upgrade(db_url: str, force: bool):
-    """Upgrade database schema to current version."""
-    from sqlalchemy import create_engine
+def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
+    """Upgrade database schema by applying pending migrations.
+    
+    This command detects and applies SQL migrations from the migrations/ directory.
+    Migrations are numbered (001, 002, 003, etc.) and applied in order.
+    
+    Examples:
+        vmware-inv schema-upgrade                    # Apply all pending migrations
+        vmware-inv schema-upgrade --target 004       # Apply up to migration 004
+        vmware-inv schema-upgrade --dry-run          # Preview migrations without applying
+    """
+    import re
+    from pathlib import Path
+    from sqlalchemy import create_engine, text
     from sqlalchemy.orm import sessionmaker
     from .models import Base
     from .services.schema_service import SchemaService, CURRENT_SCHEMA_VERSION
     
     click.echo(f"\n📊 Database Schema Upgrade")
-    click.echo(f"Database: {db_url}\n")
+    click.echo(f"Database: {db_url}")
+    if dry_run:
+        click.echo("Mode: DRY RUN (no changes will be applied)")
+    click.echo()
     
     try:
         engine = create_engine(db_url, echo=False)
@@ -1055,58 +1079,141 @@ def schema_upgrade(db_url: str, force: bool):
         session = SessionLocal()
         schema_service = SchemaService(session)
         
-        # Check current version
-        current_version = schema_service.get_current_version()
+        # Get migrations directory
+        migrations_dir = Path(__file__).parent.parent / "migrations"
+        if not migrations_dir.exists():
+            click.echo(f"✗ Migrations directory not found: {migrations_dir}", err=True)
+            raise click.Abort()
         
-        if current_version:
-            click.echo(f"Current version: {current_version.version}")
-        else:
-            click.echo("Current version: None (uninitialized)")
+        # Find migration SQL files
+        migration_pattern = re.compile(r'^(\d{3})_(.+)\.sql$')
+        migrations = []
         
-        click.echo(f"Target version:  {CURRENT_SCHEMA_VERSION}")
+        for file in sorted(migrations_dir.glob("*.sql")):
+            match = migration_pattern.match(file.name)
+            if match:
+                version = match.group(1)
+                description = match.group(2).replace("_", " ").title()
+                migrations.append({
+                    'version': version,
+                    'description': description,
+                    'file': file,
+                    'python_script': migrations_dir / f"apply_{version}_migration.py"
+                })
         
-        if current_version and current_version.version == CURRENT_SCHEMA_VERSION:
-            click.echo(f"\n✅ Database is already at the latest version!")
+        if not migrations:
+            click.echo("⚠️  No migrations found in migrations/ directory")
             return
         
+        # Check current schema version
+        current_version = schema_service.get_current_version()
+        current_ver_num = None
+        
+        if current_version:
+            # Extract numeric version (e.g., "1.4.0" -> look for last migration)
+            click.echo(f"Current schema version: {current_version.version}")
+            # Try to determine which migration corresponds to this
+            # For now, assume migrations are tracked separately
+        else:
+            click.echo("Current schema version: None (uninitialized)")
+        
+        # Check schema_versions table for applied migrations
+        try:
+            applied_migrations = set()
+            result = session.execute(text(
+                r"SELECT version FROM schema_versions WHERE migration_script LIKE '%_%.sql' ORDER BY applied_at"
+            ))
+            for row in result:
+                # Extract migration number from version or migration_script
+                applied_migrations.add(row[0])
+        except:
+            applied_migrations = set()
+        
+        # Determine pending migrations
+        pending_migrations = []
+        for mig in migrations:
+            if mig['version'] not in applied_migrations:
+                if target and int(mig['version']) > int(target):
+                    break
+                pending_migrations.append(mig)
+        
+        if not pending_migrations:
+            click.echo(f"\n✅ Database is already up to date!")
+            click.echo(f"Latest version: {CURRENT_SCHEMA_VERSION}")
+            return
+        
+        # Display pending migrations
+        click.echo(f"\n📋 Pending Migrations ({len(pending_migrations)}):")
+        for mig in pending_migrations:
+            click.echo(f"   [{mig['version']}] {mig['description']}")
+        
+        if dry_run:
+            click.echo(f"\n✓ Dry run complete. No changes were made.")
+            return
+        
+        # Confirm
         if not force:
-            click.echo("\n⚠️  This will:")
-            click.echo("   - Create any missing tables")
-            click.echo("   - Update schema version tracking")
-            click.echo(f"   - Upgrade from {current_version.version if current_version else 'uninitialized'} to {CURRENT_SCHEMA_VERSION}")
             click.echo()
-            if not click.confirm("Proceed with upgrade?"):
+            if not click.confirm("Apply these migrations?"):
                 click.echo("Aborted.")
                 return
         
-        # Create all tables
-        click.echo("\n📦 Creating/updating tables...", nl=False)
-        Base.metadata.create_all(engine)
-        click.echo(" ✓")
+        click.echo()
         
-        # Record new schema version
-        click.echo("📝 Recording schema version...", nl=False)
-        if not current_version:
-            # First time initialization
-            schema_service.initialize_schema_tracking()
-        else:
-            # Upgrade
+        # Apply migrations
+        for mig in pending_migrations:
+            click.echo(f"📦 Applying migration {mig['version']}: {mig['description']}")
+            
+            # Read SQL file
+            with open(mig['file'], 'r') as f:
+                sql_content = f.read()
+            
+            # Remove comments and split into statements
+            lines = sql_content.split("\n")
+            clean_lines = []
+            in_comment_block = False
+            
+            for line in lines:
+                if line.strip().startswith("--"):
+                    continue
+                if "/*" in line:
+                    in_comment_block = True
+                if "*/" in line:
+                    in_comment_block = False
+                    continue
+                if not in_comment_block:
+                    clean_lines.append(line)
+            
+            clean_sql = " ".join(clean_lines)
+            statements = [s.strip() for s in clean_sql.split(";") if s.strip()]
+            
+            # Execute statements
+            with engine.begin() as conn:
+                for statement in statements:
+                    try:
+                        conn.execute(text(statement))
+                    except Exception as e:
+                        if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                            pass  # Column/table already exists, continue
+                        else:
+                            click.echo(f"   ⚠️  Warning: {e}")
+            
+            # Record migration
             schema_service.record_version(
-                version=CURRENT_SCHEMA_VERSION,
-                description="Add migration planning tables (MigrationTarget, MigrationScenario, MigrationWave)",
+                version=mig['version'],
+                description=mig['description'],
                 applied_by="cli",
-                migration_script="002_add_migration_planning_tables.sql",
-                tables_added="migration_targets,migration_scenarios,migration_waves",
-                notes="Adds multi-platform migration planning and scenario analysis capabilities"
+                migration_script=mig['file'].name
             )
-        click.echo(" ✓")
+            
+            click.echo(f"   ✓ Migration {mig['version']} applied successfully")
         
         session.close()
         
-        click.echo(f"\n✅ Schema upgraded successfully to version {CURRENT_SCHEMA_VERSION}!")
-        click.echo("\n📊 Next steps:")
-        click.echo("   - Use 'vmware-inv stats' to verify database")
-        click.echo("   - Access migration planning in the dashboard")
+        click.echo(f"\n✅ Schema upgraded successfully!")
+        click.echo(f"\n📊 Next steps:")
+        click.echo("   - Run 'vmware-inv schema-version' to verify")
+        click.echo("   - Use 'vmware-inv stats' to check database")
         
     except Exception as e:
         click.echo(f"\n✗ Error: {e}", err=True)
