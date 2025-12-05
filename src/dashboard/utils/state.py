@@ -254,7 +254,7 @@ class PageNavigator:
             "Comparison",
             "Data Quality",
         ],
-        "tools": ["Folder Labelling"],
+        "tools": ["Folder Labelling", "VM Label Analysis"],
         "naming": ["Naming Convention Manager", "Naming Analysis"],
         "migration": ["Migration Targets", "Strategy Configuration", "Migration Planning", "Migration Scenarios"],
         "system": ["Data Import", "Database Backup", "PDF Export", "Help"],
