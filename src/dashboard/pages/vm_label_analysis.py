@@ -138,13 +138,21 @@ def render_label_filter(session, labels):
                 # VMs with ANY of the selected labels
                 query = query.join(VMLabel).join(Label).filter(Label.name.in_(selected_labels))
             elif "ALL" in filter_mode:
-                # VMs with ALL of the selected labels
-                for label_name in selected_labels:
-                    query = (
-                        query.join(VMLabel, VirtualMachine.id == VMLabel.vm_id)
-                        .join(Label, VMLabel.label_id == Label.id)
-                        .filter(Label.name == label_name)
-                    )
+                # VMs with ALL of the selected labels - use HAVING COUNT approach
+                from sqlalchemy import func
+
+                # Get label IDs for the selected label names
+                label_ids = [lbl.id for lbl in labels if lbl.name in selected_labels]
+
+                # Subquery: VMs that have all the selected labels
+                subquery = (
+                    session.query(VMLabel.vm_id)
+                    .filter(VMLabel.label_id.in_(label_ids))
+                    .group_by(VMLabel.vm_id)
+                    .having(func.count(func.distinct(VMLabel.label_id)) == len(label_ids))
+                )
+
+                query = query.filter(VirtualMachine.id.in_(subquery))
             else:  # Exclude
                 # VMs without any of the selected labels
                 subquery = session.query(VMLabel.vm_id).join(Label).filter(Label.name.in_(selected_labels)).distinct()
