@@ -3,6 +3,7 @@
 import streamlit as st
 import pandas as pd
 import io
+import plotly.express as px
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from streamlit_extras.colored_header import colored_header
@@ -46,7 +47,7 @@ def render(db_url: str):
                 "Analysis Mode",
                 options=["Single Convention", "Multi-Convention"],
                 horizontal=True,
-                help="Choose single or multi-convention analysis"
+                help="Choose single or multi-convention analysis",
             )
 
         if analysis_mode == "Single Convention":
@@ -56,7 +57,7 @@ def render(db_url: str):
                     "Select Convention",
                     options=list(convention_names.keys()),
                     help="Choose a convention to view analysis results",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
                 )
                 selected_convention_id = convention_names[selected_name]
 
@@ -74,21 +75,20 @@ def render(db_url: str):
             # Multi-convention selection
             with col2:
                 st.caption("Select conventions below")
-            
+
             with col3:
                 if st.button("🔄 Refresh All", use_container_width=True):
-                    selected_conv_ids = st.session_state.get('multi_conv_selected', [])
+                    selected_conv_ids = st.session_state.get("multi_conv_selected", [])
                     if selected_conv_ids:
                         with st.spinner("Re-analyzing VMs with multiple conventions..."):
                             stats = service.analyze_vm_inventory_multi(
-                                convention_ids=selected_conv_ids,
-                                stop_on_first_match=False
+                                convention_ids=selected_conv_ids, stop_on_first_match=False
                             )
                             st.success(f"✅ Analyzed {stats['total']} VMs with {len(selected_conv_ids)} conventions")
                             st.rerun()
-            
+
             add_vertical_space(1)
-            
+
             # Multi-select conventions
             selected_conventions = []
             st.markdown("**Select Conventions:**")
@@ -101,25 +101,23 @@ def render(db_url: str):
                         conv = conventions[idx]
                         with col:
                             if st.checkbox(
-                                f"{conv.name}",
-                                key=f"analysis_multi_select_{conv.id}",
-                                help=f"Pattern: {conv.pattern}"
+                                f"{conv.name}", key=f"analysis_multi_select_{conv.id}", help=f"Pattern: {conv.pattern}"
                             ):
                                 selected_conventions.append(conv)
-            
+
             # Store selected IDs in session state for refresh
-            st.session_state['multi_conv_selected'] = [c.id for c in selected_conventions]
-            
+            st.session_state["multi_conv_selected"] = [c.id for c in selected_conventions]
+
             if not selected_conventions:
                 st.warning("⚠️ Please select at least one convention to view statistics")
                 return
-            
+
             convention = selected_conventions[0]  # Use first for compatibility
 
         add_vertical_space(1)
 
         # Tabs for different views
-        tab1, tab2, tab3 = st.tabs(["📋 Analysis Results", "📈 Statistics", "📤 Export"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📋 Analysis Results", "📈 Statistics", "🏷️ Label Management", "📤 Export"])
 
         # ========== TAB 1: Analysis Results ==========
         with tab1:
@@ -132,8 +130,15 @@ def render(db_url: str):
             else:
                 render_statistics(service, session, convention)
 
-        # ========== TAB 3: Export ==========
+        # ========== TAB 3: Label Management ==========
         with tab3:
+            if analysis_mode == "Multi-Convention":
+                render_label_management_multi(service, session, selected_conventions)
+            else:
+                render_label_management(service, session, convention)
+
+        # ========== TAB 4: Export ==========
+        with tab4:
             render_export(service, session, convention)
 
         session.close()
@@ -161,8 +166,8 @@ def render_analysis_results(service: NamingConventionService, session, conventio
         return
 
     # Summary metrics
-    valid_count = query.filter(VMNamingAnalysis.is_valid == True).count()
-    invalid_count = query.filter(VMNamingAnalysis.is_valid == False).count()
+    valid_count = query.filter(VMNamingAnalysis.is_valid.is_(True)).count()
+    invalid_count = query.filter(VMNamingAnalysis.is_valid.is_(False)).count()
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -208,7 +213,7 @@ def render_analysis_results(service: NamingConventionService, session, conventio
                     # Fetch all analyses and extract field values in Python
                     analyses = (
                         session.query(VMNamingAnalysis)
-                        .filter(VMNamingAnalysis.convention_id == convention.id, VMNamingAnalysis.is_valid == True)
+                        .filter(VMNamingAnalysis.convention_id == convention.id, VMNamingAnalysis.is_valid.is_(True))
                         .all()
                     )
 
@@ -230,9 +235,9 @@ def render_analysis_results(service: NamingConventionService, session, conventio
 
     # Apply filters to query
     if validity_filter == "Valid Only":
-        query = query.filter(VMNamingAnalysis.is_valid == True)
+        query = query.filter(VMNamingAnalysis.is_valid.is_(True))
     elif validity_filter == "Invalid Only":
-        query = query.filter(VMNamingAnalysis.is_valid == False)
+        query = query.filter(VMNamingAnalysis.is_valid.is_(False))
 
     if selected_dc != "All":
         query = query.filter(VirtualMachine.datacenter == selected_dc)
@@ -323,7 +328,7 @@ def render_statistics(service: NamingConventionService, session, convention):
     # Get valid analyses
     analyses = (
         session.query(VMNamingAnalysis)
-        .filter(VMNamingAnalysis.convention_id == convention.id, VMNamingAnalysis.is_valid == True)
+        .filter(VMNamingAnalysis.convention_id == convention.id, VMNamingAnalysis.is_valid.is_(True))
         .all()
     )
 
@@ -384,7 +389,7 @@ def render_multi_convention_statistics(service: NamingConventionService, session
     colored_header(
         label="Multi-Convention Field Value Distribution",
         description=f"Compare field value distributions across {len(conventions)} conventions",
-        color_name="green-70"
+        color_name="green-70",
     )
 
     # Get all common field names across selected conventions
@@ -404,7 +409,7 @@ def render_multi_convention_statistics(service: NamingConventionService, session
     for convention in conventions:
         analyses = (
             session.query(VMNamingAnalysis)
-            .filter(VMNamingAnalysis.convention_id == convention.id, VMNamingAnalysis.is_valid == True)
+            .filter(VMNamingAnalysis.convention_id == convention.id, VMNamingAnalysis.is_valid.is_(True))
             .all()
         )
         all_analyses_by_convention[convention.id] = analyses
@@ -423,12 +428,14 @@ def render_multi_convention_statistics(service: NamingConventionService, session
     summary_data = []
     for convention in conventions:
         analyses = all_analyses_by_convention[convention.id]
-        summary_data.append({
-            "Convention": convention.name,
-            "Pattern": convention.pattern,
-            "Valid VMs": len(analyses),
-            "Percentage": f"{(len(analyses) / total_valid_vms * 100):.1f}%" if total_valid_vms > 0 else "0%"
-        })
+        summary_data.append(
+            {
+                "Convention": convention.name,
+                "Pattern": convention.pattern,
+                "Valid VMs": len(analyses),
+                "Percentage": f"{(len(analyses) / total_valid_vms * 100):.1f}%" if total_valid_vms > 0 else "0%",
+            }
+        )
 
     st.dataframe(pd.DataFrame(summary_data), use_container_width=True, hide_index=True)
 
@@ -485,7 +492,7 @@ def render_multi_convention_statistics(service: NamingConventionService, session
             # Sort by total count across all conventions
             comparison_data.sort(
                 key=lambda x: sum(x[conv_name] for conv_name in field_data_by_convention.keys() if conv_name in x),
-                reverse=True
+                reverse=True,
             )
 
             # Display top 20 values
@@ -494,19 +501,12 @@ def render_multi_convention_statistics(service: NamingConventionService, session
 
             # Visualization with plotly
             if len(comparison_data) > 0:
-                import plotly.express as px
-                import plotly.graph_objects as go
-
                 # Prepare data for grouped bar chart
                 chart_data = []
                 for row in comparison_data[:10]:  # Top 10 for chart
                     for conv_name in field_data_by_convention.keys():
                         if conv_name in row:
-                            chart_data.append({
-                                "Value": row["Value"],
-                                "Convention": conv_name,
-                                "Count": row[conv_name]
-                            })
+                            chart_data.append({"Value": row["Value"], "Convention": conv_name, "Count": row[conv_name]})
 
                 if chart_data:
                     df_chart = pd.DataFrame(chart_data)
@@ -517,7 +517,7 @@ def render_multi_convention_statistics(service: NamingConventionService, session
                         color="Convention",
                         barmode="group",
                         title=f"Top 10 Values for {field_name}",
-                        labels={"Count": "Number of VMs", "Value": field_name}
+                        labels={"Count": "Number of VMs", "Value": field_name},
                     )
                     st.plotly_chart(fig, use_container_width=True)
 
@@ -551,9 +551,9 @@ def render_export(service: NamingConventionService, session, convention):
     )
 
     if validity_filter == "Valid Only":
-        query = query.filter(VMNamingAnalysis.is_valid == True)
+        query = query.filter(VMNamingAnalysis.is_valid.is_(True))
     elif validity_filter == "Invalid Only":
-        query = query.filter(VMNamingAnalysis.is_valid == False)
+        query = query.filter(VMNamingAnalysis.is_valid.is_(False))
 
     results = query.all()
 
@@ -600,10 +600,13 @@ def render_export(service: NamingConventionService, session, convention):
     with col1:
         if export_format == "CSV":
             csv_data = df.to_csv(index=False).encode("utf-8")
+            filename = (
+                f"naming_analysis_{convention.name.replace(' ', '_')}" f"_{validity_filter.replace(' ', '_')}.csv"
+            )
             st.download_button(
                 label="⬇️ Download CSV",
                 data=csv_data,
-                file_name=f"naming_analysis_{convention.name.replace(' ', '_')}_{validity_filter.replace(' ', '_')}.csv",
+                file_name=filename,
                 mime="text/csv",
                 use_container_width=True,
                 type="primary",
@@ -616,14 +619,180 @@ def render_export(service: NamingConventionService, session, convention):
                 with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
                     df.to_excel(writer, sheet_name="Naming Analysis", index=False)
 
+                filename_xlsx = (
+                    f"naming_analysis_{convention.name.replace(' ', '_')}" f"_{validity_filter.replace(' ', '_')}.xlsx"
+                )
+                mime_type = "application/vnd.openxmlformats-officedocument" ".spreadsheetml.sheet"
                 st.download_button(
                     label="⬇️ Download Excel",
                     data=buf.getvalue(),
-                    file_name=f"naming_analysis_{convention.name.replace(' ', '_')}_{validity_filter.replace(' ', '_')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    file_name=filename_xlsx,
+                    mime=mime_type,
                     use_container_width=True,
                     type="primary",
                 )
             except Exception as e:
                 st.error(f"❌ Excel export failed: {e}")
                 st.caption("Note: Excel export requires xlsxwriter package")
+
+
+def render_label_management(service: NamingConventionService, session, convention):
+    """Render the label management tab for a single convention."""
+    add_vertical_space(1)
+
+    colored_header(
+        label="Label Management",
+        description=f"Manage labels generated from '{convention.name}' convention fields",
+        color_name="green-70",
+    )
+
+    add_vertical_space(1)
+
+    # Check if convention has been analyzed
+    analysis_count = session.query(VMNamingAnalysis).filter(VMNamingAnalysis.convention_id == convention.id).count()
+
+    if analysis_count == 0:
+        st.warning("⚠️ No analysis data found. Please run analysis first before applying labels.")
+        if st.button("🔄 Run Analysis Now", type="primary"):
+            with st.spinner("Analyzing VMs..."):
+                stats = service.analyze_vm_inventory(convention.id)
+                st.success(f"✅ Analyzed {stats['total']} VMs")
+                st.rerun()
+        return
+
+    st.info(f"📊 Found {analysis_count:,} analyzed VMs for this convention")
+
+    add_vertical_space(1)
+
+    # Configuration section
+    st.markdown("### ⚙️ Label Configuration")
+
+    # Field selection
+    field_names = [f.field_name for f in sorted(convention.fields, key=lambda f: f.position)]
+    selected_fields = st.multiselect(
+        "Select fields to create labels for:",
+        options=field_names,
+        default=field_names,
+        help="Labels will be created for selected fields only",
+    )
+
+    add_vertical_space(1)
+
+    # Filter options
+    st.markdown("**Filter VMs (optional):**")
+    col1, col2 = st.columns(2)
+    with col1:
+        datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
+        datacenter = st.selectbox("Datacenter", ["All"] + sorted(datacenters))
+        datacenter = None if datacenter == "All" else datacenter
+
+    with col2:
+        clusters = [c[0] for c in session.query(VirtualMachine.cluster).distinct().all() if c[0]]
+        cluster = st.selectbox("Cluster", ["All"] + sorted(clusters))
+        cluster = None if cluster == "All" else cluster
+
+    add_vertical_space(1)
+
+    # Options
+    st.markdown("**Options:**")
+    col1, col2 = st.columns(2)
+    with col1:
+        overwrite = st.checkbox("Overwrite existing labels", value=False, help="Replace existing label values for VMs")
+    with col2:
+        dry_run = st.checkbox("Dry run (preview only)", value=True, help="Preview changes without applying them")
+
+    add_vertical_space(1)
+
+    # Label format preview
+    if selected_fields:
+        st.markdown("**Label Format Preview:**")
+        st.caption(f"Labels will follow format: `nc:{convention.name}:<field> = <value>`")
+        st.code(f"nc:{convention.name}:{selected_fields[0]} = <extracted_value>", language="text")
+
+    add_vertical_space(2)
+
+    # Apply button
+    if st.button(
+        "🚀 Apply Labels" if not dry_run else "🔍 Preview Labels",
+        type="primary",
+        disabled=len(selected_fields) == 0,
+        use_container_width=True,
+    ):
+        # Build filter
+        vm_filter = {}
+        if datacenter:
+            vm_filter["datacenter"] = datacenter
+        if cluster:
+            vm_filter["cluster"] = cluster
+
+        mode_text = "Previewing" if dry_run else "Applying"
+        with st.spinner(f"{mode_text} labels..."):
+            try:
+                stats = service.apply_labels_from_analysis(
+                    convention_id=convention.id,
+                    vm_filter=vm_filter if vm_filter else None,
+                    overwrite_existing=overwrite,
+                    field_filter=selected_fields if selected_fields != field_names else None,
+                    dry_run=dry_run,
+                    assigned_by="streamlit_ui",
+                )
+
+                add_vertical_space(1)
+
+                if dry_run:
+                    st.info("🔍 **Dry Run Results (No changes made)**")
+                else:
+                    st.success("✅ **Labels Applied Successfully!**")
+
+                # Display statistics
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("🏷️ Labels Created", stats["labels_created"])
+                with col2:
+                    st.metric("🔗 Assignments", stats["labels_assigned"])
+                with col3:
+                    st.metric("🖥️ VMs Labeled", stats["vms_labeled"])
+                with col4:
+                    if stats["labels_removed"] > 0:
+                        st.metric("🗑️ Labels Removed", stats["labels_removed"])
+                    elif stats["labels_skipped"] > 0:
+                        st.metric("⏭️ Labels Skipped", stats["labels_skipped"])
+
+            except Exception as e:
+                st.error(f"❌ Error applying labels: {e}")
+
+
+def render_label_management_multi(service: NamingConventionService, session, selected_conventions):
+    """Render the label management tab for multiple conventions."""
+    add_vertical_space(1)
+
+    colored_header(
+        label="Multi-Convention Label Management",
+        description="Manage labels from multiple naming conventions",
+        color_name="green-70",
+    )
+
+    if not selected_conventions:
+        st.warning("⚠️ No conventions selected")
+        return
+
+    add_vertical_space(1)
+
+    st.info(f"📊 Working with {len(selected_conventions)} convention(s)")
+
+    add_vertical_space(1)
+
+    # Convention selector for label application
+    st.markdown("### Select Convention to Apply Labels")
+    st.caption("Choose which convention's fields to use for label generation")
+
+    convention_options = {f"{c.name} ({c.pattern})": c for c in selected_conventions}
+    selected_conv_name = st.selectbox(
+        "Convention", options=list(convention_options.keys()), label_visibility="collapsed"
+    )
+    selected_convention = convention_options[selected_conv_name]
+
+    add_vertical_space(1)
+
+    # Render single convention label management for selected convention
+    render_label_management(service, session, selected_convention)

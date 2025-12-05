@@ -80,7 +80,7 @@ def render_conventions_list(service: NamingConventionService, session):
     if len(conventions) > 1:
         with st.expander("🔀 Multi-Convention Analysis", expanded=False):
             st.caption("Analyze VMs against multiple conventions simultaneously")
-            
+
             # Convention selection
             selected_conventions = []
             cols_per_row = 3
@@ -92,14 +92,12 @@ def render_conventions_list(service: NamingConventionService, session):
                         conv = conventions[idx]
                         with col:
                             if st.checkbox(
-                                f"{conv.name}",
-                                key=f"multi_select_{conv.id}",
-                                help=f"Pattern: {conv.pattern}"
+                                f"{conv.name}", key=f"multi_select_{conv.id}", help=f"Pattern: {conv.pattern}"
                             ):
                                 selected_conventions.append(conv.id)
-            
+
             add_vertical_space(1)
-            
+
             # Analysis options
             col1, col2 = st.columns(2)
             with col1:
@@ -107,7 +105,7 @@ def render_conventions_list(service: NamingConventionService, session):
                     "Test all conventions",
                     value=False,
                     key="multi_test_all",
-                    help="Test all conventions even if VM matches earlier one"
+                    help="Test all conventions even if VM matches earlier one",
                 )
             with col2:
                 batch_size = st.number_input(
@@ -116,28 +114,22 @@ def render_conventions_list(service: NamingConventionService, session):
                     max_value=1000,
                     value=100,
                     key="multi_batch_size",
-                    help="Number of VMs to process per batch"
+                    help="Number of VMs to process per batch",
                 )
-            
+
             add_vertical_space(1)
-            
+
             # Analyze button
             if st.button(
                 "🔍 Analyze with Selected Conventions",
                 disabled=len(selected_conventions) < 2,
                 type="primary",
-                use_container_width=True
+                use_container_width=True,
             ):
                 if len(selected_conventions) < 2:
                     st.warning("⚠️ Please select at least 2 conventions")
                 else:
-                    analyze_multi_conventions(
-                        service,
-                        selected_conventions,
-                        conventions,
-                        test_all,
-                        batch_size
-                    )
+                    analyze_multi_conventions(service, selected_conventions, conventions, test_all, batch_size)
 
     add_vertical_space(1)
 
@@ -187,7 +179,7 @@ def render_conventions_list(service: NamingConventionService, session):
             add_vertical_space(1)
 
             # Action buttons
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, col4, col5 = st.columns(5)
 
             with col1:
                 if st.button("✏️ Edit", key=f"edit_{convention.id}", use_container_width=True):
@@ -201,11 +193,16 @@ def render_conventions_list(service: NamingConventionService, session):
                     analyze_convention(service, convention)
 
             with col3:
+                if st.button("🏷️ Apply Labels", key=f"labels_{convention.id}", use_container_width=True):
+                    st.session_state[f"show_label_config_{convention.id}"] = True
+                    st.rerun()
+
+            with col4:
                 if st.button("📊 View Results", key=f"view_{convention.id}", use_container_width=True):
                     st.session_state["nav_to_analysis"] = convention.id
                     st.info("Navigate to 'Naming Analysis' page to view results")
 
-            with col4:
+            with col5:
                 if st.button("🗑️ Delete", key=f"delete_{convention.id}", use_container_width=True):
                     if st.session_state.get(f"confirm_delete_{convention.id}"):
                         try:
@@ -219,6 +216,141 @@ def render_conventions_list(service: NamingConventionService, session):
                     else:
                         st.session_state[f"confirm_delete_{convention.id}"] = True
                         st.warning("⚠️ Click again to confirm deletion")
+
+            # Label configuration dialog
+            if st.session_state.get(f"show_label_config_{convention.id}"):
+                show_label_configuration(service, convention)
+
+
+def show_label_configuration(service: NamingConventionService, convention: NamingConvention):
+    """Show label configuration dialog."""
+    add_vertical_space(1)
+    st.markdown("---")
+    st.markdown(f"### 🏷️ Apply Labels from Convention: {convention.name}")
+
+    # Field selection
+    field_names = [f.field_name for f in sorted(convention.fields, key=lambda f: f.position)]
+    selected_fields = st.multiselect(
+        "Select fields to create labels for:",
+        options=field_names,
+        default=field_names,
+        key=f"label_fields_{convention.id}",
+        help="Labels will be created for selected fields only",
+    )
+
+    add_vertical_space(1)
+
+    # Filter options
+    st.markdown("**Filter VMs (optional):**")
+    col1, col2 = st.columns(2)
+    with col1:
+        datacenter = st.text_input(
+            "Datacenter", key=f"label_dc_{convention.id}", help="Apply labels only to VMs in this datacenter"
+        )
+    with col2:
+        cluster = st.text_input(
+            "Cluster", key=f"label_cluster_{convention.id}", help="Apply labels only to VMs in this cluster"
+        )
+
+    add_vertical_space(1)
+
+    # Options
+    col1, col2 = st.columns(2)
+    with col1:
+        overwrite = st.checkbox(
+            "Overwrite existing labels",
+            value=False,
+            key=f"label_overwrite_{convention.id}",
+            help="Replace existing label values for VMs",
+        )
+    with col2:
+        dry_run = st.checkbox(
+            "Dry run (preview only)",
+            value=True,
+            key=f"label_dry_run_{convention.id}",
+            help="Preview changes without applying them",
+        )
+
+    add_vertical_space(1)
+
+    # Build filter
+    vm_filter = {}
+    if datacenter:
+        vm_filter["datacenter"] = datacenter
+    if cluster:
+        vm_filter["cluster"] = cluster
+
+    # Action buttons
+    col1, col2, col3 = st.columns([1, 1, 2])
+
+    with col1:
+        if st.button(
+            "🚀 Apply Labels",
+            key=f"apply_labels_btn_{convention.id}",
+            type="primary",
+            disabled=len(selected_fields) == 0,
+            use_container_width=True,
+        ):
+            apply_labels_from_convention(service, convention, selected_fields, vm_filter, overwrite, dry_run)
+
+    with col2:
+        if st.button("❌ Cancel", key=f"cancel_labels_{convention.id}", use_container_width=True):
+            st.session_state[f"show_label_config_{convention.id}"] = False
+            st.rerun()
+
+    st.markdown("---")
+
+
+def apply_labels_from_convention(
+    service: NamingConventionService,
+    convention: NamingConvention,
+    fields: list,
+    vm_filter: dict,
+    overwrite: bool,
+    dry_run: bool,
+):
+    """Apply labels from naming convention fields."""
+    mode_text = "Preview" if dry_run else "Applying"
+    with st.spinner(f"{mode_text} labels for convention '{convention.name}'..."):
+        try:
+            stats = service.apply_labels_from_analysis(
+                convention_id=convention.id,
+                vm_filter=vm_filter if vm_filter else None,
+                overwrite_existing=overwrite,
+                field_filter=fields if fields != [f.field_name for f in convention.fields] else None,
+                dry_run=dry_run,
+                assigned_by="streamlit_ui",
+            )
+
+            if dry_run:
+                st.info("🔍 **Dry Run Results (No changes made)**")
+            else:
+                st.success("✅ **Labels Applied Successfully!**")
+
+            # Display statistics
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("🏷️ Labels Created", stats["labels_created"])
+            with col2:
+                st.metric("🔗 Assignments", stats["labels_assigned"])
+            with col3:
+                st.metric("🖥️ VMs Labeled", stats["vms_labeled"])
+            with col4:
+                if stats["labels_removed"] > 0:
+                    st.metric("🗑️ Labels Removed", stats["labels_removed"])
+                elif stats["labels_skipped"] > 0:
+                    st.metric("⏭️ Labels Skipped", stats["labels_skipped"])
+
+            add_vertical_space(1)
+
+            # Show label examples if created
+            if stats["labels_created"] > 0 and dry_run:
+                st.markdown("**Label Preview:**")
+                st.caption(f"Labels will follow format: `nc:{convention.name}:<field> = <value>`")
+                st.caption(f"Example: `nc:{convention.name}:{fields[0]} = <extracted_value>`")
+
+        except Exception as e:
+            st.error(f"❌ Error applying labels: {e}")
 
 
 def analyze_convention(service: NamingConventionService, convention: NamingConvention):
@@ -250,27 +382,17 @@ def analyze_convention(service: NamingConventionService, convention: NamingConve
 
 
 def analyze_multi_conventions(
-    service: NamingConventionService,
-    selected_ids: list,
-    all_conventions: list,
-    test_all: bool,
-    batch_size: int
+    service: NamingConventionService, selected_ids: list, all_conventions: list, test_all: bool, batch_size: int
 ):
     """Analyze VMs with multiple conventions."""
-    # Get convention names
-    conv_names = [c.name for c in all_conventions if c.id in selected_ids]
-    
     with st.spinner(f"Analyzing VMs with {len(selected_ids)} conventions..."):
         try:
             stats = service.analyze_vm_inventory_multi(
-                convention_ids=selected_ids,
-                vm_filter=None,
-                batch_size=batch_size,
-                stop_on_first_match=not test_all
+                convention_ids=selected_ids, vm_filter=None, batch_size=batch_size, stop_on_first_match=not test_all
             )
-            
+
             st.success("✅ Multi-Convention Analysis Complete!")
-            
+
             # Overall statistics
             st.markdown("### 📊 Overall Results")
             col1, col2, col3, col4 = st.columns(4)
@@ -287,21 +409,21 @@ def analyze_multi_conventions(
                     st.metric("Multiple Matches", stats["multiple_matches"])
                 else:
                     st.metric("Records Created", stats["records_created"])
-            
+
             add_vertical_space(1)
-            
+
             # Records statistics
             col1, col2 = st.columns(2)
             with col1:
                 st.metric("🆕 Records Created", stats["records_created"])
             with col2:
                 st.metric("🔄 Records Updated", stats["records_updated"])
-            
+
             add_vertical_space(1)
-            
+
             # Per-convention results
             st.markdown("### 📊 Results by Convention")
-            
+
             # Prepare data for chart
             conv_data = []
             for conv_id in selected_ids:
@@ -309,30 +431,27 @@ def analyze_multi_conventions(
                 if conv:
                     match_count = stats["by_convention"][conv_id]
                     match_pct = (match_count / stats["total"] * 100) if stats["total"] > 0 else 0
-                    conv_data.append({
-                        "Convention": conv.name,
-                        "Matches": match_count,
-                        "Percentage": match_pct
-                    })
-            
+                    conv_data.append({"Convention": conv.name, "Matches": match_count, "Percentage": match_pct})
+
             # Display as table
             conv_df = pd.DataFrame(conv_data)
             st.dataframe(conv_df, use_container_width=True, hide_index=True)
-            
+
             # Display as bar chart
             if conv_data:
                 import plotly.express as px
+
                 fig = px.bar(
                     conv_df,
                     x="Convention",
                     y="Matches",
                     text="Percentage",
                     title="Matches by Convention",
-                    labels={"Matches": "Number of Matches", "Convention": "Naming Convention"}
+                    labels={"Matches": "Number of Matches", "Convention": "Naming Convention"},
                 )
-                fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+                fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
                 st.plotly_chart(fig, use_container_width=True)
-            
+
         except Exception as e:
             st.error(f"❌ Multi-convention analysis failed: {e}")
             st.exception(e)

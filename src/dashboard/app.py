@@ -14,12 +14,12 @@ try:
 except ImportError:
     __version__ = "0.6.0"  # Fallback
 
-# Import utilities
-from src.dashboard.utils.state import StateManager, SessionKeys, PageNavigator
-from src.dashboard.utils.database import DatabaseManager
-from src.dashboard.utils.cache import get_vm_counts, CacheManager
-from src.dashboard.utils.errors import ErrorHandler
-from src.dashboard.utils.theme import ThemeManager
+# Import utilities  # noqa: E402
+from src.dashboard.utils.state import StateManager, SessionKeys, PageNavigator  # noqa: E402
+from src.dashboard.utils.database import DatabaseManager  # noqa: E402
+from src.dashboard.utils.cache import get_vm_counts, CacheManager  # noqa: E402
+from src.dashboard.utils.errors import ErrorHandler  # noqa: E402
+from src.dashboard.utils.theme import ThemeManager  # noqa: E402
 
 # Page configuration
 st.set_page_config(
@@ -129,12 +129,13 @@ with st.sidebar:
                 PageNavigator.navigate_to(page_name)
 
     # === INFRASTRUCTURE (Collapsible) ===
-    with st.expander("🏗️ Infrastructure", expanded=False):
+    with st.expander("🏭️ Infrastructure", expanded=False):
         infra_pages = [
             ("💻 Resources", "Resources"),
             ("🌐 Infrastructure", "Infrastructure"),
             ("📁 Folder Analysis", "Folder Analysis"),
             ("🏷️ Folder Labelling", "Folder Labelling"),
+            ("🏷️ VM Label Analysis", "VM Label Analysis"),
         ]
         for display_name, page_name in infra_pages:
             if st.button(display_name, key=f"btn_{page_name}", width="stretch"):
@@ -196,7 +197,7 @@ with st.sidebar:
 
             st.metric("Total VMs", f"{counts['total']:,}")
             st.metric("Powered On", f"{counts['powered_on']:,}")
-        except Exception as e:
+        except Exception:
             st.caption("Load data to see stats")
 
     # Cache controls
@@ -322,6 +323,11 @@ try:
         from src.dashboard.pages import naming_analysis
 
         naming_analysis.render(st.session_state.db_url)
+
+    elif page == "VM Label Analysis":
+        from src.dashboard.pages import vm_label_analysis
+
+        vm_label_analysis.render(st.session_state.db_url)
 
 except Exception as e:
     st.error(f"❌ Error loading page: {str(e)}")
