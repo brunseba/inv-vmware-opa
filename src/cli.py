@@ -1086,9 +1086,25 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
         schema_service = SchemaService(session)
         
         # Get migrations directory
-        migrations_dir = Path(__file__).parent.parent / "migrations"
-        if not migrations_dir.exists():
-            click.echo(f"✗ Migrations directory not found: {migrations_dir}", err=True)
+        # Try multiple locations: development, installed package, or current directory
+        possible_dirs = [
+            Path(__file__).parent.parent / "migrations",  # Development: src/../migrations
+            Path(__file__).parent / "migrations",          # Package: src/migrations
+            Path.cwd() / "migrations",                     # Current directory
+        ]
+        
+        migrations_dir = None
+        for dir_path in possible_dirs:
+            if dir_path.exists() and dir_path.is_dir():
+                migrations_dir = dir_path
+                break
+        
+        if not migrations_dir:
+            click.echo(f"✗ Migrations directory not found in any of these locations:", err=True)
+            for dir_path in possible_dirs:
+                click.echo(f"   - {dir_path}", err=True)
+            click.echo(f"\n💡 Hint: Run this command from the project root directory, or ensure ", err=True)
+            click.echo(f"   migrations are included in the package installation.", err=True)
             raise click.Abort()
         
         # Find migration SQL files

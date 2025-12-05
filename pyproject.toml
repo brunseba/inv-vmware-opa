@@ -106,10 +106,11 @@ py-modules = []
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*"]
+include = ["src*", "migrations"]
 
 [tool.setuptools.package-data]
 src = ["dashboard/*.py", "dashboard/pages/*.py", "tools/*.py"]
+migrations = ["*.sql", "*.py", "*.md"]
 
 [dependency-groups]
 dev = [
