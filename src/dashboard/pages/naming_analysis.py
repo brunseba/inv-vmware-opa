@@ -58,6 +58,7 @@ def render(db_url: str):
                     options=list(convention_names.keys()),
                     help="Choose a convention to view analysis results",
                     label_visibility="collapsed",
+                    key="single_convention_selector",
                 )
                 selected_convention_id = convention_names[selected_name]
 
@@ -188,15 +189,17 @@ def render_analysis_results(service: NamingConventionService, session, conventio
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        validity_filter = st.selectbox("Validity", options=["All", "Valid Only", "Invalid Only"])
+        validity_filter = st.selectbox(
+            "Validity", options=["All", "Valid Only", "Invalid Only"], key="analysis_validity_filter"
+        )
 
     with col2:
         datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
-        selected_dc = st.selectbox("Datacenter", ["All"] + sorted(datacenters))
+        selected_dc = st.selectbox("Datacenter", ["All"] + sorted(datacenters), key="analysis_datacenter_filter")
 
     with col3:
         clusters = [c[0] for c in session.query(VirtualMachine.cluster).distinct().all() if c[0]]
-        selected_cluster = st.selectbox("Cluster", ["All"] + sorted(clusters))
+        selected_cluster = st.selectbox("Cluster", ["All"] + sorted(clusters), key="analysis_cluster_filter")
 
     with col4:
         limit = st.number_input("Max Results", min_value=10, max_value=1000, value=100, step=10)
@@ -683,12 +686,14 @@ def render_label_management(service: NamingConventionService, session, conventio
     col1, col2 = st.columns(2)
     with col1:
         datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
-        datacenter = st.selectbox("Datacenter", ["All"] + sorted(datacenters))
+        datacenter = st.selectbox(
+            "Datacenter", ["All"] + sorted(datacenters), key=f"label_mgmt_datacenter_{convention.id}"
+        )
         datacenter = None if datacenter == "All" else datacenter
 
     with col2:
         clusters = [c[0] for c in session.query(VirtualMachine.cluster).distinct().all() if c[0]]
-        cluster = st.selectbox("Cluster", ["All"] + sorted(clusters))
+        cluster = st.selectbox("Cluster", ["All"] + sorted(clusters), key=f"label_mgmt_cluster_{convention.id}")
         cluster = None if cluster == "All" else cluster
 
     add_vertical_space(1)
@@ -788,7 +793,10 @@ def render_label_management_multi(service: NamingConventionService, session, sel
 
     convention_options = {f"{c.name} ({c.pattern})": c for c in selected_conventions}
     selected_conv_name = st.selectbox(
-        "Convention", options=list(convention_options.keys()), label_visibility="collapsed"
+        "Convention",
+        options=list(convention_options.keys()),
+        label_visibility="collapsed",
+        key="multi_label_mgmt_convention_selector",
     )
     selected_convention = convention_options[selected_conv_name]
 
