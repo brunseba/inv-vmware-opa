@@ -112,15 +112,15 @@ def render_label_filter(session, labels):
 
     with col1:
         datacenters = [dc[0] for dc in session.query(VirtualMachine.datacenter).distinct().all() if dc[0]]
-        selected_dc = st.selectbox("Datacenter", ["All"] + sorted(datacenters))
+        selected_dc = st.selectbox("Datacenter", ["All"] + sorted(datacenters), key="label_filter_datacenter")
 
     with col2:
         clusters = [c[0] for c in session.query(VirtualMachine.cluster).distinct().all() if c[0]]
-        selected_cluster = st.selectbox("Cluster", ["All"] + sorted(clusters))
+        selected_cluster = st.selectbox("Cluster", ["All"] + sorted(clusters), key="label_filter_cluster")
 
     with col3:
         power_states = ["All", "poweredOn", "poweredOff", "suspended"]
-        selected_power = st.selectbox("Power State", power_states)
+        selected_power = st.selectbox("Power State", power_states, key="label_filter_power_state")
 
     with col4:
         max_results = st.number_input("Max Results", min_value=10, max_value=10000, value=1000, step=100)
@@ -134,15 +134,15 @@ def render_label_filter(session, labels):
 
         # Apply label filters
         if selected_labels:
+            # Get label IDs for the selected label names
+            label_ids = [lbl.id for lbl in labels if lbl.name in selected_labels]
+
             if "ANY" in filter_mode:
                 # VMs with ANY of the selected labels
                 query = query.join(VMLabel).join(Label).filter(Label.name.in_(selected_labels))
             elif "ALL" in filter_mode:
                 # VMs with ALL of the selected labels - use HAVING COUNT approach
                 from sqlalchemy import func
-
-                # Get label IDs for the selected label names
-                label_ids = [lbl.id for lbl in labels if lbl.name in selected_labels]
 
                 # Subquery: VMs that have all the selected labels
                 subquery = (
@@ -155,7 +155,10 @@ def render_label_filter(session, labels):
                 query = query.filter(VirtualMachine.id.in_(subquery))
             else:  # Exclude
                 # VMs without any of the selected labels
-                subquery = session.query(VMLabel.vm_id).join(Label).filter(Label.name.in_(selected_labels)).distinct()
+                # Get all VM IDs that have any of the selected labels
+                subquery = session.query(VMLabel.vm_id).filter(VMLabel.label_id.in_(label_ids)).distinct()
+
+                # Filter to VMs NOT in that subquery
                 query = query.filter(~VirtualMachine.id.in_(subquery))
 
         # Apply additional filters
@@ -256,7 +259,11 @@ def render_label_statistics(session, labels):
     with col1:
         show_unused = st.checkbox("Show unused labels", value=False)
     with col2:
-        category_filter = st.selectbox("Category Filter", ["All"] + sorted(df_stats["Category"].unique().tolist()))
+        category_filter = st.selectbox(
+            "Category Filter",
+            ["All"] + sorted(df_stats["Category"].unique().tolist()),
+            key="label_stats_category_filter",
+        )
 
     # Apply filters
     filtered_df = df_stats.copy()
@@ -390,7 +397,9 @@ def render_label_analysis(session, labels):
 
     # Select a label to analyze
     label_names = [label.name for label in labels]
-    selected_label = st.selectbox("Select a label to analyze", options=label_names)
+    selected_label = st.selectbox(
+        "Select a label to analyze", options=label_names, key="label_analysis_cooccurrence_selector"
+    )
 
     if selected_label:
         # Find VMs with this label
