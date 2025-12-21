@@ -204,6 +204,7 @@ source = ["src"]
 branch = true
 parallel = true
 data_file = ".coverage"
+relative_files = true
 omit = [
     "tests/*",
     "src/dashboard/*",
