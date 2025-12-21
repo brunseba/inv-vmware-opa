@@ -2,9 +2,10 @@
 
 ## Current Status
 
-**SonarQube Coverage**: 28.58% ✅
+**SonarQube Coverage**: 32.74% ✅
 **Last Updated**: 2025-12-21
-**Tests Passing**: 149/149 (100%)
+**Tests Passing**: 164/169 (97%)
+**Priority 2 Status**: Partially Complete (82% of target)
 
 ### Priority 1 Resolution - ✅ COMPLETED
 
@@ -168,16 +169,18 @@ To immediately show coverage in SonarQube:
 - ✅ Generated working coverage.xml with relative paths (commit a4ae58c)
 - ✅ Achieved 28.58% coverage (exceeded 20-30% target)
 
-**Priority 2 (Next Sprint):** 🔄 IN PROGRESS
-- Fix remaining test failures:
-  - test_schema_cli.py (output format expectations)
-  - test_migration_scenarios.py (VM keyword argument)
-  - Dashboard test imports
-- Add new tests for:
-  - src/cli.py (0% coverage, 736 statements)
-  - src/report_generator.py (0% coverage, 593 statements)
-  - src/tools/screenshot_*.py (0% coverage)
-- Target: 40-50% coverage
+**Priority 2 (Next Sprint):** 🔶 PARTIALLY COMPLETE (82% of goal)
+- ✅ Fixed schema CLI tests: 4/5 passing (80%)
+- ✅ Fixed migration scenario tests: 11/15 passing (73%)
+- ✅ Added 15 new tests (149 → 164)
+- ✅ Coverage increased: 28.58% → 32.74% (+4.16pp)
+- 🔶 Target: 40-50% coverage (Gap: -7.26pp)
+
+Remaining work:
+- Fix 1 schema CLI test (schema-upgrade migration tracking)
+- Fix 4 migration scenario tests (API contract mismatches)
+- Add CLI command tests (~5-8% coverage potential)
+- Add report generator tests (~2-3% coverage potential)
 
 **Priority 3 (Future):**
 - Increase coverage to 60-80%
@@ -187,6 +190,12 @@ To immediately show coverage in SonarQube:
 
 ## Recent Commits
 
+**Priority 2**:
+- `0b94cdb` - test: increase coverage to 32.74% (164 passing tests)
+- `0cf4c4f` - test: fix test failures (schema-version + migration scenarios)
+
+**Priority 1**:
+- `642eedd` - docs: update test coverage status - Priority 1 completed
 - `a4ae58c` - fix: use relative paths in coverage.xml for SonarQube
 - `870a96e` - test: increase coverage to 28.58% (149 passing tests)
 - `0a10d33` - fix: enable test coverage (18.41% baseline)
@@ -196,8 +205,9 @@ To immediately show coverage in SonarQube:
 
 ## Related Issues
 
-- ✅ SonarQube: 28.58% coverage (was 0%)
+- ✅ SonarQube: 32.74% coverage (was 0%, +32.74pp)
 - ✅ Reliability rating: A (0 bugs)
 - ✅ Test infrastructure: Fixed and working
 - ⚠️ Code smells: 195 remaining
-- 🎯 Next target: 40-50% coverage
+- 🎯 Current: 32.74% (Priority 2: 82% complete)
+- 🎯 Next target: 40% coverage (gap: -7.26pp)
