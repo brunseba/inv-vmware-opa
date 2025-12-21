@@ -142,8 +142,9 @@ class DashboardScreenshotter:
                     # Try to click it to expand (if already expanded, this is harmless)
                     summary.click()
                     time.sleep(0.5)  # Brief wait for expansion animation
-                except:
-                    pass  # Expander might already be expanded or not clickable
+                except Exception:
+                    # Expander might already be expanded or not clickable
+                    pass
 
             # Now find and click the navigation button
             buttons = self.driver.find_elements(By.CSS_SELECTOR, "button")

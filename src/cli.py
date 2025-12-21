@@ -1202,7 +1202,8 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
             result = session.execute(text(r"SELECT version FROM schema_versions ORDER BY applied_at"))
             for row in result:
                 applied_migrations.add(row[0])
-        except:
+        except Exception:
+            # Table doesn't exist yet or query failed
             applied_migrations = set()
 
         # Determine the actual latest applied migration (highest number)

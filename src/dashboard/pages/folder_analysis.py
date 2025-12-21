@@ -212,7 +212,8 @@ def render(db_url: str):
             try:
                 labels = label_service.get_folder_labels(folder)
                 folder_label_counts[folder] = len(labels)
-            except:
+            except Exception:
+                # Folder might not have labels or query failed
                 folder_label_counts[folder] = 0
 
         df_folders["Label_Count"] = df_folders["Folder"].map(folder_label_counts)
@@ -301,7 +302,8 @@ def render(db_url: str):
                 try:
                     labels = label_service.get_folder_labels(folder)
                     folder_label_counts[folder] = len(labels)
-                except:
+                except Exception:
+                    # Folder might not have labels or query failed
                     folder_label_counts[folder] = 0
 
             df_folders["Label_Count"] = df_folders["Folder"].map(folder_label_counts)

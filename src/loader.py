@@ -24,7 +24,7 @@ def parse_date(value) -> datetime | None:
     if isinstance(value, str):
         try:
             return pd.to_datetime(value)
-        except:
+        except (ValueError, TypeError):
             return None
     return None
 

@@ -269,7 +269,8 @@ def render_scenarios_list(service: MigrationScenarioService, session):
                 calculated_days = duration_detail.get("total_days", 0)
             else:
                 initial_repl_h = delta_sync_h = cutover_h = total_repl_h = total_h = calculated_days = 0
-        except:
+        except Exception:
+            # Failed to calculate duration details
             initial_repl_h = delta_sync_h = cutover_h = total_repl_h = total_h = calculated_days = 0
 
         scenarios_data.append(
@@ -666,7 +667,7 @@ def render_create_scenario(service: MigrationScenarioService, session):
                 try:
                     vm_ids = [int(x.strip()) for x in vm_ids_input.split(",")]
                     vm_selection_criteria["vm_ids"] = vm_ids
-                except:
+                except (ValueError, TypeError):
                     st.error("Invalid VM IDs format")
 
         add_vertical_space(1)

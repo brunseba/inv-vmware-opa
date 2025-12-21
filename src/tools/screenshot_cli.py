@@ -538,7 +538,8 @@ def pages(url: str, live: bool):
                         summary = expander.find_element(By.TAG_NAME, "summary")
                         summary.click()
                         time.sleep(0.3)
-                    except:
+                    except Exception:
+                        # Expander might be already expanded or not interactive
                         pass
 
                 progress.update(task, description="[green]✓ Menus expanded")

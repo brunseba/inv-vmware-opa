@@ -145,7 +145,8 @@ def render(db_url: str):
                 # Clean up temp file
                 try:
                     os.unlink(tmp_path)
-                except:
+                except (OSError, FileNotFoundError):
+                    # File already deleted or can't be deleted
                     pass
 
         else:
