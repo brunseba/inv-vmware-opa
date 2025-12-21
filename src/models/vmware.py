@@ -1,8 +1,10 @@
 """Database models for VMware inventory."""
 
 from datetime import datetime
-from sqlalchemy import String, Integer, Float, DateTime, Boolean, Text, ForeignKey, UniqueConstraint
+
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
+
 from src.models.base import Base
 
 

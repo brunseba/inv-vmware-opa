@@ -1,12 +1,12 @@
 """Service for managing VM naming conventions and analysis."""
 
-import re
 import logging
-from typing import Dict, List, Optional, Tuple
+import re
 from datetime import datetime
+
 from sqlalchemy.orm import Session
 
-from src.models import NamingConvention, NamingConventionField, VMNamingAnalysis, VirtualMachine, Label, VMLabel
+from src.models import Label, NamingConvention, NamingConventionField, VirtualMachine, VMLabel, VMNamingAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +38,9 @@ class NamingConventionService:
         self,
         name: str,
         pattern: str,
-        fields: List[Dict],
-        description: Optional[str] = None,
-        created_by: Optional[str] = None,
+        fields: list[dict],
+        description: str | None = None,
+        created_by: str | None = None,
     ) -> NamingConvention:
         """Create a new naming convention.
 
@@ -106,11 +106,11 @@ class NamingConventionService:
     def update_convention(
         self,
         convention_id: int,
-        name: Optional[str] = None,
-        pattern: Optional[str] = None,
-        fields: Optional[List[Dict]] = None,
-        description: Optional[str] = None,
-        is_active: Optional[bool] = None,
+        name: str | None = None,
+        pattern: str | None = None,
+        fields: list[dict] | None = None,
+        description: str | None = None,
+        is_active: bool | None = None,
     ) -> NamingConvention:
         """Update an existing naming convention.
 
@@ -207,7 +207,7 @@ class NamingConventionService:
 
         logger.info(f"Deleted naming convention ID {convention_id}")
 
-    def get_convention(self, convention_id: int) -> Optional[NamingConvention]:
+    def get_convention(self, convention_id: int) -> NamingConvention | None:
         """Get a naming convention by ID.
 
         Args:
@@ -218,7 +218,7 @@ class NamingConventionService:
         """
         return self.session.query(NamingConvention).get(convention_id)
 
-    def list_conventions(self, active_only: bool = False, include_fields: bool = True) -> List[NamingConvention]:
+    def list_conventions(self, active_only: bool = False, include_fields: bool = True) -> list[NamingConvention]:
         """List all naming conventions.
 
         Args:
@@ -238,7 +238,7 @@ class NamingConventionService:
         # Fields are loaded automatically via relationship if accessed
         return conventions
 
-    def parse_vm_name(self, vm_name: str, convention: NamingConvention) -> Tuple[bool, Dict[str, str], List[str]]:
+    def parse_vm_name(self, vm_name: str, convention: NamingConvention) -> tuple[bool, dict[str, str], list[str]]:
         """Parse a VM name according to a naming convention.
 
         Args:
@@ -305,8 +305,8 @@ class NamingConventionService:
         return is_valid, field_values, errors
 
     def analyze_vm_inventory(
-        self, convention_id: int, vm_filter: Optional[Dict] = None, batch_size: int = 100
-    ) -> Dict[str, int]:
+        self, convention_id: int, vm_filter: dict | None = None, batch_size: int = 100
+    ) -> dict[str, int]:
         """Analyze VM inventory against a naming convention.
 
         Args:
@@ -393,11 +393,11 @@ class NamingConventionService:
 
     def analyze_vm_inventory_multi(
         self,
-        convention_ids: List[int],
-        vm_filter: Optional[Dict] = None,
+        convention_ids: list[int],
+        vm_filter: dict | None = None,
         batch_size: int = 100,
         stop_on_first_match: bool = True,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """Analyze VM inventory against multiple naming conventions.
 
         Args:
@@ -444,7 +444,7 @@ class NamingConventionService:
             "total": total_vms,
             "matched": 0,
             "unmatched": 0,
-            "by_convention": {conv_id: 0 for conv_id in convention_ids},
+            "by_convention": dict.fromkeys(convention_ids, 0),
             "multiple_matches": 0,
             "records_created": 0,
             "records_updated": 0,
@@ -515,8 +515,8 @@ class NamingConventionService:
         return stats
 
     def query_vms_by_field(
-        self, convention_id: int, field_filters: Dict[str, str], valid_only: bool = True
-    ) -> List[VMNamingAnalysis]:
+        self, convention_id: int, field_filters: dict[str, str], valid_only: bool = True
+    ) -> list[VMNamingAnalysis]:
         """Query VMs by naming convention field values.
 
         Args:
@@ -540,7 +540,7 @@ class NamingConventionService:
 
         return query.all()
 
-    def generate_migration_groups(self, convention_id: int, grouping_fields: List[str]) -> List[Dict]:
+    def generate_migration_groups(self, convention_id: int, grouping_fields: list[str]) -> list[dict]:
         """Generate migration groups based on naming convention fields.
 
         Args:
@@ -584,12 +584,12 @@ class NamingConventionService:
     def apply_labels_from_analysis(
         self,
         convention_id: int,
-        vm_filter: Optional[Dict] = None,
+        vm_filter: dict | None = None,
         overwrite_existing: bool = False,
-        field_filter: Optional[List[str]] = None,
+        field_filter: list[str] | None = None,
         dry_run: bool = False,
         assigned_by: str = "naming_convention",
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """Apply labels to VMs based on naming convention field values.
 
         Creates labels with format: nc:<convention_name>:<field_name> = <field_value>
@@ -748,7 +748,7 @@ class NamingConventionService:
 
         return stats
 
-    def _validate_pattern_and_fields(self, pattern: str, fields: List[Dict]) -> None:
+    def _validate_pattern_and_fields(self, pattern: str, fields: list[dict]) -> None:
         """Validate pattern and field definitions.
 
         Args:
@@ -779,7 +779,7 @@ class NamingConventionService:
         expected_positions = list(range(len(fields)))
         if sorted_positions != expected_positions:
             raise PatternValidationError(
-                f"Field positions must be consecutive starting from 0. "
+                "Field positions must be consecutive starting from 0. "
                 f"Expected {expected_positions}, got {sorted_positions}"
             )
 

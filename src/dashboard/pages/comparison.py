@@ -1,14 +1,17 @@
 """Comparison page - Compare datacenters and clusters side by side."""
 
-import streamlit as st
-import plotly.express as px
-import plotly.graph_objects as go
-from sqlalchemy import create_engine, func
-from sqlalchemy.orm import sessionmaker
-import pandas as pd
-from src.models import VirtualMachine
 import sys
 from pathlib import Path
+
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+from sqlalchemy import create_engine, func
+from sqlalchemy.orm import sessionmaker
+
+from src.models import VirtualMachine
+from src.constants import TOTAL_VMS, POWERED_ON, MEMORY_GB
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.dashboard.utils.theme import ThemeManager
@@ -75,11 +78,11 @@ def _compare_datacenters(session):
         dc_data.append(
             {
                 "Datacenter": dc,
-                "Total VMs": total,
-                "Powered On": powered_on,
+                TOTAL_VMS: total,
+                POWERED_ON: powered_on,
                 "Power On %": f"{(powered_on/total*100):.1f}%" if total > 0 else "0%",
                 "vCPUs": int(total_cpus),
-                "Memory (GB)": int(total_mem / 1024) if total_mem else 0,
+                MEMORY_GB: int(total_mem / 1024) if total_mem else 0,
                 "Clusters": clusters,
                 "Hosts": hosts,
                 "VMs/Host": f"{total/hosts:.1f}" if hosts > 0 else "0",
@@ -100,10 +103,10 @@ def _compare_datacenters(session):
         fig = px.bar(
             df_comparison,
             x="Datacenter",
-            y="Total VMs",
+            y=TOTAL_VMS,
             title="VM Count Comparison",
             color="Datacenter",
-            text="Total VMs",
+            text=TOTAL_VMS,
         )
         fig.update_traces(textposition="outside")
         fig = ThemeManager.apply_chart_theme(fig)
@@ -112,7 +115,7 @@ def _compare_datacenters(session):
 
     with col2:
         fig = px.bar(
-            df_comparison, x="Datacenter", y=["vCPUs", "Memory (GB)"], title="Resource Comparison", barmode="group"
+            df_comparison, x="Datacenter", y=["vCPUs", MEMORY_GB], title="Resource Comparison", barmode="group"
         )
         fig = ThemeManager.apply_chart_theme(fig)
 
@@ -122,7 +125,7 @@ def _compare_datacenters(session):
     st.subheader("Overall Comparison (Normalized)")
 
     # Normalize metrics for radar chart
-    metrics = ["Total VMs", "vCPUs", "Memory (GB)", "Clusters", "Hosts"]
+    metrics = [TOTAL_VMS, "vCPUs", MEMORY_GB, "Clusters", "Hosts"]
     normalized_data = []
 
     for metric in metrics:
@@ -142,7 +145,7 @@ def _compare_datacenters(session):
         line_close=True,
         title="Datacenter Profile Comparison (% of max)",
     )
-    fig.update_traces(fill="toself")
+    fig.update_traces(fill="tosel")
     fig = ThemeManager.apply_chart_theme(fig)
 
     st.plotly_chart(fig, width="stretch")
@@ -183,10 +186,10 @@ def _compare_clusters(session):
             {
                 "Cluster": cluster,
                 "Datacenter": datacenter[0] if datacenter else "Unknown",
-                "Total VMs": total,
-                "Powered On": powered_on,
+                TOTAL_VMS: total,
+                POWERED_ON: powered_on,
                 "vCPUs": int(total_cpus),
-                "Memory (GB)": int(total_mem / 1024) if total_mem else 0,
+                MEMORY_GB: int(total_mem / 1024) if total_mem else 0,
                 "Hosts": hosts,
                 "VMs/Host": f"{total/hosts:.1f}" if hosts > 0 else "0",
                 "Avg vCPU/VM": f"{total_cpus/total:.1f}" if total > 0 else "0",

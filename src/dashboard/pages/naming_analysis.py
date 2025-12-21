@@ -1,15 +1,17 @@
 """VM Naming Analysis page - View and analyze VM naming patterns."""
 
-import streamlit as st
-import pandas as pd
 import io
+
+import pandas as pd
 import plotly.express as px
+import streamlit as st
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
+from streamlit_extras.colored_header import colored_header
+
+from src.models import VirtualMachine, VMNamingAnalysis
 from src.services.naming_convention_service import NamingConventionService
-from src.models import VMNamingAnalysis, VirtualMachine
 
 
 def render(db_url: str):
@@ -494,7 +496,7 @@ def render_multi_convention_statistics(service: NamingConventionService, session
 
             # Sort by total count across all conventions
             comparison_data.sort(
-                key=lambda x: sum(x[conv_name] for conv_name in field_data_by_convention.keys() if conv_name in x),
+                key=lambda x: sum(x[conv_name] for conv_name in field_data_by_convention if conv_name in x),
                 reverse=True,
             )
 
@@ -507,7 +509,7 @@ def render_multi_convention_statistics(service: NamingConventionService, session
                 # Prepare data for grouped bar chart
                 chart_data = []
                 for row in comparison_data[:10]:  # Top 10 for chart
-                    for conv_name in field_data_by_convention.keys():
+                    for conv_name in field_data_by_convention:
                         if conv_name in row:
                             chart_data.append({"Value": row["Value"], "Convention": conv_name, "Count": row[conv_name]})
 

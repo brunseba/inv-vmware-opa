@@ -2,10 +2,10 @@
 
 from datetime import datetime
 from pathlib import Path
+
 import pandas as pd
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from typing import Optional
+from sqlalchemy.orm import Session, sessionmaker
 
 from .models import Base, VirtualMachine
 
@@ -15,7 +15,7 @@ def normalize_column_name(name: str) -> str:
     return name.lower().replace(" ", "_").replace("#", "").replace("(", "").replace(")", "")
 
 
-def parse_date(value) -> Optional[datetime]:
+def parse_date(value) -> datetime | None:
     """Parse date from various formats."""
     if pd.isna(value):
         return None
@@ -29,7 +29,7 @@ def parse_date(value) -> Optional[datetime]:
     return None
 
 
-def parse_bool(value) -> Optional[bool]:
+def parse_bool(value) -> bool | None:
     """Parse boolean from various formats."""
     if pd.isna(value):
         return None
@@ -44,7 +44,7 @@ def parse_bool(value) -> Optional[bool]:
     return None
 
 
-def parse_int(value) -> Optional[int]:
+def parse_int(value) -> int | None:
     """Parse integer safely."""
     if pd.isna(value):
         return None
@@ -54,7 +54,7 @@ def parse_int(value) -> Optional[int]:
         return None
 
 
-def parse_float(value) -> Optional[float]:
+def parse_float(value) -> float | None:
     """Parse float safely."""
     if pd.isna(value):
         return None
@@ -67,10 +67,10 @@ def parse_float(value) -> Optional[float]:
 def get_sheet_names(excel_path: Path) -> list[str]:
     """
     Get list of sheet names from Excel file.
-    
+
     Args:
         excel_path: Path to Excel file
-        
+
     Returns:
         List of sheet names
     """
@@ -81,13 +81,13 @@ def get_sheet_names(excel_path: Path) -> list[str]:
 def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False, sheet_name: str = "Sheet1") -> int:
     """
     Load VMware inventory from Excel file into database.
-    
+
     Args:
         excel_path: Path to Excel file
         db_url: SQLAlchemy database URL
         clear_existing: If True, clear existing data before loading
         sheet_name: Name or index of sheet to load (default: "Sheet1")
-        
+
     Returns:
         Number of records loaded
     """
@@ -96,35 +96,36 @@ def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False
     Base.metadata.create_all(engine)
     SessionLocal = sessionmaker(bind=engine)
     session: Session = SessionLocal()
-    
+
     # Initialize schema tracking if this is a new database
     try:
         from .services.schema_service import SchemaService
+
         schema_service = SchemaService(session)
         schema_service.initialize_schema_tracking()
     except Exception:
         # Schema tracking initialization failed, but continue with data load
         pass
-    
+
     try:
         # Clear existing data if requested
         if clear_existing:
             session.query(VirtualMachine).delete()
             session.commit()
-        
+
         # Read Excel file
         # Try to detect header row automatically
         df = pd.read_excel(excel_path, sheet_name=sheet_name)
-        
+
         # If first row is all NaN, skip it and use second row as header
         if df.iloc[0].isna().all():
             df = pd.read_excel(excel_path, sheet_name=sheet_name, header=1)
-        
+
         # Normalize column names for easier mapping
         column_mapping = {col: normalize_column_name(col) for col in df.columns}
-        
+
         records_loaded = 0
-        
+
         # Process each row
         for _, row in df.iterrows():
             # Map Excel columns to model fields
@@ -147,11 +148,17 @@ def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False
                 "memory": parse_int(row["Memory"]),
                 "nics": parse_int(row["NICs"]),
                 "disks": parse_int(row["Disks"]),
-                "min_required_evc_mode_key": str(row["min Required EVC Mode Key"]) if not pd.isna(row["min Required EVC Mode Key"]) else None,
-                "latency_sensitivity": str(row["Latency Sensitivity"]) if not pd.isna(row["Latency Sensitivity"]) else None,
+                "min_required_evc_mode_key": (
+                    str(row["min Required EVC Mode Key"]) if not pd.isna(row["min Required EVC Mode Key"]) else None
+                ),
+                "latency_sensitivity": (
+                    str(row["Latency Sensitivity"]) if not pd.isna(row["Latency Sensitivity"]) else None
+                ),
                 "enable_uuid": parse_bool(row["EnableUUID"]),
                 "cbt": str(row["CBT"]) if not pd.isna(row["CBT"]) else None,
-                "primary_ip_address": str(row["Primary IP Address"]) if not pd.isna(row["Primary IP Address"]) else None,
+                "primary_ip_address": (
+                    str(row["Primary IP Address"]) if not pd.isna(row["Primary IP Address"]) else None
+                ),
                 "network_1": str(row["Network #1"]) if not pd.isna(row["Network #1"]) else None,
                 "network_2": str(row["Network #2"]) if not pd.isna(row["Network #2"]) else None,
                 "network_3": str(row["Network #3"]) if not pd.isna(row["Network #3"]) else None,
@@ -173,11 +180,17 @@ def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False
                 "provisioned_mib": parse_float(row["Provisioned MiB"]),
                 "in_use_mib": parse_float(row["In Use MiB"]),
                 "unshared_mib": parse_float(row["Unshared MiB"]),
-                "ha_restart_priority": str(row["HA Restart Priority"]) if not pd.isna(row["HA Restart Priority"]) else None,
-                "ha_isolation_response": str(row["HA Isolation Response"]) if not pd.isna(row["HA Isolation Response"]) else None,
+                "ha_restart_priority": (
+                    str(row["HA Restart Priority"]) if not pd.isna(row["HA Restart Priority"]) else None
+                ),
+                "ha_isolation_response": (
+                    str(row["HA Isolation Response"]) if not pd.isna(row["HA Isolation Response"]) else None
+                ),
                 "ha_vm_monitoring": str(row["HA VM Monitoring"]) if not pd.isna(row["HA VM Monitoring"]) else None,
                 "cluster_rules": str(row["Cluster rule(s)"]) if not pd.isna(row["Cluster rule(s)"]) else None,
-                "cluster_rule_names": str(row["Cluster rule name(s)"]) if not pd.isna(row["Cluster rule name(s)"]) else None,
+                "cluster_rule_names": (
+                    str(row["Cluster rule name(s)"]) if not pd.isna(row["Cluster rule name(s)"]) else None
+                ),
                 "boot_required": parse_bool(row["Boot Required"]),
                 "boot_delay": parse_int(row["Boot delay"]),
                 "boot_retry_delay": parse_int(row["Boot retry delay"]),
@@ -190,38 +203,54 @@ def load_excel_to_db(excel_path: Path, db_url: str, clear_existing: bool = False
                 "hw_target": str(row["HW target"]) if not pd.isna(row["HW target"]) else None,
                 "path": str(row["Path"]) if not pd.isna(row["Path"]) else None,
                 "log_directory": str(row["Log directory"]) if not pd.isna(row["Log directory"]) else None,
-                "snapshot_directory": str(row["Snapshot directory"]) if not pd.isna(row["Snapshot directory"]) else None,
+                "snapshot_directory": (
+                    str(row["Snapshot directory"]) if not pd.isna(row["Snapshot directory"]) else None
+                ),
                 "suspend_directory": str(row["Suspend directory"]) if not pd.isna(row["Suspend directory"]) else None,
                 "annotation": str(row["Annotation"]) if not pd.isna(row["Annotation"]) else None,
                 "nb_last_backup": parse_date(row["NB_LAST_BACKUP"]),
                 "datacenter": str(row["Datacenter"]) if not pd.isna(row["Datacenter"]) else None,
                 "cluster": str(row["Cluster"]) if not pd.isna(row["Cluster"]) else None,
                 "host": str(row["Host"]) if not pd.isna(row["Host"]) else None,
-                "os_config": str(row["OS according to the configuration file"]) if not pd.isna(row["OS according to the configuration file"]) else None,
-                "os_vmware_tools": str(row["OS according to the VMware Tools"]) if not pd.isna(row["OS according to the VMware Tools"]) else None,
+                "os_config": (
+                    str(row["OS according to the configuration file"])
+                    if not pd.isna(row["OS according to the configuration file"])
+                    else None
+                ),
+                "os_vmware_tools": (
+                    str(row["OS according to the VMware Tools"])
+                    if not pd.isna(row["OS according to the VMware Tools"])
+                    else None
+                ),
                 "vm_id": str(row["VM ID"]) if not pd.isna(row["VM ID"]) else None,
                 "vm_uuid": str(row["VM UUID"]) if not pd.isna(row["VM UUID"]) else None,
-                "vi_sdk_server_type": str(row["VI SDK Server type"]) if not pd.isna(row["VI SDK Server type"]) else None,
-                "vi_sdk_api_version": str(row["VI SDK API Version"]) if not pd.isna(row["VI SDK API Version"]) else None,
+                "vi_sdk_server_type": (
+                    str(row["VI SDK Server type"]) if not pd.isna(row["VI SDK Server type"]) else None
+                ),
+                "vi_sdk_api_version": (
+                    str(row["VI SDK API Version"]) if not pd.isna(row["VI SDK API Version"]) else None
+                ),
                 "code_ccx": str(row["CODE_CCX"]) if not pd.isna(row["CODE_CCX"]) else None,
                 "vm_nbu": str(row["VM_NBU"]) if not pd.isna(row["VM_NBU"]) else None,
                 "vm_orchid": str(row["VM_ORCHID"]) if not pd.isna(row["VM_ORCHID"]) else None,
-                "licence_enforcement": str(row["Licence Enforcement"]) if not pd.isna(row["Licence Enforcement"]) else None,
+                "licence_enforcement": (
+                    str(row["Licence Enforcement"]) if not pd.isna(row["Licence Enforcement"]) else None
+                ),
                 "env": str(row["Env"]) if not pd.isna(row["Env"]) else None,
             }
-            
+
             # Skip if VM name is missing
             if not vm_data["vm"]:
                 continue
-            
+
             vm = VirtualMachine(**vm_data)
             session.add(vm)
             records_loaded += 1
-        
+
         # Commit all records
         session.commit()
         return records_loaded
-        
+
     except Exception as e:
         session.rollback()
         raise e

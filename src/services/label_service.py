@@ -1,11 +1,11 @@
 """Label service layer for managing VM and folder labels."""
 
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
 
-from src.models import Label, VMLabel, FolderLabel, VirtualMachine
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Session
+
+from src.models import FolderLabel, Label, VirtualMachine, VMLabel
 
 
 class LabelService:
@@ -31,32 +31,32 @@ class LabelService:
         self.session.commit()
         return label
 
-    def get_label(self, label_id: int) -> Optional[Label]:
+    def get_label(self, label_id: int) -> Label | None:
         """Get a label by ID."""
         return self.session.query(Label).filter(Label.id == label_id).first()
 
-    def get_label_by_key_value(self, key: str, value: str) -> Optional[Label]:
+    def get_label_by_key_value(self, key: str, value: str) -> Label | None:
         """Get a label by key-value pair."""
         return self.session.query(Label).filter(Label.key == key, Label.value == value).first()
 
-    def list_labels(self, key: str = None) -> List[Label]:
+    def list_labels(self, key: str = None) -> list[Label]:
         """List all labels, optionally filtered by key."""
         query = self.session.query(Label)
         if key:
             query = query.filter(Label.key == key)
         return query.order_by(Label.key, Label.value).all()
 
-    def get_label_keys(self) -> List[str]:
+    def get_label_keys(self) -> list[str]:
         """Get all unique label keys."""
         result = self.session.query(Label.key).distinct().order_by(Label.key).all()
         return [r[0] for r in result]
 
-    def get_label_values(self, key: str) -> List[str]:
+    def get_label_values(self, key: str) -> list[str]:
         """Get all values for a specific label key."""
         result = self.session.query(Label.value).filter(Label.key == key).distinct().order_by(Label.value).all()
         return [r[0] for r in result]
 
-    def update_label(self, label_id: int, description: str = None, color: str = None) -> Optional[Label]:
+    def update_label(self, label_id: int, description: str = None, color: str = None) -> Label | None:
         """Update label description and/or color."""
         label = self.get_label(label_id)
         if not label:
@@ -117,7 +117,7 @@ class LabelService:
         self.session.commit()
         return True
 
-    def clean_all_vm_labels(self, include_inherited: bool = True) -> Dict[str, int]:
+    def clean_all_vm_labels(self, include_inherited: bool = True) -> dict[str, int]:
         """Remove all VM label assignments.
 
         Args:
@@ -146,7 +146,7 @@ class LabelService:
 
         return {"total_removed": total_count, "direct_removed": direct_count, "inherited_removed": inherited_count}
 
-    def get_vm_labels(self, vm_id: int, include_inherited: bool = True) -> List[Dict]:
+    def get_vm_labels(self, vm_id: int, include_inherited: bool = True) -> list[dict]:
         """Get all labels for a VM with details."""
         query = (
             self.session.query(Label, VMLabel)
@@ -177,7 +177,7 @@ class LabelService:
 
         return labels
 
-    def get_vms_with_label(self, key: str, value: str) -> List[VirtualMachine]:
+    def get_vms_with_label(self, key: str, value: str) -> list[VirtualMachine]:
         """Get all VMs that have a specific label."""
         label = self.get_label_by_key_value(key, value)
         if not label:
@@ -257,7 +257,7 @@ class LabelService:
         self.session.commit()
         return True
 
-    def get_folder_labels(self, folder_path: str) -> List[Dict]:
+    def get_folder_labels(self, folder_path: str) -> list[dict]:
         """Get all labels for a folder."""
         results = (
             self.session.query(Label, FolderLabel)
@@ -284,7 +284,7 @@ class LabelService:
 
         return labels
 
-    def get_folders_with_label(self, key: str, value: str) -> List[str]:
+    def get_folders_with_label(self, key: str, value: str) -> list[str]:
         """Get all folder paths that have a specific label."""
         label = self.get_label_by_key_value(key, value)
         if not label:
@@ -298,7 +298,7 @@ class LabelService:
     # Folder Operations
     # ========================================================================
 
-    def get_all_folders(self) -> List[str]:
+    def get_all_folders(self) -> list[str]:
         """Get all unique folder paths from VMs."""
         results = (
             self.session.query(VirtualMachine.folder)
@@ -310,7 +310,7 @@ class LabelService:
 
         return [r[0] for r in results]
 
-    def get_folder_stats(self, folder_path: str) -> Dict:
+    def get_folder_stats(self, folder_path: str) -> dict:
         """Get statistics for a folder."""
         # VM count (exact match)
         vm_count = (
@@ -409,7 +409,7 @@ class LabelService:
     # Helper Methods
     # ========================================================================
 
-    def get_folder_hierarchy(self, folder_path: str) -> List[str]:
+    def get_folder_hierarchy(self, folder_path: str) -> list[str]:
         """Get folder hierarchy from path (parent to child)."""
         if not folder_path:
             return []
@@ -420,7 +420,7 @@ class LabelService:
             hierarchy.append("/" + "/".join(parts[:i]))
         return hierarchy
 
-    def get_vm_effective_labels(self, vm_id: int) -> Dict[str, Dict]:
+    def get_vm_effective_labels(self, vm_id: int) -> dict[str, dict]:
         """
         Get all effective labels for a VM including inherited ones.
         Direct labels override inherited ones with the same key.
@@ -466,7 +466,7 @@ class LabelService:
     # VM Retrieval by Categories (OS and Resources)
     # ========================================================================
 
-    def get_vms_by_os_category(self, os_pattern: str = None, os_family: str = None) -> List[VirtualMachine]:
+    def get_vms_by_os_category(self, os_pattern: str = None, os_family: str = None) -> list[VirtualMachine]:
         """Get VMs filtered by operating system.
 
         Args:
@@ -536,7 +536,7 @@ class LabelService:
         max_nics: int = None,
         min_disks: int = None,
         max_disks: int = None,
-    ) -> List[VirtualMachine]:
+    ) -> list[VirtualMachine]:
         """Get VMs filtered by resource specifications.
 
         Args:
@@ -601,7 +601,7 @@ class LabelService:
 
         return query.order_by(VirtualMachine.vm).all()
 
-    def get_vms_by_resource_category(self, category: str) -> List[VirtualMachine]:
+    def get_vms_by_resource_category(self, category: str) -> list[VirtualMachine]:
         """Get VMs by predefined resource size categories.
 
         Args:
@@ -618,16 +618,15 @@ class LabelService:
         """
         if category == "small":
             return self.get_vms_by_resource_criteria(max_cpus=2, max_memory_gb=4)
-        elif category == "medium":
+        if category == "medium":
             return self.get_vms_by_resource_criteria(min_cpus=3, max_cpus=4, min_memory_gb=4, max_memory_gb=16)
-        elif category == "large":
+        if category == "large":
             return self.get_vms_by_resource_criteria(min_cpus=5, max_cpus=8, min_memory_gb=16, max_memory_gb=32)
-        elif category == "xlarge":
+        if category == "xlarge":
             return self.get_vms_by_resource_criteria(min_cpus=9, min_memory_gb=32)
-        else:
-            return []
+        return []
 
-    def batch_assign_label_to_vms(self, vm_ids: List[int], label_id: int, assigned_by: str = None) -> Tuple[int, int]:
+    def batch_assign_label_to_vms(self, vm_ids: list[int], label_id: int, assigned_by: str = None) -> tuple[int, int]:
         """Assign a label to multiple VMs in batch.
 
         Args:
@@ -651,7 +650,7 @@ class LabelService:
 
         return successful, failed
 
-    def get_vms_by_network_complexity(self, complexity: str) -> List[VirtualMachine]:
+    def get_vms_by_network_complexity(self, complexity: str) -> list[VirtualMachine]:
         """Get VMs by network complexity based on NIC count.
 
         Args:
@@ -667,14 +666,13 @@ class LabelService:
         """
         if complexity == "simple":
             return self.get_vms_by_resource_criteria(max_nics=1)
-        elif complexity == "standard":
+        if complexity == "standard":
             return self.get_vms_by_resource_criteria(min_nics=2, max_nics=2)
-        elif complexity == "complex":
+        if complexity == "complex":
             return self.get_vms_by_resource_criteria(min_nics=3)
-        else:
-            return []
+        return []
 
-    def get_vms_by_storage_complexity(self, complexity: str) -> List[VirtualMachine]:
+    def get_vms_by_storage_complexity(self, complexity: str) -> list[VirtualMachine]:
         """Get VMs by storage complexity based on disk count.
 
         Args:
@@ -690,14 +688,13 @@ class LabelService:
         """
         if complexity == "simple":
             return self.get_vms_by_resource_criteria(max_disks=1)
-        elif complexity == "standard":
+        if complexity == "standard":
             return self.get_vms_by_resource_criteria(min_disks=2, max_disks=3)
-        elif complexity == "complex":
+        if complexity == "complex":
             return self.get_vms_by_resource_criteria(min_disks=4)
-        else:
-            return []
+        return []
 
-    def get_distinct_os_values(self) -> List[str]:
+    def get_distinct_os_values(self) -> list[str]:
         """Get all distinct OS configuration values from VMs.
 
         Returns:
@@ -717,7 +714,7 @@ class LabelService:
 
         return [os[0] for os in result if os[0]]
 
-    def get_vm_counts_by_criteria(self, os_pattern: str = None, resource_category: str = None) -> Dict:
+    def get_vm_counts_by_criteria(self, os_pattern: str = None, resource_category: str = None) -> dict:
         """Get count of VMs matching various criteria.
 
         Args:

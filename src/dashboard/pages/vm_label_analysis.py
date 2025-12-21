@@ -1,13 +1,14 @@
 """VM Label Analysis page - Analyze VMs by labels with advanced filtering."""
 
-import streamlit as st
 import pandas as pd
 import plotly.express as px
+import streamlit as st
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
-from src.models import VirtualMachine, Label, VMLabel
+from streamlit_extras.colored_header import colored_header
+
+from src.models import Label, VirtualMachine, VMLabel
 
 
 def render(db_url: str):
@@ -119,7 +120,7 @@ def render_label_filter(session, labels):
         selected_cluster = st.selectbox("Cluster", ["All"] + sorted(clusters), key="label_filter_cluster")
 
     with col3:
-        power_states = ["All", "poweredOn", "poweredOff", "suspended"]
+        power_states = ["All", "poweredOn", "poweredOf", "suspended"]
         selected_power = st.selectbox("Power State", power_states, key="label_filter_power_state")
 
     with col4:

@@ -1,14 +1,15 @@
 """Analytics page - Advanced analytics and trends."""
 
-import streamlit as st
-import plotly.express as px
-import plotly.graph_objects as go
-from sqlalchemy import create_engine, func
-from sqlalchemy.orm import sessionmaker
-import pandas as pd
-from src.models import VirtualMachine
 import sys
 from pathlib import Path
+
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+from sqlalchemy import create_engine, func
+from sqlalchemy.orm import sessionmaker
+
+from src.models import VirtualMachine
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.dashboard.utils.theme import ThemeManager

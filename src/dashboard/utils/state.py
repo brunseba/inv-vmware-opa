@@ -4,11 +4,12 @@ This module provides centralized session state management with
 standardized keys and initialization patterns.
 """
 
-import streamlit as st
+import logging
 import os
 from enum import Enum
-from typing import Any, Optional
-import logging
+from typing import Any
+
+import streamlit as st
 
 logger = logging.getLogger(__name__)
 
@@ -300,7 +301,7 @@ class PageNavigator:
         return page_name in all_pages
 
     @staticmethod
-    def get_page_category(page_name: str) -> Optional[str]:
+    def get_page_category(page_name: str) -> str | None:
         """Get category for a page.
 
         Args:

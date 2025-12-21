@@ -1,8 +1,9 @@
 """VMware vSphere Inventory Dashboard - Main Application."""
 
 import sys
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 from streamlit_extras.add_vertical_space import add_vertical_space
 
 # Add parent directory to path to import from src
@@ -15,10 +16,10 @@ except ImportError:
     __version__ = "0.9.0"  # Fallback
 
 # Import utilities  # noqa: E402
-from src.dashboard.utils.state import StateManager, SessionKeys, PageNavigator  # noqa: E402
+from src.dashboard.utils.cache import CacheManager, get_vm_counts  # noqa: E402
 from src.dashboard.utils.database import DatabaseManager  # noqa: E402
-from src.dashboard.utils.cache import get_vm_counts, CacheManager  # noqa: E402
 from src.dashboard.utils.errors import ErrorHandler  # noqa: E402
+from src.dashboard.utils.state import PageNavigator, SessionKeys, StateManager  # noqa: E402
 from src.dashboard.utils.theme import ThemeManager  # noqa: E402
 
 # Page configuration
@@ -63,10 +64,10 @@ with st.sidebar:
     <div style="text-align: center; padding: 1rem 0;">
         <svg width="180" height="60" xmlns="http://www.w3.org/2000/svg">
             <rect width="180" height="60" rx="8" fill="#607078"/>
-            <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="20"
+            <text x="50%" y="50%" font-family="Arial, sans-seri" font-size="20"
                   font-weight="bold" fill="white" text-anchor="middle"
                   dominant-baseline="middle">VMware</text>
-            <text x="50%" y="75%" font-family="Arial, sans-serif" font-size="10"
+            <text x="50%" y="75%" font-family="Arial, sans-seri" font-size="10"
                   fill="#cccccc" text-anchor="middle"
                   dominant-baseline="middle">Inventory</text>
         </svg>
@@ -342,6 +343,7 @@ def main():
     # When called, we launch streamlit to run this file.
     # The actual app code runs at module level above.
     import sys
+
     from streamlit.web import cli as stcli
 
     # Set sys.argv to simulate 'streamlit run app.py'

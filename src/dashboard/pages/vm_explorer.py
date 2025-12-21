@@ -1,49 +1,53 @@
 """VM Explorer page - Detailed VM search and information."""
 
-import streamlit as st
 import re
+
+import pandas as pd
+import streamlit as st
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
-import pandas as pd
-from src.models import VirtualMachine
-from src.dashboard.utils.database import DatabaseManager
+
+from src.dashboard.utils.cache import get_datacenters, get_power_states
 from src.dashboard.utils.errors import DataValidator, ErrorHandler
 from src.dashboard.utils.pagination import (
-    paginate_query, show_pagination_controls, 
-    show_results_warning, PaginationConfig, DEFAULT_PAGE_SIZE
+    DEFAULT_PAGE_SIZE,
+    PaginationConfig,
+    paginate_query,
+    show_pagination_controls,
+    show_results_warning,
 )
-from src.dashboard.utils.cache import get_datacenters, get_power_states
+from src.models import VirtualMachine
 
 
 def render(db_url: str):
     """Render the VM explorer page."""
     st.markdown('<h1 class="main-header">🔍 VM Explorer</h1>', unsafe_allow_html=True)
-    
+
     try:
         # Create database session
         engine = create_engine(db_url, echo=False)
         SessionLocal = sessionmaker(bind=engine)
         session = SessionLocal()
-        
+
         # Search and filters
         col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
-        
+
         with col1:
             search_term = st.text_input("🔎 Search VMs", placeholder="Enter VM name, IP, or hostname...")
-        
+
         with col4:
             use_regex = st.checkbox("Use Regex", value=False, help="Enable regex pattern matching")
-        
+
         with col2:
             # Use cached datacenter list
             datacenters = get_datacenters(db_url)
             selected_dc = st.selectbox("Datacenter", ["All"] + datacenters)
-        
+
         with col3:
             # Use cached power states
             power_states = get_power_states(db_url)
             selected_power = st.selectbox("Power State", ["All"] + power_states)
-        
+
         # Additional filters
         colf1, colf2, colf3 = st.columns(3)
         with colf1:
@@ -53,38 +57,37 @@ def render(db_url: str):
         with colf3:
             # Label filter
             from src.models import Label
+
             label_keys = [k[0] for k in session.query(Label.key).distinct().all() if k[0]]
             selected_label_key = st.selectbox("Label Key", ["All"] + label_keys)
-        
+
         # Label value filter (shown if key is selected)
         selected_label_value = None
         if selected_label_key != "All":
-            label_values = [v[0] for v in session.query(Label.value).filter(
-                Label.key == selected_label_key
-            ).distinct().all() if v[0]]
+            label_values = [
+                v[0]
+                for v in session.query(Label.value).filter(Label.key == selected_label_key).distinct().all()
+                if v[0]
+            ]
             selected_label_value = st.selectbox("Label Value", ["All"] + label_values)
-        
+
         # Validate regex if used
         if search_term and use_regex:
             is_valid, error_msg = DataValidator.validate_regex(search_term)
             if not is_valid:
-                ErrorHandler.show_error(
-                    Exception(error_msg), 
-                    context="validating search pattern",
-                    show_details=False
-                )
+                ErrorHandler.show_error(Exception(error_msg), context="validating search pattern", show_details=False)
                 return
-        
+
         # Validate search term length
         if search_term:
             is_valid, error_msg = DataValidator.validate_string_length(search_term, 500, "Search term")
             if not is_valid:
                 ErrorHandler.show_warning(error_msg)
                 return
-        
+
         # Build query
         query = session.query(VirtualMachine)
-        
+
         # Handle regex vs normal search
         if search_term and use_regex:
             # For regex, we'll filter after fetching (regex not directly supported by SQLite)
@@ -95,13 +98,13 @@ def render(db_url: str):
                     VirtualMachine.vm.ilike(f"%{search_term}%"),
                     VirtualMachine.dns_name.ilike(f"%{search_term}%"),
                     VirtualMachine.primary_ip_address.ilike(f"%{search_term}%"),
-                    VirtualMachine.host.ilike(f"%{search_term}%")
+                    VirtualMachine.host.ilike(f"%{search_term}%"),
                 )
             )
-        
+
         if selected_dc != "All":
             query = query.filter(VirtualMachine.datacenter == selected_dc)
-        
+
         if selected_power != "All":
             query = query.filter(VirtualMachine.powerstate == selected_power)
 
@@ -124,105 +127,112 @@ def render(db_url: str):
                     if end_date:
                         # Include end date fully
                         import datetime
-                        query = query.filter(VirtualMachine.creation_date < (datetime.datetime.combine(end_date, datetime.time.max)))
-        
+
+                        query = query.filter(
+                            VirtualMachine.creation_date < (datetime.datetime.combine(end_date, datetime.time.max))
+                        )
+
         # Label filter
         if selected_label_key != "All":
             from src.models import VMLabel
-            
+
             # Get label ID(s)
             if selected_label_value and selected_label_value != "All":
                 # Filter by specific key=value
-                label = session.query(Label).filter(
-                    Label.key == selected_label_key,
-                    Label.value == selected_label_value
-                ).first()
+                label = (
+                    session.query(Label)
+                    .filter(Label.key == selected_label_key, Label.value == selected_label_value)
+                    .first()
+                )
                 if label:
                     query = query.join(VMLabel).filter(VMLabel.label_id == label.id)
             else:
                 # Filter by key only (any value)
-                label_ids = session.query(Label.id).filter(
-                    Label.key == selected_label_key
-                ).all()
+                label_ids = session.query(Label.id).filter(Label.key == selected_label_key).all()
                 label_ids = [lid[0] for lid in label_ids]
                 if label_ids:
                     query = query.join(VMLabel).filter(VMLabel.label_id.in_(label_ids))
-        
+
         # Get pagination state
-        page = st.session_state.get('vm_explorer_page', 1)
-        page_size = st.session_state.get('vm_explorer_page_size', DEFAULT_PAGE_SIZE)
-        
+        page = st.session_state.get("vm_explorer_page", 1)
+        page_size = st.session_state.get("vm_explorer_page_size", DEFAULT_PAGE_SIZE)
+
         # For regex search, we need to fetch and filter in Python
         if search_term and use_regex:
             # Get total count first for warning
             total_count = query.count()
             config = PaginationConfig(page_size=page_size)
             show_results_warning(total_count, config)
-            
+
             # Fetch with limit
             all_vms = query.limit(config.max_fetch).all()
-            
+
             # Apply regex filter
             regex = re.compile(search_term, re.IGNORECASE)
             filtered_vms = [
-                vm for vm in all_vms 
-                if any([
-                    vm.vm and regex.search(vm.vm),
-                    vm.dns_name and regex.search(vm.dns_name),
-                    vm.primary_ip_address and regex.search(vm.primary_ip_address)
-                ])
+                vm
+                for vm in all_vms
+                if any(
+                    [
+                        vm.vm and regex.search(vm.vm),
+                        vm.dns_name and regex.search(vm.dns_name),
+                        vm.primary_ip_address and regex.search(vm.primary_ip_address),
+                    ]
+                )
             ]
-            
+
             # Manual pagination for filtered results
             total_results = len(filtered_vms)
             st.info(f"Found {total_results:,} VMs (regex filter applied)")
-            
+
             # Simple pagination controls
             page_size = st.selectbox("Results per page", [10, 25, 50, 100], index=1)
             page = st.number_input("Page", min_value=1, max_value=max(1, (total_results // page_size) + 1), value=1)
-            
+
             offset = (page - 1) * page_size
-            vms = filtered_vms[offset:offset + page_size]
+            vms = filtered_vms[offset : offset + page_size]
         else:
             # Use database-side pagination (much more efficient)
             # Get total for warning
             total_count = query.count()
             config = PaginationConfig(page_size=page_size)
             show_results_warning(total_count, config)
-            
+
             # Paginate query
             result = paginate_query(query, page=page, page_size=page_size)
             vms = result.items
-            
+
             st.info(f"Found {result.total:,} VMs")
-            
+
             # Show pagination controls
             new_page = show_pagination_controls(result, key_prefix="vm_explorer")
             if new_page != page:
-                st.session_state['vm_explorer_page'] = new_page
+                st.session_state["vm_explorer_page"] = new_page
                 st.rerun()
-        
+
         if not vms:
             st.warning("No VMs found matching your criteria")
             return
-        
+
         st.divider()
-        
+
         # Results table
         vm_data = []
         for vm in vms:
-            vm_data.append({
-                'VM': vm.vm,
-                'Power': vm.powerstate or 'N/A',
-                'CPUs': vm.cpus or 0,
-                'Memory_GB': (vm.memory or 0) / 1024,
-                'IP': vm.primary_ip_address or 'N/A',
-                'OS': (vm.os_config or 'N/A')[:30],
-                'Datacenter': vm.datacenter or 'N/A',
-                'Cluster': vm.cluster or 'N/A',
-                'Host': vm.host or 'N/A',
-            })
-        
+            vm_data.append(
+                {
+                    "VM": vm.vm,
+                    "Power": vm.powerstate or "N/A",
+                    "CPUs": vm.cpus or 0,
+                    "Memory_GB": (vm.memory or 0) / 1024,
+                    "IP": vm.primary_ip_address or "N/A",
+                    "OS": (vm.os_config or "N/A")[:30],
+                    "Datacenter": vm.datacenter or "N/A",
+                    "Cluster": vm.cluster or "N/A",
+                    "Host": vm.host or "N/A",
+                }
+            )
+
         df_vms = pd.DataFrame(vm_data)
 
         # Export buttons
@@ -230,48 +240,43 @@ def render(db_url: str):
         with exp_col1:
             st.download_button(
                 label="⬇️ Export CSV",
-                data=df_vms.to_csv(index=False).encode('utf-8'),
+                data=df_vms.to_csv(index=False).encode("utf-8"),
                 file_name="vms_export.csv",
-                mime="text/csv"
+                mime="text/csv",
             )
         with exp_col2:
             try:
                 import io
+
                 buf = io.BytesIO()
-                with pd.ExcelWriter(buf, engine='xlsxwriter') as writer:
-                    df_vms.to_excel(writer, index=False, sheet_name='VMs')
+                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                    df_vms.to_excel(writer, index=False, sheet_name="VMs")
                 st.download_button(
                     label="⬇️ Export Excel",
                     data=buf.getvalue(),
                     file_name="vms_export.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             except Exception:
                 st.caption("Install xlsxwriter for Excel export: uv add xlsxwriter")
-        
+
         # Display with formatting
-        st.dataframe(
-            df_vms.style.format({
-                'Memory_GB': '{:.1f}'
-            }),
-            width="stretch",
-            hide_index=True
-        )
-        
+        st.dataframe(df_vms.style.format({"Memory_GB": "{:.1f}"}), width="stretch", hide_index=True)
+
         st.divider()
-        
+
         # VM Details section
         st.subheader("VM Details")
         vm_names = [vm.vm for vm in vms]
         selected_vm_name = st.selectbox("Select a VM to view details", vm_names)
-        
+
         if selected_vm_name:
             selected_vm = next((vm for vm in vms if vm.vm == selected_vm_name), None)
-            
+
             if selected_vm:
                 # Basic info
                 col1, col2, col3, col4 = st.columns(4)
-                
+
                 with col1:
                     st.metric("Power State", selected_vm.powerstate or "N/A")
                 with col2:
@@ -281,10 +286,12 @@ def render(db_url: str):
                     st.metric("Memory", f"{memory_gb:.1f} GB")
                 with col4:
                     st.metric("NICs", selected_vm.nics or 0)
-                
+
                 # Detailed information tabs
-                tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 General", "💾 Resources", "🌐 Network", "🏭️ Infrastructure", "🏷️ Labels"])
-                
+                tab1, tab2, tab3, tab4, tab5 = st.tabs(
+                    ["📋 General", "💾 Resources", "🌐 Network", "🏭️ Infrastructure", "🏷️ Labels"]
+                )
+
                 with tab1:
                     col1, col2 = st.columns(2)
                     with col1:
@@ -301,7 +308,7 @@ def render(db_url: str):
                         st.write("**Firmware:**", selected_vm.firmware or "N/A")
                         if selected_vm.creation_date:
                             st.write("**Created:**", selected_vm.creation_date.strftime("%Y-%m-%d %H:%M"))
-                
+
                 with tab2:
                     col1, col2 = st.columns(2)
                     with col1:
@@ -316,7 +323,7 @@ def render(db_url: str):
                             st.write("**In Use:**", f"{selected_vm.in_use_mib / 1024:.1f} GB")
                         if selected_vm.unshared_mib:
                             st.write("**Unshared:**", f"{selected_vm.unshared_mib / 1024:.1f} GB")
-                
+
                 with tab3:
                     st.write("**Primary IP:**", selected_vm.primary_ip_address or "N/A")
                     networks = []
@@ -326,10 +333,10 @@ def render(db_url: str):
                             networks.append(f"Network {i}: {net}")
                     if networks:
                         for net in networks:
-                            st.write(f"**{net.split(':')[0]}:**", net.split(': ')[1] if ': ' in net else "N/A")
+                            st.write(f"**{net.split(':')[0]}:**", net.split(": ")[1] if ": " in net else "N/A")
                     else:
                         st.info("No network information available")
-                
+
                 with tab4:
                     col1, col2 = st.columns(2)
                     with col1:
@@ -342,19 +349,20 @@ def render(db_url: str):
                         st.write("**vApp:**", selected_vm.vapp or "N/A")
                         st.write("**HA Protection:**", selected_vm.das_protection or "N/A")
                         st.write("**Environment:**", selected_vm.env or "N/A")
-                
+
                 with tab5:
                     # Show VM labels
                     from src.services.label_service import LabelService
+
                     label_service = LabelService(session)
-                    
+
                     vm_labels = label_service.get_vm_labels(selected_vm.id, include_inherited=True)
-                    
+
                     if vm_labels:
                         # Separate direct and inherited labels
-                        direct_labels = [lbl for lbl in vm_labels if not lbl['inherited']]
-                        inherited_labels = [lbl for lbl in vm_labels if lbl['inherited']]
-                        
+                        direct_labels = [lbl for lbl in vm_labels if not lbl["inherited"]]
+                        inherited_labels = [lbl for lbl in vm_labels if lbl["inherited"]]
+
                         if direct_labels:
                             st.write("**Direct Labels:**")
                             for lbl in direct_labels:
@@ -362,12 +370,12 @@ def render(db_url: str):
                                 with col1:
                                     st.write(f"🏷️ **{lbl['key']}**")
                                 with col2:
-                                    st.write(lbl['value'])
+                                    st.write(lbl["value"])
                                 with col3:
-                                    if lbl['assigned_by']:
+                                    if lbl["assigned_by"]:
                                         st.caption(f"By: {lbl['assigned_by']}")
                             st.divider()
-                        
+
                         if inherited_labels:
                             st.write("**Inherited Labels:**")
                             for lbl in inherited_labels:
@@ -375,24 +383,26 @@ def render(db_url: str):
                                 with col1:
                                     st.write(f"🔗 **{lbl['key']}**")
                                 with col2:
-                                    st.write(lbl['value'])
+                                    st.write(lbl["value"])
                                 with col3:
                                     st.caption(f"From: {lbl['source_folder']}")
-                        
+
                         # Summary
                         st.divider()
-                        st.caption(f"Total: {len(vm_labels)} labels ({len(direct_labels)} direct, {len(inherited_labels)} inherited)")
+                        st.caption(
+                            f"Total: {len(vm_labels)} labels ({len(direct_labels)} direct, {len(inherited_labels)} inherited)"
+                        )
                     else:
                         st.info("ℹ️ No labels assigned to this VM")
                         st.caption("Labels can be assigned in the 'Folder Labelling' section")
-                
+
                 # Annotation if available
                 if selected_vm.annotation:
                     with st.expander("📝 Annotation"):
                         st.text(selected_vm.annotation)
-    
+
     except Exception as e:
         ErrorHandler.show_error(e, context="loading VM Explorer data")
     finally:
-        if 'session' in locals():
+        if "session" in locals():
             session.close()

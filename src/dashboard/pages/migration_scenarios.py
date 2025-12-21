@@ -1,23 +1,24 @@
 """Migration Scenarios page - Create and compare migration scenarios."""
 
-import streamlit as st
+import sys
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from sqlalchemy import create_engine, func
+import streamlit as st
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
-
-import sys
-from pathlib import Path
+from streamlit_extras.colored_header import colored_header
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.models import VirtualMachine, MigrationTarget, MigrationScenario, MigrationStrategy, MigrationWave, Base, Label
-from src.services.migration_scenarios import MigrationScenarioService
 import sys
 from pathlib import Path
+
+from src.models import Base, Label, MigrationScenario, MigrationStrategy, MigrationTarget, MigrationWave, VirtualMachine
+from src.services.migration_scenarios import MigrationScenarioService
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.dashboard.utils.theme import ThemeManager
@@ -410,7 +411,7 @@ def render_scenarios_list(service: MigrationScenarioService, session):
 
                     with col1:
                         st.markdown(
-                            f"""<div style="background-color: #4CAF50; padding: 10px; border-radius: 5px; text-align: center;">
+                            """<div style="background-color: #4CAF50; padding: 10px; border-radius: 5px; text-align: center;">
                             <b>🔄 Initial</b><br>{init_hours:.1f}h ({init_pct:.0f}%)
                         </div>""",
                             unsafe_allow_html=True,
@@ -418,7 +419,7 @@ def render_scenarios_list(service: MigrationScenarioService, session):
 
                     with col2:
                         st.markdown(
-                            f"""<div style="background-color: #2196F3; padding: 10px; border-radius: 5px; text-align: center;">
+                            """<div style="background-color: #2196F3; padding: 10px; border-radius: 5px; text-align: center;">
                             <b>🔁 Delta</b><br>{delta_hours:.1f}h ({delta_pct:.0f}%)
                         </div>""",
                             unsafe_allow_html=True,
@@ -426,7 +427,7 @@ def render_scenarios_list(service: MigrationScenarioService, session):
 
                     with col3:
                         st.markdown(
-                            f"""<div style="background-color: #FF9800; padding: 10px; border-radius: 5px; text-align: center;">
+                            """<div style="background-color: #FF9800; padding: 10px; border-radius: 5px; text-align: center;">
                             <b>✅ Cutover</b><br>{cutover_hours:.1f}h ({cutover_pct:.0f}%)
                         </div>""",
                             unsafe_allow_html=True,
@@ -957,7 +958,7 @@ def render_compare_scenarios(service: MigrationScenarioService):
                 go.Scatterpolar(
                     r=[row["Score"], 100 - row["Duration (days)"], 100 - (row["Total Cost ($)"] / 1000)],
                     theta=["Score", "Speed", "Cost"],
-                    fill="toself",
+                    fill="tosel",
                     name=row["Scenario"],
                 )
             )

@@ -3,32 +3,22 @@
 # Import base
 from src.models.base import Base
 
-# Import VMware models
-from src.models.vmware import (
-    VirtualMachine,
-    Label,
-    VMLabel,
-    FolderLabel,
-    SchemaVersion
-)
-
 # Import migration target models
 from src.models.migration_target import (
-    MigrationTarget,
     MigrationScenario,
-    MigrationWave,
+    MigrationStrategy,
     MigrationStrategyConfig,
+    MigrationTarget,
+    MigrationWave,
     PlatformType,
-    MigrationStrategy
 )
-from src.models.schema_version import SchemaVersion
 
 # Import naming convention models
-from src.models.naming_convention import (
-    NamingConvention,
-    NamingConventionField,
-    VMNamingAnalysis
-)
+from src.models.naming_convention import NamingConvention, NamingConventionField, VMNamingAnalysis
+from src.models.schema_version import SchemaVersion
+
+# Import VMware models
+from src.models.vmware import FolderLabel, Label, SchemaVersion, VirtualMachine, VMLabel
 
 __all__ = [
     "Base",

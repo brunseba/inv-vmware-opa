@@ -1,16 +1,16 @@
 """Data Quality Report page - Unique values and completeness analysis."""
 
-import streamlit as st
-import plotly.express as px
-import plotly.graph_objects as go
-from sqlalchemy import create_engine, func, inspect
-from sqlalchemy.orm import sessionmaker
-import pandas as pd
-from src.models import VirtualMachine
-from src.dashboard.utils.pagination import PaginationHelper
-from src.dashboard.utils.errors import DataValidator
 import sys
 from pathlib import Path
+
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+from sqlalchemy import create_engine, func, inspect
+from sqlalchemy.orm import sessionmaker
+
+from src.dashboard.utils.pagination import PaginationHelper
+from src.models import VirtualMachine
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.dashboard.utils.theme import ThemeManager
@@ -158,12 +158,11 @@ def _render_summary_report(session, columns, total_vms, show_charts):
     def color_completeness(val):
         if val >= 90:
             return "background-color: #d4edda"
-        elif val >= 70:
+        if val >= 70:
             return "background-color: #fff3cd"
-        elif val >= 50:
+        if val >= 50:
             return "background-color: #f8d7da"
-        else:
-            return "background-color: #f5c6cb"
+        return "background-color: #f5c6cb"
 
     styled_df = df_report.style.map(color_completeness, subset=["Completeness (%)"])
 
@@ -355,7 +354,7 @@ def _render_detailed_report(session, columns, total_vms):
 
 def _render_label_quality_report(session, total_vms):
     """Render label quality and coverage report."""
-    from src.models import Label, VMLabel, FolderLabel
+    from src.models import FolderLabel, Label, VMLabel
 
     st.subheader("🏷️ Label Coverage & Quality")
 
@@ -461,7 +460,6 @@ def _render_label_quality_report(session, total_vms):
 
         # Build base query for label key statistics
         # Note: We need to use a subquery approach for proper pagination with GROUP BY
-        from sqlalchemy import select
 
         # Get label key usage statistics with pagination
         base_key_query = (
@@ -604,10 +602,9 @@ def _render_label_quality_report(session, total_vms):
             def color_severity(val):
                 if val == "High":
                     return "background-color: #f8d7da"
-                elif val == "Medium":
+                if val == "Medium":
                     return "background-color: #fff3cd"
-                else:
-                    return "background-color: #d1ecf1"
+                return "background-color: #d1ecf1"
 
             styled_issues = df_issues.style.map(color_severity, subset=["Severity"])
 

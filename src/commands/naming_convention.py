@@ -1,11 +1,11 @@
 """CLI commands for VM naming convention management."""
 
-import click
 import json
 from pathlib import Path
-from typing import Optional
-from tabulate import tabulate
+
+import click
 import pandas as pd
+from tabulate import tabulate
 
 
 @click.group(name="naming-convention")
@@ -36,6 +36,7 @@ def list_conventions(db_url: str, active_only: bool, format: str):
     """List all naming conventions."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService
 
     engine = create_engine(db_url, echo=False)
@@ -103,6 +104,7 @@ def show_convention(convention_id: int, db_url: str):
     """Show detailed information about a naming convention."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService
 
     engine = create_engine(db_url, echo=False)
@@ -205,10 +207,11 @@ def show_convention(convention_id: int, db_url: str):
     type=click.Path(exists=True, path_type=Path),
     help="Load convention definition from JSON file",
 )
-def create_convention(db_url: str, from_file: Optional[Path]):
+def create_convention(db_url: str, from_file: Path | None):
     """Create a new naming convention interactively or from a file."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService, PatternValidationError
 
     engine = create_engine(db_url, echo=False)
@@ -220,7 +223,7 @@ def create_convention(db_url: str, from_file: Optional[Path]):
 
         if from_file:
             # Load from file
-            with open(from_file, "r") as f:
+            with open(from_file) as f:
                 data = json.load(f)
 
             name = data["name"]
@@ -245,16 +248,16 @@ def create_convention(db_url: str, from_file: Optional[Path]):
             try:
                 while True:
                     click.echo(f"--- Field {position + 1} ---")
-                    field_name = click.prompt(f"  Field name")
-                    length = click.prompt(f"  Length", type=int)
-                    is_required = click.confirm(f"  Required?", default=True)
-                    field_desc = click.prompt(f"  Description (optional)", default="", show_default=False)
+                    field_name = click.prompt("  Field name")
+                    length = click.prompt("  Length", type=int)
+                    is_required = click.confirm("  Required?", default=True)
+                    field_desc = click.prompt("  Description (optional)", default="", show_default=False)
 
                     # Optional: possible values
-                    add_values = click.confirm(f"  Add possible values?", default=False)
+                    add_values = click.confirm("  Add possible values?", default=False)
                     possible_values = None
                     if add_values:
-                        values_str = click.prompt(f"  Possible values (comma-separated)")
+                        values_str = click.prompt("  Possible values (comma-separated)")
                         possible_values = [v.strip() for v in values_str.split(",")]
 
                     fields.append(
@@ -311,6 +314,7 @@ def delete_convention(convention_id: int, db_url: str):
     """Delete a naming convention."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService
 
     engine = create_engine(db_url, echo=False)
@@ -368,14 +372,15 @@ def delete_convention(convention_id: int, db_url: str):
 def analyze_inventory(
     convention_id: int,
     db_url: str,
-    datacenter: Optional[str],
-    cluster: Optional[str],
+    datacenter: str | None,
+    cluster: str | None,
     batch_size: int,
     auto_label: bool,
 ):
     """Analyze VM inventory against a naming convention."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService
 
     engine = create_engine(db_url, echo=False)
@@ -413,8 +418,8 @@ def analyze_inventory(
             )
             bar.update(100)
 
-        click.echo(f"\n✅ Analysis complete!")
-        click.echo(f"\n📊 Results:")
+        click.echo("\n✅ Analysis complete!")
+        click.echo("\n📊 Results:")
         click.echo(f"   Total VMs:     {stats['total']}")
         click.echo(
             f"   Valid:         {stats['valid']} ({stats['valid']/stats['total']*100:.1f}%)"
@@ -442,7 +447,7 @@ def analyze_inventory(
                 assigned_by="cli_auto",
             )
             click.echo("✅ Labels applied successfully!")
-            click.echo(f"\n🏷️  Label Results:")
+            click.echo("\n🏷️  Label Results:")
             click.echo(f"   Labels Created:   {label_stats['labels_created']}")
             click.echo(f"   Labels Assigned:  {label_stats['labels_assigned']}")
             click.echo(f"   VMs Labeled:      {label_stats['vms_labeled']}")
@@ -492,8 +497,8 @@ def analyze_inventory(
 def analyze_inventory_multi(
     convention_ids: tuple,
     db_url: str,
-    datacenter: Optional[str],
-    cluster: Optional[str],
+    datacenter: str | None,
+    cluster: str | None,
     batch_size: int,
     test_all: bool,
     auto_label: bool,
@@ -501,6 +506,7 @@ def analyze_inventory_multi(
     """Analyze VM inventory against multiple naming conventions."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService
 
     if not convention_ids:
@@ -553,8 +559,8 @@ def analyze_inventory_multi(
             )
             bar.update(100)
 
-        click.echo(f"\n✅ Analysis complete!")
-        click.echo(f"\n📊 Overall Results:")
+        click.echo("\n✅ Analysis complete!")
+        click.echo("\n📊 Overall Results:")
         click.echo(f"   Total VMs:          {stats['total']}")
         click.echo(
             f"   Matched:            {stats['matched']} " f"({stats['matched']/stats['total']*100:.1f}%)"
@@ -573,7 +579,7 @@ def analyze_inventory_multi(
         click.echo(f"\n   Records created:    {stats['records_created']}")
         click.echo(f"   Records updated:    {stats['records_updated']}")
 
-        click.echo(f"\n📈 By Convention:")
+        click.echo("\n📈 By Convention:")
         for conv_id in convention_ids:
             convention = next(c for c in conventions if c.id == conv_id)
             match_count = stats["by_convention"][conv_id]
@@ -598,7 +604,7 @@ def analyze_inventory_multi(
                 assigned_by="cli_auto_multi",
             )
             click.echo("✅ Labels applied successfully!")
-            click.echo(f"\n🏷️  Label Results:")
+            click.echo("\n🏷️  Label Results:")
             click.echo(f"   Labels Created:   {label_stats['labels_created']}")
             click.echo(f"   Labels Assigned:  {label_stats['labels_assigned']}")
             click.echo(f"   VMs Labeled:      {label_stats['vms_labeled']}")
@@ -637,8 +643,9 @@ def export_analysis(convention_id: int, output_file: Path, db_url: str, format: 
     """Export naming analysis results."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
+    from src.models import VirtualMachine, VMNamingAnalysis
     from src.services.naming_convention_service import NamingConventionService
-    from src.models import VMNamingAnalysis, VirtualMachine
 
     engine = create_engine(db_url, echo=False)
     SessionLocal = sessionmaker(bind=engine)
@@ -731,6 +738,7 @@ def migration_groups(convention_id: int, db_url: str, group_by: tuple, format: s
     """Generate migration groups based on naming fields."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService
 
     engine = create_engine(db_url, echo=False)
@@ -802,10 +810,11 @@ def migration_groups(convention_id: int, db_url: str, group_by: tuple, format: s
     type=click.Path(path_type=Path),
     help="Output file path (defaults to convention_<id>.json)",
 )
-def export_convention(convention_id: int, db_url: str, output: Optional[Path]):
+def export_convention(convention_id: int, db_url: str, output: Path | None):
     """Export a naming convention to JSON file."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService
 
     engine = create_engine(db_url, echo=False)
@@ -885,13 +894,14 @@ def export_convention(convention_id: int, db_url: str, output: Optional[Path]):
     is_flag=True,
     help="Skip import if a convention with the same name already exists",
 )
-def import_convention(input_file: Path, db_url: str, overwrite_name: Optional[str], skip_existing: bool):
+def import_convention(input_file: Path, db_url: str, overwrite_name: str | None, skip_existing: bool):
     """Import a naming convention from JSON file."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import (
-        NamingConventionService,
         NamingConventionError,
+        NamingConventionService,
         PatternValidationError,
     )
 
@@ -904,7 +914,7 @@ def import_convention(input_file: Path, db_url: str, overwrite_name: Optional[st
 
         # Load JSON file
         click.echo(f"\n📥 Importing naming convention from {input_file}")
-        with open(input_file, "r") as f:
+        with open(input_file) as f:
             data = json.load(f)
 
         # Validate required fields
@@ -926,12 +936,11 @@ def import_convention(input_file: Path, db_url: str, overwrite_name: Optional[st
             if skip_existing:
                 click.echo(f"⚠️  Convention '{name}' already exists. Skipping import.")
                 return
-            else:
-                if not click.confirm(
-                    f"⚠️  Convention '{name}' already exists. Continue and create a duplicate?", default=False
-                ):
-                    click.echo("❌ Import cancelled.")
-                    raise click.Abort()
+            if not click.confirm(
+                f"⚠️  Convention '{name}' already exists. Continue and create a duplicate?", default=False
+            ):
+                click.echo("❌ Import cancelled.")
+                raise click.Abort()
 
         # Validate fields
         if not fields or not isinstance(fields, list):
@@ -1006,15 +1015,16 @@ def import_convention(input_file: Path, db_url: str, overwrite_name: Optional[st
 def apply_labels(
     convention_id: int,
     db_url: str,
-    datacenter: Optional[str],
-    cluster: Optional[str],
-    fields: Optional[str],
+    datacenter: str | None,
+    cluster: str | None,
+    fields: str | None,
     overwrite: bool,
     dry_run: bool,
 ):
     """Apply labels to VMs based on naming convention field values."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from src.services.naming_convention_service import NamingConventionService
 
     engine = create_engine(db_url, echo=False)
@@ -1072,7 +1082,7 @@ def apply_labels(
         # Display results
         mode_text = "(DRY RUN)" if dry_run else ""
         click.echo(f"\n✅ Label application complete! {mode_text}")
-        click.echo(f"\n📊 Results:")
+        click.echo("\n📊 Results:")
         click.echo(f"   Labels created:       {stats['labels_created']}")
         click.echo(f"   Labels assigned:      {stats['labels_assigned']}")
         click.echo(f"   VMs labeled:          {stats['vms_labeled']}")
@@ -1085,11 +1095,11 @@ def apply_labels(
 
         # Show label format example
         if stats["labels_created"] > 0 or stats["labels_assigned"] > 0:
-            click.echo(f"\n🏷️  Label Format:")
+            click.echo("\n🏷️  Label Format:")
             example_field = convention.fields[0] if convention.fields else None
             if example_field:
                 click.echo(f"   Key:   nc:{convention.name}:{example_field.field_name}")
-                click.echo(f"   Value: <field value from VM name>")
+                click.echo("   Value: <field value from VM name>")
 
         if dry_run:
             click.echo("\n💡 Tip: Run without --dry-run to actually apply labels")

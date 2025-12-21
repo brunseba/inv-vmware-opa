@@ -1,17 +1,18 @@
 """Naming Convention Manager page - Create and manage VM naming conventions."""
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
+from streamlit_extras.colored_header import colored_header
+
+from src.models import NamingConvention
 from src.services.naming_convention_service import (
-    NamingConventionService,
     NamingConventionError,
+    NamingConventionService,
     PatternValidationError,
 )
-from src.models import NamingConvention
 
 
 def render(db_url: str):
@@ -551,7 +552,7 @@ def render_create_convention(service: NamingConventionService):
 
                 st.caption(
                     f"Position: {idx} | "
-                    f"Total chars so far: "
+                    "Total chars so far: "
                     f"{sum(f['length'] for f in st.session_state.convention_fields[:idx+1])}"
                 )
     else:

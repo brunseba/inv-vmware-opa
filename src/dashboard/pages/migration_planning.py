@@ -1,19 +1,21 @@
 """Migration Planning page - Estimate migration time and plan VM migrations."""
 
-import streamlit as st
-import plotly.graph_objects as go
+import sys
+from datetime import datetime, timedelta
+from io import BytesIO
+from pathlib import Path
+
+import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-import pandas as pd
-from datetime import datetime, timedelta
-from streamlit_extras.metric_cards import style_metric_cards
-from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
+from streamlit_extras.colored_header import colored_header
+from streamlit_extras.metric_cards import style_metric_cards
+
 from src.models import VirtualMachine
-from io import BytesIO
-import sys
-from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.dashboard.utils.theme import ThemeManager
@@ -212,7 +214,7 @@ def render(db_url: str):
             with col1:
                 st.markdown("**⚙️ Parameters**")
                 st.markdown(
-                    f"""
+                    """
                 - Fixed Time: **{fixed_time_hours}h** per VM
                 - Parallel VMs: **{parallel_vms}**
                 - Window: **{maintenance_window_hours}h/day**
@@ -222,7 +224,7 @@ def render(db_url: str):
             with col2:
                 st.markdown("**🌐 Network**")
                 st.markdown(
-                    f"""
+                    """
                 - Bandwidth: **{bandwidth_mbps:,} Mbps**
                 - Efficiency: **{network_efficiency*100:.0f}%**
                 - Effective: **{bandwidth_mbps * network_efficiency:.0f} Mbps**
@@ -232,7 +234,7 @@ def render(db_url: str):
             with col3:
                 st.markdown("**📋 Strategy**")
                 st.markdown(
-                    f"""
+                    """
                 - Method: **{migration_method}**
                 - Selection: **{selection_strategy}**
                 """
@@ -385,7 +387,7 @@ def render(db_url: str):
                 selected_cluster = st.selectbox("Cluster", options=["All"] + clusters, index=0)
 
             with col3:
-                power_state = st.selectbox("Power State", options=["All", "poweredOn", "poweredOff"], index=0)
+                power_state = st.selectbox("Power State", options=["All", "poweredOn", "poweredOf"], index=0)
 
             # Build query
             query = session.query(VirtualMachine).filter(VirtualMachine.in_use_mib.isnot(None))
@@ -476,7 +478,7 @@ def render(db_url: str):
                 include_subfolders = st.checkbox("Include Subfolders", value=True, help="Include all VMs in subfolders")
 
             with col2:
-                power_state = st.selectbox("Power State", options=["All", "poweredOn", "poweredOff"], index=0)
+                power_state = st.selectbox("Power State", options=["All", "poweredOn", "poweredOf"], index=0)
 
             # Build folder-based query
             query = session.query(VirtualMachine).filter(
@@ -510,7 +512,7 @@ def render(db_url: str):
         with st.expander("📋 Selection Summary", expanded=False):
             if selection_strategy == "Infrastructure-based":
                 st.markdown(
-                    f"""
+                    """
                 **Selection Criteria:**
                 - Datacenter: `{selected_dc}`
                 - Cluster: `{selected_cluster}`
@@ -523,7 +525,7 @@ def render(db_url: str):
                     f"\n                - Regex Filter: `{regex_pattern}`" if use_regex and regex_pattern else ""
                 )
                 st.markdown(
-                    f"""
+                    """
                 **Selection Criteria:**
                 - Folder Level: `{folder_level}`{regex_info}
                 - Selected Folders: `{len(selected_folders)}`
@@ -619,7 +621,7 @@ def render(db_url: str):
             st.metric("Calendar Days", f"{actual_days:.1f} days")
 
         style_metric_cards(
-            background_color="#1f1f1f", border_left_color="#ff8c00", border_color="#2e2e2e", box_shadow="#1f1f1f"
+            background_color="#1f1f1", border_left_color="#ff8c00", border_color="#2e2e2e", box_shadow="#1f1f1"
         )
 
         col1, col2, col3 = st.columns(3)
@@ -789,7 +791,7 @@ def render(db_url: str):
                     y="Task",
                     color="Batch",
                     hover_data=["Storage"],
-                    title=f"VM Migration Timeline (First 50 VMs shown)",
+                    title="VM Migration Timeline (First 50 VMs shown)",
                 )
                 fig.update_yaxes(categoryorder="total ascending")
                 fig.update_layout(height=600)
@@ -1545,7 +1547,7 @@ def render(db_url: str):
         add_vertical_space(1)
         with st.expander("📋 Migration Recommendations"):
             st.markdown(
-                f"""
+                """
             ### Based on your configuration:
 
             **Migration Strategy**: {migration_method}

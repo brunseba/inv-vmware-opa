@@ -1,14 +1,16 @@
 """CLI for VMware inventory management."""
 
-import click
 import os
 import subprocess
 import sys
 from pathlib import Path
-from .loader import load_excel_to_db
-from .commands.label import label
+
+import click
+
 from .commands.anonymize import anonymize
+from .commands.label import label
 from .commands.naming_convention import naming_convention
+from .loader import load_excel_to_db
 
 
 def get_default_db_url() -> str:
@@ -96,9 +98,9 @@ def load(excel_file: Path, db_url: str, clear: bool, sheet: str, list_sheets: bo
 )
 def backup(output_file: Path, db_url: str):
     """Create a full database backup."""
-    from datetime import datetime
-    from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
     from .services.backup_service import BackupService
 
     try:
@@ -107,10 +109,10 @@ def backup(output_file: Path, db_url: str):
         session = SessionLocal()
         backup_service = BackupService(session)
 
-        click.echo(f"\n💾 Creating database backup...")
+        click.echo("\n💾 Creating database backup...")
         stats = backup_service.backup_database(output_file, db_url)
 
-        click.echo(f"\n✅ Database backup complete!")
+        click.echo("\n✅ Database backup complete!")
         click.echo(f"   Source: {stats['source']}")
         click.echo(f"   Backup: {stats['backup_file']}")
         click.echo(f"   Size: {stats['size_bytes']:,} bytes")
@@ -134,8 +136,9 @@ def backup(output_file: Path, db_url: str):
 @click.confirmation_option(prompt="This will replace the current database. Continue?")
 def restore(backup_file: Path, db_url: str):
     """Restore database from backup file."""
-    from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
     from .services.backup_service import BackupService
 
     try:
@@ -144,12 +147,12 @@ def restore(backup_file: Path, db_url: str):
         session = SessionLocal()
         backup_service = BackupService(session)
 
-        click.echo(f"\n🔄 Restoring database from backup...")
+        click.echo("\n🔄 Restoring database from backup...")
         click.echo("   ⚠️  Current database will be backed up before restore")
 
         stats = backup_service.restore_database(backup_file, db_url, confirm=True)
 
-        click.echo(f"\n✅ Database restore complete!")
+        click.echo("\n✅ Database restore complete!")
         click.echo(f"   Restored from: {stats['restored_from']}")
         click.echo(f"   Restored to: {stats['restored_to']}")
         click.echo(f"   Size: {stats['size_bytes']:,} bytes")
@@ -172,6 +175,7 @@ def stats(db_url: str):
     """Show statistics about the inventory database."""
     from sqlalchemy import create_engine, func
     from sqlalchemy.orm import sessionmaker
+
     from .models import VirtualMachine
 
     engine = create_engine(db_url, echo=False)
@@ -184,7 +188,7 @@ def stats(db_url: str):
             session.query(func.count(VirtualMachine.id)).filter(VirtualMachine.powerstate == "poweredOn").scalar()
         )
         powered_off = (
-            session.query(func.count(VirtualMachine.id)).filter(VirtualMachine.powerstate == "poweredOff").scalar()
+            session.query(func.count(VirtualMachine.id)).filter(VirtualMachine.powerstate == "poweredOf").scalar()
         )
 
         datacenters = session.query(func.count(func.distinct(VirtualMachine.datacenter))).scalar()
@@ -195,7 +199,7 @@ def stats(db_url: str):
         click.echo(f"\nTotal VMs: {total_vms}")
         click.echo(f"  - Powered On:  {powered_on}")
         click.echo(f"  - Powered Off: {powered_off}")
-        click.echo(f"\nInfrastructure:")
+        click.echo("\nInfrastructure:")
         click.echo(f"  - Datacenters: {datacenters}")
         click.echo(f"  - Clusters:    {clusters}")
         click.echo(f"  - Hosts:       {hosts}")
@@ -244,6 +248,7 @@ def vm_list(db_url: str, datacenter: str, cluster: str, limit: int):
     """List virtual machines from the inventory."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from .models import VirtualMachine
 
     engine = create_engine(db_url, echo=False)
@@ -301,7 +306,7 @@ def vm_list(db_url: str, datacenter: str, cluster: str, limit: int):
 )
 @click.option(
     "--powerstate",
-    type=click.Choice(["poweredOn", "poweredOff"], case_sensitive=False),
+    type=click.Choice(["poweredOn", "poweredOf"], case_sensitive=False),
     help="Filter by power state",
 )
 @click.option(
@@ -320,11 +325,13 @@ def vm_search(
     pattern: str, db_url: str, datacenter: str, cluster: str, powerstate: str, limit: int, case_sensitive: bool
 ):
     """Search for VMs using regex pattern matching on VM names."""
+    import re
+
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    from .models import VirtualMachine
     from tabulate import tabulate
-    import re
+
+    from .models import VirtualMachine
 
     engine = create_engine(db_url, echo=False)
     SessionLocal = sessionmaker(bind=engine)
@@ -404,8 +411,9 @@ def datacenters(db_url: str):
     """List all datacenters with VM counts and statistics."""
     from sqlalchemy import create_engine, func
     from sqlalchemy.orm import sessionmaker
-    from .models import VirtualMachine
     from tabulate import tabulate
+
+    from .models import VirtualMachine
 
     engine = create_engine(db_url, echo=False)
     SessionLocal = sessionmaker(bind=engine)
@@ -420,7 +428,7 @@ def datacenters(db_url: str):
                 VirtualMachine.datacenter,
                 func.count(VirtualMachine.id).label("vm_count"),
                 func.sum(case((VirtualMachine.powerstate == "poweredOn", 1), else_=0)).label("powered_on"),
-                func.sum(case((VirtualMachine.powerstate == "poweredOff", 1), else_=0)).label("powered_off"),
+                func.sum(case((VirtualMachine.powerstate == "poweredOf", 1), else_=0)).label("powered_of"),
                 func.count(func.distinct(VirtualMachine.cluster)).label("cluster_count"),
                 func.count(func.distinct(VirtualMachine.host)).label("host_count"),
                 func.sum(VirtualMachine.cpus).label("total_cpus"),
@@ -458,7 +466,7 @@ def datacenters(db_url: str):
             )
 
         # Display table
-        headers = ["Datacenter", "VMs", "On", "Off", "Clusters", "Hosts", "vCPUs", "RAM (GiB)", "Storage (TiB)"]
+        headers = ["Datacenter", "VMs", "On", "Of", "Clusters", "Hosts", "vCPUs", "RAM (GiB)", "Storage (TiB)"]
         click.echo(f"\n🏢 Datacenters ({len(results)}):\n")
         click.echo(tabulate(table_data, headers=headers, tablefmt="simple"))
         click.echo()
@@ -488,11 +496,13 @@ def datacenters(db_url: str):
 )
 def clusters(db_url: str, datacenter: str, cluster_filter: str):
     """List all clusters with VM counts and statistics."""
+    import re
+
     from sqlalchemy import create_engine, func
     from sqlalchemy.orm import sessionmaker
-    from .models import VirtualMachine
     from tabulate import tabulate
-    import re
+
+    from .models import VirtualMachine
 
     engine = create_engine(db_url, echo=False)
     SessionLocal = sessionmaker(bind=engine)
@@ -507,7 +517,7 @@ def clusters(db_url: str, datacenter: str, cluster_filter: str):
             VirtualMachine.cluster,
             func.count(VirtualMachine.id).label("vm_count"),
             func.sum(case((VirtualMachine.powerstate == "poweredOn", 1), else_=0)).label("powered_on"),
-            func.sum(case((VirtualMachine.powerstate == "poweredOff", 1), else_=0)).label("powered_off"),
+            func.sum(case((VirtualMachine.powerstate == "poweredOf", 1), else_=0)).label("powered_of"),
             func.count(func.distinct(VirtualMachine.host)).label("host_count"),
             func.sum(VirtualMachine.cpus).label("total_cpus"),
             func.sum(VirtualMachine.memory).label("total_memory_mib"),
@@ -564,7 +574,7 @@ def clusters(db_url: str, datacenter: str, cluster_filter: str):
             )
 
         # Display table
-        headers = ["Datacenter", "Cluster", "VMs", "On", "Off", "Hosts", "vCPUs", "RAM (GiB)", "Storage (TiB)"]
+        headers = ["Datacenter", "Cluster", "VMs", "On", "Of", "Hosts", "vCPUs", "RAM (GiB)", "Storage (TiB)"]
         title = f"🖥️  Clusters ({len(results)})"
         if datacenter:
             title += f" in {datacenter}"
@@ -609,7 +619,6 @@ def clusters(db_url: str, datacenter: str, cluster_filter: str):
 def schema(db_url: str, table: str, filters: tuple, group_by: str):
     """View the datamodel schema with filtering and grouping options."""
     from sqlalchemy import create_engine, inspect
-    from .models import VirtualMachine, Label, VMLabel, FolderLabel
 
     engine = create_engine(db_url, echo=False)
     inspector = inspect(engine)
@@ -823,9 +832,8 @@ def _display_table_schema(inspector, table_name: str, categories: dict, filters:
 def clean(db_url: str, force: bool):
     """Remove all data from the database."""
     from sqlalchemy import create_engine, text
-    from .models import Base
 
-    click.echo(f"\n🗑️  Database Clean")
+    click.echo("\n🗑️  Database Clean")
     click.echo(f"Database: {db_url}\n")
 
     try:
@@ -867,7 +875,7 @@ def clean(db_url: str, force: bool):
                 conn.execute(text("VACUUM"))
             click.echo(" ✓")
 
-        click.echo(f"\n✅ Database cleaned successfully!")
+        click.echo("\n✅ Database cleaned successfully!")
         click.echo("\n📊 Next steps:")
         click.echo("   - Load new data: vmware-inv load <excel_file>")
         click.echo("   - Check status: vmware-inv stats")
@@ -886,7 +894,7 @@ def clean(db_url: str, force: bool):
 )
 def optimize(db_url: str):
     """Optimize database by adding performance indexes."""
-    from sqlalchemy import create_engine, text, inspect
+    from sqlalchemy import create_engine, inspect, text
 
     click.echo("\n🛠️  Optimizing database performance...")
     click.echo(f"Database: {db_url}\n")
@@ -928,7 +936,7 @@ def optimize(db_url: str):
                 except Exception as e:
                     click.echo(f" ✗ Failed: {e}")
 
-        click.echo(f"\n📊 Summary:")
+        click.echo("\n📊 Summary:")
         click.echo(f"   Created: {created_count} indexes")
         click.echo(f"   Skipped: {skipped_count} indexes")
 
@@ -958,8 +966,9 @@ def schema_version(db_url: str, history: bool):
     """Show database schema version information."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    from .services.schema_service import SchemaService, CURRENT_SCHEMA_VERSION
     from tabulate import tabulate
+
+    from .services.schema_service import CURRENT_SCHEMA_VERSION, SchemaService
 
     try:
         engine = create_engine(db_url, echo=False)
@@ -971,7 +980,7 @@ def schema_version(db_url: str, history: bool):
         current_version = schema_service.get_current_version()
         compatibility = schema_service.check_schema_compatibility()
 
-        click.echo(f"\n📊 Schema Version Information")
+        click.echo("\n📊 Schema Version Information")
         click.echo(f"Database: {db_url}\n")
 
         # Current status
@@ -981,17 +990,17 @@ def schema_version(db_url: str, history: bool):
             click.echo(f"Applied at:        {current_version.applied_at.strftime('%Y-%m-%d %H:%M:%S')}")
             click.echo(f"Applied by:        {current_version.applied_by or 'N/A'}")
         else:
-            click.echo(f"Current migration: None (uninitialized)")
+            click.echo("Current migration: None (uninitialized)")
 
         expected_semver = schema_service.migration_to_semver(CURRENT_SCHEMA_VERSION)
         click.echo(f"Expected migration: {CURRENT_SCHEMA_VERSION} (schema {expected_semver})")
 
         # Compatibility status
         if compatibility["compatible"]:
-            click.echo(f"\n✅ Status: Compatible")
+            click.echo("\n✅ Status: Compatible")
         else:
             click.echo(f"\n⚠️  Status: {compatibility['message']}")
-            click.echo(f"\n💡 Run 'vmware-inv schema-upgrade' to update the schema")
+            click.echo("\n💡 Run 'vmware-inv schema-upgrade' to update the schema")
 
         # Show history if requested
         if history:
@@ -1041,8 +1050,9 @@ def schema_info(db_url: str):
     """Show detailed schema information including tables and compatibility."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    from .services.schema_service import SchemaService
     from tabulate import tabulate
+
+    from .services.schema_service import SchemaService
 
     try:
         engine = create_engine(db_url, echo=False)
@@ -1053,7 +1063,7 @@ def schema_info(db_url: str):
         # Get comprehensive schema info
         info = schema_service.get_schema_info()
 
-        click.echo(f"\n📋 Database Schema Information")
+        click.echo("\n📋 Database Schema Information")
         click.echo(f"Database: {db_url}\n")
 
         # Version info
@@ -1061,7 +1071,7 @@ def schema_info(db_url: str):
         if info["current_version"]:
             click.echo(f"  Current:  migration {info['current_version']} (schema {info['current_semver']})")
         else:
-            click.echo(f"  Current:  Not set")
+            click.echo("  Current:  Not set")
         click.echo(f"  Expected: migration {info['expected_version']} (schema {info['expected_semver']})")
         click.echo(f"  App:      {info['app_version']}")
         click.echo(f"  Status:   {'✅ Compatible' if info['compatible'] else '⚠️  Incompatible'}")
@@ -1072,7 +1082,7 @@ def schema_info(db_url: str):
         click.echo(tabulate(table_data, headers=["#", "Table Name"], tablefmt="simple"))
 
         # Metadata
-        click.echo(f"\nMetadata:")
+        click.echo("\nMetadata:")
         click.echo(f"  Schema tracking: {'✅ Enabled' if info['schema_tracking_enabled'] else '❌ Disabled'}")
         click.echo(f"  Version history: {info['version_history_count']} record(s)")
         if info["last_update"]:
@@ -1124,12 +1134,13 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
     """
     import re
     from pathlib import Path
+
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import sessionmaker
-    from .models import Base
-    from .services.schema_service import SchemaService, CURRENT_SCHEMA_VERSION
 
-    click.echo(f"\n📊 Database Schema Upgrade")
+    from .services.schema_service import CURRENT_SCHEMA_VERSION, SchemaService
+
+    click.echo("\n📊 Database Schema Upgrade")
     click.echo(f"Database: {db_url}")
     if dry_run:
         click.echo("Mode: DRY RUN (no changes will be applied)")
@@ -1156,11 +1167,11 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
                 break
 
         if not migrations_dir:
-            click.echo(f"✗ Migrations directory not found in any of these locations:", err=True)
+            click.echo("✗ Migrations directory not found in any of these locations:", err=True)
             for dir_path in possible_dirs:
                 click.echo(f"   - {dir_path}", err=True)
-            click.echo(f"\n💡 Hint: Run this command from the project root directory, or ensure ", err=True)
-            click.echo(f"   migrations are included in the package installation.", err=True)
+            click.echo("\n💡 Hint: Run this command from the project root directory, or ensure ", err=True)
+            click.echo("   migrations are included in the package installation.", err=True)
             raise click.Abort()
 
         # Find migration SQL files
@@ -1220,7 +1231,7 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
 
         if not pending_migrations:
             expected_semver = schema_service.migration_to_semver(CURRENT_SCHEMA_VERSION)
-            click.echo(f"\n✅ Database is already up to date!")
+            click.echo("\n✅ Database is already up to date!")
             click.echo(f"Current: migration {CURRENT_SCHEMA_VERSION} (schema {expected_semver})")
             return
 
@@ -1230,7 +1241,7 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
             click.echo(f"   [{mig['version']}] {mig['description']}")
 
         if dry_run:
-            click.echo(f"\n✓ Dry run complete. No changes were made.")
+            click.echo("\n✓ Dry run complete. No changes were made.")
             return
 
         # Confirm
@@ -1247,7 +1258,7 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
             click.echo(f"📦 Applying migration {mig['version']}: {mig['description']}")
 
             # Read SQL file
-            with open(mig["file"], "r") as f:
+            with open(mig["file"]) as f:
                 sql_content = f.read()
 
             # Remove comments and split into statements
@@ -1292,8 +1303,8 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
 
         session.close()
 
-        click.echo(f"\n✅ Schema upgraded successfully!")
-        click.echo(f"\n📊 Next steps:")
+        click.echo("\n✅ Schema upgraded successfully!")
+        click.echo("\n📊 Next steps:")
         click.echo("   - Run 'vmware-inv schema-version' to verify")
         click.echo("   - Use 'vmware-inv stats' to check database")
 
@@ -1333,6 +1344,7 @@ def schema_upgrade(db_url: str, target: str, dry_run: bool, force: bool):
 def dashboard(port: int, host: str, db_url: str, no_browser: bool):
     """Launch the interactive web dashboard."""
     import os
+
     from .dashboard import APP_PATH
 
     if not APP_PATH.exists():
@@ -1340,7 +1352,7 @@ def dashboard(port: int, host: str, db_url: str, no_browser: bool):
         click.echo("\nPlease ensure the package is installed correctly.", err=True)
         raise click.Abort()
 
-    click.echo(f"🚀 Starting VMware Inventory Dashboard...")
+    click.echo("🚀 Starting VMware Inventory Dashboard...")
     click.echo(f"   Host: {host}")
     click.echo(f"   Port: {port}")
     click.echo(f"   Database: {db_url}")
@@ -1410,6 +1422,7 @@ def fullweb(port: int, host: str, db_path: str, no_browser: bool):
     """
     import os
     from pathlib import Path
+
     from .dashboard import APP_PATH
 
     if not APP_PATH.exists():
@@ -1421,26 +1434,26 @@ def fullweb(port: int, host: str, db_path: str, no_browser: bool):
     db_file = Path(db_path)
     db_url = f"sqlite:///{db_file.absolute()}"
 
-    click.echo(f"🌐 Starting VMware Inventory Dashboard (Full Web Mode)...")
-    click.echo(f"\n📌 Configuration:")
+    click.echo("🌐 Starting VMware Inventory Dashboard (Full Web Mode)...")
+    click.echo("\n📌 Configuration:")
     click.echo(f"   Host: {host}")
     click.echo(f"   Port: {port}")
     click.echo(f"   Database: {db_file.absolute()}")
 
     # Check if database exists
     if db_file.exists():
-        click.echo(f"\n💾 Existing database found")
-        click.echo(f"   You can load new data or work with existing data")
+        click.echo("\n💾 Existing database found")
+        click.echo("   You can load new data or work with existing data")
     else:
-        click.echo(f"\n✨ New database will be created")
-        click.echo(f"   Use 'Data Import' page to upload and load your Excel file")
+        click.echo("\n✨ New database will be created")
+        click.echo("   Use 'Data Import' page to upload and load your Excel file")
 
     click.echo(f"\n🌍 Access at: http://{host}:{port}")
-    click.echo(f"\n📥 To get started:")
-    click.echo(f"   1. Navigate to Management > Data Import")
-    click.echo(f"   2. Upload your Excel file (RVTools export)")
-    click.echo(f"   3. Select sheet and import options")
-    click.echo(f"   4. Click 'Import Data'")
+    click.echo("\n📥 To get started:")
+    click.echo("   1. Navigate to Management > Data Import")
+    click.echo("   2. Upload your Excel file (RVTools export)")
+    click.echo("   3. Select sheet and import options")
+    click.echo("   4. Click 'Import Data'")
     click.echo("\n   Press Ctrl+C to stop the dashboard\n")
 
     # Set environment variable for default database URL

@@ -1,13 +1,14 @@
 """CLI commands for label management."""
 
-import click
 from pathlib import Path
+
+import click
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tabulate import tabulate
 
-from src.services.label_service import LabelService
 from src.models import VirtualMachine
+from src.services.label_service import LabelService
 
 
 def get_label_service(db_url: str) -> LabelService:
@@ -189,7 +190,7 @@ def remove_vm_label(vm_name: str, key: str, value: str, db_url: str):
         if success:
             click.echo(f"✅ Label removed: {vm_name} → {key}={value}")
         else:
-            click.echo(f"❌ Label was not assigned to VM", err=True)
+            click.echo("❌ Label was not assigned to VM", err=True)
 
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
@@ -293,7 +294,7 @@ def clean_all_vm_labels(include_inherited: bool, db_url: str):
         direct_count = total_before - inherited_count
 
         # Show what will be removed
-        click.echo(f"\n📊 Current VM label assignments:")
+        click.echo("\n📊 Current VM label assignments:")
         click.echo(f"   Direct assignments: {direct_count:,}")
         click.echo(f"   Inherited from folders: {inherited_count:,}")
         click.echo(f"   Total: {total_before:,}\n")
@@ -305,8 +306,8 @@ def clean_all_vm_labels(include_inherited: bool, db_url: str):
         click.echo("🗑️  Removing VM label assignments...")
         stats = service.clean_all_vm_labels(include_inherited=include_inherited)
 
-        click.echo(f"\n✅ Cleanup complete!\n")
-        click.echo(f"📊 Results:")
+        click.echo("\n✅ Cleanup complete!\n")
+        click.echo("📊 Results:")
         click.echo(f"   Direct assignments removed: {stats['direct_removed']:,}")
         if include_inherited:
             click.echo(f"   Inherited assignments removed: {stats['inherited_removed']:,}")
@@ -352,9 +353,9 @@ def assign_folder_label(
 
         click.echo(f"✅ Label assigned to folder: {folder_path} → {key}={value}")
         if inherit_vms:
-            click.echo(f"   ✓ Applied to VMs in folder")
+            click.echo("   ✓ Applied to VMs in folder")
         if inherit_subfolders:
-            click.echo(f"   ✓ Applied to subfolders")
+            click.echo("   ✓ Applied to subfolders")
 
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
@@ -384,9 +385,9 @@ def remove_folder_label(folder_path: str, key: str, value: str, keep_inherited: 
         if success:
             click.echo(f"✅ Label removed from folder: {folder_path} → {key}={value}")
             if not keep_inherited:
-                click.echo(f"   ✓ Removed inherited labels from VMs")
+                click.echo("   ✓ Removed inherited labels from VMs")
         else:
-            click.echo(f"❌ Label was not assigned to folder", err=True)
+            click.echo("❌ Label was not assigned to folder", err=True)
 
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
@@ -493,11 +494,11 @@ def sync_inherited_labels(folder: str, db_url: str):
         if folder:
             click.echo(f"🔄 Syncing inherited labels for folder: {folder}")
         else:
-            click.echo(f"🔄 Syncing all inherited labels...")
+            click.echo("🔄 Syncing all inherited labels...")
 
         service.sync_inherited_labels(folder)
 
-        click.echo(f"✅ Inherited labels synced successfully")
+        click.echo("✅ Inherited labels synced successfully")
 
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
@@ -515,13 +516,13 @@ def backup_labels(output_file: Path, db_url: str):
         service = get_label_service(db_url)
         backup_service = BackupService(service.session)
 
-        click.echo(f"\n💾 Creating backup...")
+        click.echo("\n💾 Creating backup...")
         stats = backup_service.export_labels(output_file)
 
-        click.echo(f"\n✅ Backup complete!")
+        click.echo("\n✅ Backup complete!")
         click.echo(f"   File: {stats['file']}")
         click.echo(f"   Size: {stats['size_bytes']:,} bytes")
-        click.echo(f"\n📊 Backed up:")
+        click.echo("\n📊 Backed up:")
         click.echo(f"   Labels: {stats['labels']}")
         click.echo(f"   VM Assignments: {stats['vm_assignments']}")
         click.echo(f"   Folder Assignments: {stats['folder_assignments']}")
@@ -557,21 +558,21 @@ def restore_labels(input_file: Path, mode: str, clear_existing: bool, db_url: st
                 click.echo("Cancelled.")
                 return
 
-        click.echo(f"\n🔄 Restoring from backup...")
+        click.echo("\n🔄 Restoring from backup...")
         click.echo(f"   Mode: {mode}")
 
         stats = backup_service.import_labels(input_file, mode=mode, clear_existing=clear_existing)
 
-        click.echo(f"\n✅ Restore complete!")
-        click.echo(f"\n📊 Results:")
-        click.echo(f"   Labels:")
+        click.echo("\n✅ Restore complete!")
+        click.echo("\n📊 Results:")
+        click.echo("   Labels:")
         click.echo(f"     - Created: {stats['labels_created']}")
         click.echo(f"     - Updated: {stats['labels_updated']}")
         click.echo(f"     - Skipped: {stats['labels_skipped']}")
-        click.echo(f"   VM Assignments:")
+        click.echo("   VM Assignments:")
         click.echo(f"     - Created: {stats['vm_assignments_created']}")
         click.echo(f"     - Skipped: {stats['vm_assignments_skipped']}")
-        click.echo(f"   Folder Assignments:")
+        click.echo("   Folder Assignments:")
         click.echo(f"     - Created: {stats['folder_assignments_created']}")
         click.echo(f"     - Skipped: {stats['folder_assignments_skipped']}")
 
@@ -670,13 +671,13 @@ def assign_all_folders_label(
             click.echo("  ✓ Will apply to subfolders")
 
         if dry_run:
-            click.echo(f"\n🔍 DRY RUN - Folders that would be labeled:\n")
+            click.echo("\n🔍 DRY RUN - Folders that would be labeled:\n")
             for folder in folders[:20]:  # Show first 20
                 stats = service.get_folder_stats(folder)
                 click.echo(f"  • {folder:<60} ({stats['vm_count']} VMs)")
             if len(folders) > 20:
                 click.echo(f"  ... and {len(folders) - 20} more")
-            click.echo(f"\n💡 Remove --dry-run to apply changes")
+            click.echo("\n💡 Remove --dry-run to apply changes")
             return
 
         # Confirm action
@@ -691,7 +692,7 @@ def assign_all_folders_label(
             click.echo(f"ℹ️  Created new label: {key}={value}\n")
 
         # Apply to all folders
-        click.echo(f"\n🔄 Applying label to folders...\n")
+        click.echo("\n🔄 Applying label to folders...\n")
         success_count = 0
         error_count = 0
 
@@ -710,7 +711,7 @@ def assign_all_folders_label(
                     error_count += 1
                     click.echo(f"\n  ⚠️  Error on {folder}: {e}")
 
-        click.echo(f"\n✅ Complete:")
+        click.echo("\n✅ Complete:")
         click.echo(f"   Successfully labeled: {success_count} folders")
         if error_count > 0:
             click.echo(f"   Errors: {error_count}")

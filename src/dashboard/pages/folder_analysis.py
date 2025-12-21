@@ -1,19 +1,20 @@
 """Folder Analysis page - Synthesis and metrics by folder."""
 
-import streamlit as st
-import plotly.express as px
-import plotly.graph_objects as go
-from sqlalchemy import create_engine, func
-from sqlalchemy.orm import sessionmaker
-import pandas as pd
-from streamlit_extras.metric_cards import style_metric_cards
-from streamlit_extras.colored_header import colored_header
-from streamlit_extras.add_vertical_space import add_vertical_space
-from streamlit_extras.dataframe_explorer import dataframe_explorer
-from src.models import VirtualMachine
-from src.services.label_service import LabelService
 import sys
 from pathlib import Path
+
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+from sqlalchemy import create_engine, func
+from sqlalchemy.orm import sessionmaker
+from streamlit_extras.add_vertical_space import add_vertical_space
+from streamlit_extras.colored_header import colored_header
+from streamlit_extras.metric_cards import style_metric_cards
+
+from src.models import VirtualMachine
+from src.services.label_service import LabelService
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.dashboard.utils.theme import ThemeManager
@@ -243,7 +244,7 @@ def render(db_url: str):
 
         # Style metric cards
         style_metric_cards(
-            background_color="#1f1f1f", border_left_color="#ff8c00", border_color="#2e2e2e", box_shadow="#1f1f1f"
+            background_color="#1f1f1", border_left_color="#ff8c00", border_color="#2e2e2e", box_shadow="#1f1f1"
         )
 
         add_vertical_space(2)
@@ -639,7 +640,7 @@ def render(db_url: str):
 
             # Style metrics
             style_metric_cards(
-                background_color="#1f1f1f", border_left_color="#dc143c", border_color="#2e2e2e", box_shadow="#1f1f1f"
+                background_color="#1f1f1", border_left_color="#dc143c", border_color="#2e2e2e", box_shadow="#1f1f1"
             )
 
             add_vertical_space(1)
