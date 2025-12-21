@@ -1,0 +1,2799 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="VMware inventory management CLI tool with migration planning">
+      
+      
+        <meta name="author" content="brun_s">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Field-by-Field Anonymization Guide - VMware Inventory OPA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#field-by-field-anonymization-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="VMware Inventory OPA" class="md-header__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            VMware Inventory OPA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Field-by-Field Anonymization Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/cli-commands/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../DASHBOARD/" class="md-tabs__link">
+          
+  
+  
+  Features
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/DOCKER/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../migration/MIGRATION_NOTES/" class="md-tabs__link">
+          
+  
+  
+  Migration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/CONTRIBUTING/" class="md-tabs__link">
+          
+  
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../data-model/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="VMware Inventory OPA" class="md-nav__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    VMware Inventory OPA
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/QUICK_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/QUICK_START_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/cli-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visual Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/pdf-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Backup & Restore
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Features
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DASHBOARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DASHBOARD_TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Testing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../UI_ENHANCEMENTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UI Enhancements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PDF_EXPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PDF_CHARTS_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Charts Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PDF_ENHANCED_FEATURES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Enhanced Features
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MULTI_TARGET_MIGRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-Target Migration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FIXES_APPLIED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fixes Applied
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/DOCKER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-compose-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Compose Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/WEBASSEMBLY_EVALUATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WebAssembly Evaluation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Migration
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Migration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/MIGRATION_NOTES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/MIGRATION_NOTES_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/REPLICATION_DURATION_MITIGATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Replication Duration Plan
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/CHECK_SCHEMA_VERSION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_CLI_COMMANDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_CLI_UPDATE_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Updates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_VERSION_CONSOLIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Consolidation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/build-report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Build Report
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/TESTING_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Testing Summary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/TEST_COVERAGE_REPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Test Coverage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/labelling-schema-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Label System
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table of Contents
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identity-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      Identity &amp; Naming
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identity &amp; Naming">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vm-vm-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm (VM Name)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dns_name-dns-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      dns_name (DNS Name)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm_id-vm-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm_id (VM ID)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm_uuid-vm-uuid" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm_uuid (VM UUID)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      Network
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primary_ip_address-primary-ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      primary_ip_address (Primary IP)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network_1-through-network_8-network-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      network_1 through network_8 (Network Names)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Infrastructure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datacenter-datacenter" class="md-nav__link">
+    <span class="md-ellipsis">
+      datacenter (Datacenter)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cluster-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      cluster (Cluster)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#host-esxi-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      host (ESXi Host)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder-folder-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder (Folder Path)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource_pool-resource-pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      resource_pool (Resource Pool)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vapp-vapp" class="md-nav__link">
+    <span class="md-ellipsis">
+      vapp (vApp)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#storage-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      Storage Paths
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#textnotes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text/Notes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Text/Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#annotation-annotationnotes" class="md-nav__link">
+    <span class="md-ellipsis">
+      annotation (Annotation/Notes)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cluster_rules-cluster-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      cluster_rules (Cluster Rules)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cluster_rule_names-cluster-rule-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      cluster_rule_names (Cluster Rule Names)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Fields
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code_ccx-custom-field-code-ccx" class="md-nav__link">
+    <span class="md-ellipsis">
+      code_ccx (Custom Field: Code CCX)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm_nbu-custom-field-vm-nbu-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm_nbu (Custom Field: VM NBU - Backup)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm_orchid-custom-field-vm-orchid" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm_orchid (Custom Field: VM Orchid)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#licence_enforcement-custom-field-license" class="md-nav__link">
+    <span class="md-ellipsis">
+      licence_enforcement (Custom Field: License)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#env-custom-field-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      env (Custom Field: Environment)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sdkserver-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      SDK/Server Info
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SDK/Server Info">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vi_sdk_server_type-vcenter-server-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      vi_sdk_server_type (vCenter Server Type)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vi_sdk_api_version-vcenter-api-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      vi_sdk_api_version (vCenter API Version)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-anonymized-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-Anonymized Fields
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Non-Anonymized Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resource-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resource Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#states-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      States &amp; Status
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#os-hardware" class="md-nav__link">
+    <span class="md-ellipsis">
+      OS &amp; Hardware
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dates-times" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dates &amp; Times
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#haft-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      HA/FT Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#display" class="md-nav__link">
+    <span class="md-ellipsis">
+      Display
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other" class="md-nav__link">
+    <span class="md-ellipsis">
+      Other
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consistency-guarantees" class="md-nav__link">
+    <span class="md-ellipsis">
+      Consistency Guarantees
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consistency Guarantees">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hash-based-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hash-Based Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#random-generation-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Random Generation Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary Table
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="field-by-field-anonymization-guide">Field-by-Field Anonymization Guide<a class="headerlink" href="#field-by-field-anonymization-guide" title="Permanent link">&para;</a></h1>
+<p>This document explains exactly how each field is anonymized in the VMware inventory data.</p>
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#identity--naming">Identity &amp; Naming</a></li>
+<li><a href="#network">Network</a></li>
+<li><a href="#infrastructure">Infrastructure</a></li>
+<li><a href="#storage-paths">Storage Paths</a></li>
+<li><a href="#textnotes">Text/Notes</a></li>
+<li><a href="#custom-fields">Custom Fields</a></li>
+<li><a href="#sdkserver-info">SDK/Server Info</a></li>
+<li><a href="#non-anonymized-fields">Non-Anonymized Fields</a></li>
+</ul>
+<hr />
+<h2 id="identity-naming">Identity &amp; Naming<a class="headerlink" href="#identity-naming" title="Permanent link">&para;</a></h2>
+<h3 id="vm-vm-name"><code>vm</code> (VM Name)<a class="headerlink" href="#vm-vm-name" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Pattern-preserving sequential naming</p>
+<p><strong>How it works:</strong>
+1. Detects environment prefix (PROD, DEV, TEST, UAT, QA, STAGING, PREPROD)
+2. If prefix found: preserves it, replaces rest with sequential number
+3. If no prefix: uses generic sequential naming</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>PROD-WEB-SERVER-01  → PROD-VM-001
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>DEV-DATABASE-MAIN   → DEV-VM-002
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>test-app            → vm-003
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>UAT-CLUSTER-APP-05  → UAT-VM-004
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>myserver            → vm-005
+</code></pre></div></p>
+<p><strong>Code:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_anonymize_vm_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">env_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(PROD|DEV|TEST|PREPROD|UAT|STAGING|QA)[-_]&#39;</span><span class="p">,</span> 
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>                         <span class="n">vm_name</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">if</span> <span class="n">env_match</span><span class="p">:</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">env_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">-VM-</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;vm-</span><span class="si">{</span><span class="n">counter</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div></p>
+<hr />
+<h3 id="dns_name-dns-name"><code>dns_name</code> (DNS Name)<a class="headerlink" href="#dns_name-dns-name" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash hostname, preserve domain structure</p>
+<p><strong>How it works:</strong>
+1. Splits DNS name by dots
+2. Hashes the hostname (first part)
+3. Keeps the domain suffix unchanged</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>webserver1.company.com     → host3f2a8b45.company.com
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>db-primary.prod.local      → host8b7e2f19.prod.local
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>app.example.org            → hostc4d9e1a2.example.org
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>standalone                 → hostf8b2c7d3
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Preserves domain structure for network topology analysis while hiding actual server names.</p>
+<p><strong>Code:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_anonymize_dns_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dns_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">parts</span> <span class="o">=</span> <span class="n">dns_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="n">hostname</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="n">domain</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="n">anon_hostname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_name</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="s2">&quot;host&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">anon_hostname</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_name</span><span class="p">(</span><span class="n">dns_name</span><span class="p">,</span> <span class="s2">&quot;host&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<hr />
+<h3 id="vm_id-vm-id"><code>vm_id</code> (VM ID)<a class="headerlink" href="#vm_id-vm-id" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash-based transformation</p>
+<p><strong>How it works:</strong>
+1. Takes original VM ID
+2. Generates consistent hash
+3. Prefixes with "vm-"</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>vm-1234         → vm-3f2a8b45
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>500             → vm-8b7e2f19
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>VirtualMachine  → vm-c4d9e1a2
+</code></pre></div></p>
+<p><strong>Note:</strong> Uses same hashing function as other fields for consistency.</p>
+<hr />
+<h3 id="vm_uuid-vm-uuid"><code>vm_uuid</code> (VM UUID)<a class="headerlink" href="#vm_uuid-vm-uuid" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash-based UUID replacement</p>
+<p><strong>How it works:</strong>
+1. Hashes the original UUID
+2. Prefixes with "uuid-"
+3. Maintains uniqueness via MD5</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>42305ca4-3c8d-7f9a-1234-567890abcdef  → uuid-3f2a8b45c7d9e1f2
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>50123456-789a-bcde-f012-3456789abcde  → uuid-8b7e2f19a4c6d8e0
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Preserves UUID uniqueness for relationship tracking while removing actual UUID values.</p>
+<hr />
+<h2 id="network">Network<a class="headerlink" href="#network" title="Permanent link">&para;</a></h2>
+<h3 id="primary_ip_address-primary-ip"><code>primary_ip_address</code> (Primary IP)<a class="headerlink" href="#primary_ip_address-primary-ip" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Subnet-preserving or full anonymization</p>
+<p><strong>Option 1: --keep-subnet (default)</strong>
+- Keeps first 2 octets
+- Anonymizes last 2 octets using hash</p>
+<p><strong>Option 2: --anonymize-subnet</strong>
+- Fully anonymizes to 10.x.x.x range
+- All octets derived from hash</p>
+<p><strong>Examples (--keep-subnet):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>192.168.10.50   → 192.168.142.73
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>10.20.30.40     → 10.20.89.156
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>172.16.5.100    → 172.16.203.45
+</code></pre></div></p>
+<p><strong>Examples (--anonymize-subnet):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>192.168.10.50   → 10.142.73.89
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>10.20.30.40     → 10.89.156.203
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>172.16.5.100    → 10.203.45.178
+</code></pre></div></p>
+<p><strong>Code:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_anonymize_ip_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">keep_subnet</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">octets</span> <span class="o">=</span> <span class="n">ip</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="k">if</span> <span class="n">keep_subnet</span><span class="p">:</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span class="n">hash_suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_name</span><span class="p">(</span><span class="n">ip</span><span class="p">)[:</span><span class="mi">4</span><span class="p">]</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span class="n">third</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hash_suffix</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="o">%</span> <span class="mi">256</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>        <span class="n">fourth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hash_suffix</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="o">%</span> <span class="mi">256</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">octets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">octets</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">third</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">fourth</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="n">hash_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_name</span><span class="p">(</span><span class="n">ip</span><span class="p">)[:</span><span class="mi">6</span><span class="p">]</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="n">second</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hash_val</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="o">%</span> <span class="mi">256</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="n">third</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hash_val</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="o">%</span> <span class="mi">256</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">fourth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hash_val</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="o">%</span> <span class="mi">256</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;10.</span><span class="si">{</span><span class="n">second</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">third</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">fourth</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Subnet preservation helps maintain network topology visibility for analysis.</p>
+<hr />
+<h3 id="network_1-through-network_8-network-names"><code>network_1</code> through <code>network_8</code> (Network Names)<a class="headerlink" href="#network_1-through-network_8-network-names" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash-based network naming</p>
+<p><strong>How it works:</strong>
+1. Takes original network name
+2. Creates consistent hash (6 chars)
+3. Prefixes with "Network-"</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>VLAN-Production-100     → Network-3f2a8b
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>DMZ-External            → Network-8b7e2f
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Internal-Management     → Network-c4d9e1
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>VM Network              → Network-f8b2c7
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Removes internal network naming conventions while preserving network count and structure.</p>
+<hr />
+<h2 id="infrastructure">Infrastructure<a class="headerlink" href="#infrastructure" title="Permanent link">&para;</a></h2>
+<h3 id="datacenter-datacenter"><code>datacenter</code> (Datacenter)<a class="headerlink" href="#datacenter-datacenter" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Sequential naming</p>
+<p><strong>How it works:</strong>
+1. Assigns sequential numbers to datacenters
+2. Uses format "DC##"
+3. First seen = DC01, second = DC02, etc.</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>NYC-Production-DC       → DC01
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>London-DataCenter-1     → DC02
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>APAC-Singapore-DC       → DC03
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>Paris-Backup            → DC04
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Simple sequential naming is sufficient; relationships are preserved via consistency.</p>
+<hr />
+<h3 id="cluster-cluster"><code>cluster</code> (Cluster)<a class="headerlink" href="#cluster-cluster" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Sequential naming</p>
+<p><strong>How it works:</strong>
+1. Assigns sequential numbers to clusters
+2. Uses format "Cluster##"
+3. Maintains per-datacenter relationships</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>Production-Cluster-A    → Cluster01
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Dev-Cluster-West        → Cluster02
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>Test-Environment-01     → Cluster03
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>DR-Cluster-Primary      → Cluster04
+</code></pre></div></p>
+<hr />
+<h3 id="host-esxi-host"><code>host</code> (ESXi Host)<a class="headerlink" href="#host-esxi-host" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Sequential naming with .local domain</p>
+<p><strong>How it works:</strong>
+1. Assigns sequential numbers to hosts
+2. Uses format "esxi-host-##.local"
+3. Maintains cluster membership</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>esxi-prod-web-01.company.com      → esxi-host-01.local
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>esx-database-primary.prod.local   → esxi-host-02.local
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>host-123.datacenter.org           → esxi-host-03.local
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Standard naming removes organizational patterns while keeping host count visible.</p>
+<hr />
+<h3 id="folder-folder-path"><code>folder</code> (Folder Path)<a class="headerlink" href="#folder-folder-path" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Per-component hashing</p>
+<p><strong>How it works:</strong>
+1. Splits path by <code>/</code>
+2. Hashes each folder component
+3. Rebuilds path with hashed names</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>/Production/WebServers/Frontend
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  → /folder3f/folder2a/folder8b
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>/Dev/Applications/Database
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>  → /folder9c/folder5d/folder1e
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>/VM/Templates/Linux
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>  → /folder4f/folder7a/folder3c
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Preserves folder hierarchy depth and structure for analysis.</p>
+<hr />
+<h3 id="resource_pool-resource-pool"><code>resource_pool</code> (Resource Pool)<a class="headerlink" href="#resource_pool-resource-pool" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash-based naming</p>
+<p><strong>How it works:</strong>
+1. Hashes the resource pool name
+2. Prefixes with "ResourcePool-"
+3. Takes first 8 characters of hash</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>Production-HighPriority     → ResourcePool-3f2a8b45
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>Development-Standard        → ResourcePool-8b7e2f19
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>Test-LowPriority           → ResourcePool-c4d9e1a2
+</code></pre></div></p>
+<hr />
+<h3 id="vapp-vapp"><code>vapp</code> (vApp)<a class="headerlink" href="#vapp-vapp" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash-based naming</p>
+<p><strong>How it works:</strong>
+1. Hashes the vApp name
+2. Prefixes with "vApp-"
+3. Takes first 8 characters of hash</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>WebApplication-Stack        → vApp-3f2a8b45
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>Database-Cluster            → vApp-8b7e2f19
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>Monitoring-Suite            → vApp-c4d9e1a2
+</code></pre></div></p>
+<hr />
+<h2 id="storage-paths">Storage Paths<a class="headerlink" href="#storage-paths" title="Permanent link">&para;</a></h2>
+<p>All storage path fields use the same logic:
+- <code>path</code> (VM Path)
+- <code>log_directory</code> (Log Directory)
+- <code>snapshot_directory</code> (Snapshot Directory)
+- <code>suspend_directory</code> (Suspend Directory)</p>
+<p><strong>Anonymization Logic:</strong> Hash-based datastore paths</p>
+<p><strong>How it works:</strong>
+1. Hashes the entire path
+2. Creates new path: <code>/vmfs/volumes/datastore/{hash16}</code>
+3. Removes all folder structure information</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>/vmfs/volumes/prod-datastore-01/vm123/vm123.vmx
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>  → /vmfs/volumes/datastore/3f2a8b45c7d9e1f2
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>[datastore-production] VMs/webserver/logs
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>  → /vmfs/volumes/datastore/8b7e2f19a4c6d8e0
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>/vmfs/volumes/backup-ssd/snapshots/db-01
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>  → /vmfs/volumes/datastore/c4d9e1a2f5b8d4c7
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Completely removes datastore naming and structure while maintaining uniqueness.</p>
+<hr />
+<h2 id="textnotes">Text/Notes<a class="headerlink" href="#textnotes" title="Permanent link">&para;</a></h2>
+<h3 id="annotation-annotationnotes"><code>annotation</code> (Annotation/Notes)<a class="headerlink" href="#annotation-annotationnotes" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Full redaction or pattern sanitization</p>
+<p><strong>Option 1: --redact-annotations (secure)</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>Contact: john.doe@company.com, IP: 192.168.1.100
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>  → [REDACTED]
+</code></pre></div></p>
+<p><strong>Option 2: --sanitize-annotations (default)</strong>
+Sanitizes specific patterns:
+- <strong>IP Addresses</strong>: Anonymized using IP anonymization logic
+- <strong>Emails</strong>: Replaced with <code>user@example.com</code>
+- <strong>Phone Numbers</strong>: Replaced with <code>XXX-XXX-XXXX</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>Server managed by john.doe@company.com
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>IP: 192.168.10.50, Tel: 555-123-4567
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>Deployed 2024-01-15
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>  → Server managed by user@example.com
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>     IP: 192.168.142.73, Tel: XXX-XXX-XXXX
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>     Deployed 2024-01-15
+</code></pre></div>
+<p><strong>Code:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_anonymize_annotation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">redact</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span class="k">if</span> <span class="n">redact</span><span class="p">:</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>        <span class="k">return</span> <span class="s2">&quot;[REDACTED]&quot;</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="c1"># Replace IPs</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="n">anon</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b&#39;</span><span class="p">,</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>                  <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anonymize_ip_address</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)),</span> <span class="n">anon</span><span class="p">)</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="c1"># Replace emails</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="n">anon</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b&#39;</span><span class="p">,</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>                  <span class="s1">&#39;user@example.com&#39;</span><span class="p">,</span> <span class="n">anon</span><span class="p">)</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    <span class="c1"># Replace phone numbers</span>
+<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    <span class="n">anon</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\b\d</span><span class="si">{3}</span><span class="s1">[-.]?\d</span><span class="si">{3}</span><span class="s1">[-.]?\d</span><span class="si">{4}</span><span class="s1">\b&#39;</span><span class="p">,</span>
+<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>                  <span class="s1">&#39;XXX-XXX-XXXX&#39;</span><span class="p">,</span> <span class="n">anon</span><span class="p">)</span>
+<a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>
+<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>    <span class="k">return</span> <span class="n">anon</span>
+</code></pre></div></p>
+<hr />
+<h3 id="cluster_rules-cluster-rules"><code>cluster_rules</code> (Cluster Rules)<a class="headerlink" href="#cluster_rules-cluster-rules" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Full redaction</p>
+<p><strong>How it works:</strong>
+- Complex rule text fully redacted
+- Prevents exposure of VM relationships and policies</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>AntiAffinity: VM1, VM2, VM3; Affinity: VM4, VM5
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>  → [REDACTED]
+</code></pre></div></p>
+<hr />
+<h3 id="cluster_rule_names-cluster-rule-names"><code>cluster_rule_names</code> (Cluster Rule Names)<a class="headerlink" href="#cluster_rule_names-cluster-rule-names" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash-based naming</p>
+<p><strong>How it works:</strong>
+1. Splits comma-separated rule names
+2. Hashes each rule name
+3. Prefixes with "Rule-"</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>WebServerAntiAffinity, DatabaseAffinity
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>  → Rule-3f2a8b, Rule-8b7e2f
+</code></pre></div></p>
+<hr />
+<h2 id="custom-fields">Custom Fields<a class="headerlink" href="#custom-fields" title="Permanent link">&para;</a></h2>
+<h3 id="code_ccx-custom-field-code-ccx"><code>code_ccx</code> (Custom Field: Code CCX)<a class="headerlink" href="#code_ccx-custom-field-code-ccx" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Random Code Generation</p>
+<p><strong>How it works:</strong>
+- Generates random application/service code
+- Format: <code>PREFIX-ABC-123</code> (prefix + 3 chars + 3 digits)
+- Prefixes: APP, SVC, PRD, SYS (randomly chosen)
+- Uses seed for reproducibility</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>CCX-PROD-12345  → APP-K7M-D3G
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>APP-DB-001      → SVC-R2P-8N1
+</code></pre></div></p>
+<hr />
+<h3 id="vm_nbu-custom-field-vm-nbu-backup"><code>vm_nbu</code> (Custom Field: VM NBU - Backup)<a class="headerlink" href="#vm_nbu-custom-field-vm-nbu-backup" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Random Backup Policy Generation</p>
+<p><strong>How it works:</strong>
+- Generates random backup policy name
+- Format: <code>POLICY-{TIER}-{RETENTION}</code>
+- Tiers: GOLD, SILVER, BRONZE, STANDARD
+- Retention: 7D, 14D, 30D, 90D</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>NBU-Policy-WebServers  → POLICY-GOLD-30D
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>BACKUP-DAILY-001       → POLICY-SILVER-14D
+</code></pre></div></p>
+<hr />
+<h3 id="vm_orchid-custom-field-vm-orchid"><code>vm_orchid</code> (Custom Field: VM Orchid)<a class="headerlink" href="#vm_orchid-custom-field-vm-orchid" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Random Monitoring Tag Generation</p>
+<p><strong>How it works:</strong>
+- Generates random monitoring/management tag
+- Format: <code>MON-{6 alphanumeric characters}</code></p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>ORCHID-PROD-WEB  → MON-A1B2C3
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>TRACKING-DB-01   → MON-X7Y9Z4
+</code></pre></div></p>
+<hr />
+<h3 id="licence_enforcement-custom-field-license"><code>licence_enforcement</code> (Custom Field: License)<a class="headerlink" href="#licence_enforcement-custom-field-license" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Random License Code Generation</p>
+<p><strong>How it works:</strong>
+- Generates random license identifier
+- Format: <code>{TYPE}-{3 digits}</code>
+- Types: ENT, STD, PRO, BAS</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>ENTERPRISE-2024  → ENT-457
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>STANDARD-PLUS    → STD-892
+</code></pre></div></p>
+<hr />
+<h3 id="env-custom-field-environment"><code>env</code> (Custom Field: Environment)<a class="headerlink" href="#env-custom-field-environment" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Environment Normalization</p>
+<p><strong>How it works:</strong>
+- Detects common environment patterns
+- Normalizes to: PROD, DEV, TEST, UAT
+- Preserves environment semantics</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>production       → PROD
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>PROD-CLUSTER     → PROD
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>development      → DEV
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>test-env         → TEST
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>staging          → UAT
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>QA-ENVIRONMENT   → TEST
+</code></pre></div></p>
+<hr />
+<h2 id="sdkserver-info">SDK/Server Info<a class="headerlink" href="#sdkserver-info" title="Permanent link">&para;</a></h2>
+<h3 id="vi_sdk_server_type-vcenter-server-type"><code>vi_sdk_server_type</code> (vCenter Server Type)<a class="headerlink" href="#vi_sdk_server_type-vcenter-server-type" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash-based naming</p>
+<p><strong>How it works:</strong>
+1. Hashes the server type
+2. Prefixes with "vCenter-"</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>vpx            → vCenter-3f2a8b
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>embeddedEsx    → vCenter-8b7e2f
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>vcsa           → vCenter-c4d9e1
+</code></pre></div></p>
+<hr />
+<h3 id="vi_sdk_api_version-vcenter-api-version"><code>vi_sdk_api_version</code> (vCenter API Version)<a class="headerlink" href="#vi_sdk_api_version-vcenter-api-version" title="Permanent link">&para;</a></h3>
+<p><strong>Anonymization Logic:</strong> Hash-based version string</p>
+<p><strong>How it works:</strong>
+1. Hashes the version string
+2. Prefixes with "api-"</p>
+<p><strong>Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>7.0.3    → api-3f2a8b
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>8.0.1    → api-8b7e2f
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>6.7.0    → api-c4d9e1
+</code></pre></div></p>
+<p><strong>Reasoning:</strong> Removes specific version information while maintaining uniqueness.</p>
+<hr />
+<h2 id="non-anonymized-fields">Non-Anonymized Fields<a class="headerlink" href="#non-anonymized-fields" title="Permanent link">&para;</a></h2>
+<p>These fields are <strong>NOT</strong> anonymized as they contain technical metrics, not sensitive data:</p>
+<h3 id="resource-metrics">Resource Metrics<a class="headerlink" href="#resource-metrics" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>cpus</code> - CPU count</li>
+<li><code>memory</code> - Memory size</li>
+<li><code>nics</code> - NIC count</li>
+<li><code>disks</code> - Disk count</li>
+<li><code>provisioned_mib</code> - Provisioned storage</li>
+<li><code>in_use_mib</code> - Used storage</li>
+<li><code>unshared_mib</code> - Unshared storage</li>
+</ul>
+<h3 id="states-status">States &amp; Status<a class="headerlink" href="#states-status" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>powerstate</code> - poweredOn, poweredOff, suspended</li>
+<li><code>template</code> - Is template boolean</li>
+<li><code>connection_state</code> - connected, disconnected</li>
+<li><code>guest_state</code> - running, not running</li>
+<li><code>config_status</code> - green, yellow, red</li>
+<li><code>heartbeat</code> - heartbeat status</li>
+</ul>
+<h3 id="os-hardware">OS &amp; Hardware<a class="headerlink" href="#os-hardware" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>os_config</code> - Operating system type (Windows, Linux, etc.)</li>
+<li><code>os_vmware_tools</code> - VMware Tools version/status</li>
+<li><code>hw_version</code> - Hardware version (vmx-14, etc.)</li>
+<li><code>firmware</code> - bios, efi</li>
+</ul>
+<h3 id="dates-times">Dates &amp; Times<a class="headerlink" href="#dates-times" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>creation_date</code> - When VM was created</li>
+<li><code>poweron</code> - Last power on time</li>
+<li><code>suspend_time</code> - Last suspend time</li>
+<li><code>nb_last_backup</code> - Last backup timestamp</li>
+<li><code>imported_at</code> - Data import timestamp</li>
+</ul>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>boot_delay</code>, <code>boot_retry_delay</code> - Boot timings</li>
+<li><code>boot_required</code>, <code>boot_retry_enabled</code>, <code>boot_bios_setup</code> - Boot config</li>
+<li><code>latency_sensitivity</code> - Latency setting</li>
+<li><code>enable_uuid</code> - UUID enabled boolean</li>
+<li><code>cbt</code> - Changed Block Tracking</li>
+<li><code>consolidation_needed</code> - Consolidation flag</li>
+</ul>
+<h3 id="haft-configuration">HA/FT Configuration<a class="headerlink" href="#haft-configuration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>das_protection</code> - HA protection status</li>
+<li><code>ha_restart_priority</code> - HA restart priority</li>
+<li><code>ha_isolation_response</code> - HA isolation response</li>
+<li><code>ha_vm_monitoring</code> - HA monitoring status</li>
+<li><code>ft_state</code> - Fault Tolerance state</li>
+<li><code>ft_latency</code>, <code>ft_bandwidth</code>, <code>ft_sec_latency</code> - FT metrics</li>
+</ul>
+<h3 id="display">Display<a class="headerlink" href="#display" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>num_monitors</code> - Monitor count</li>
+<li><code>video_ram_kib</code> - Video RAM size</li>
+</ul>
+<h3 id="other">Other<a class="headerlink" href="#other" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>srm_placeholder</code> - SRM status</li>
+<li><code>min_required_evc_mode_key</code> - EVC mode</li>
+<li><code>change_version</code> - Change version number</li>
+<li><code>hw_upgrade_status</code>, <code>hw_upgrade_policy</code>, <code>hw_target</code> - Upgrade settings</li>
+</ul>
+<p><strong>Reasoning:</strong> These are technical configurations and metrics that don't reveal organizational structure or sensitive information. They're essential for analysis and reporting.</p>
+<hr />
+<h2 id="consistency-guarantees">Consistency Guarantees<a class="headerlink" href="#consistency-guarantees" title="Permanent link">&para;</a></h2>
+<p>All anonymization methods use <strong>deterministic processing</strong> with a seed:</p>
+<h3 id="hash-based-methods">Hash-Based Methods<a class="headerlink" href="#hash-based-methods" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_hash_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>    <span class="n">hash_obj</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    <span class="n">hash_hex</span> <span class="o">=</span> <span class="n">hash_obj</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">8</span><span class="p">]</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">hash_hex</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<h3 id="random-generation-methods">Random Generation Methods<a class="headerlink" href="#random-generation-methods" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># Initialize random generator with seed</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">_random</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="c1"># Generate reproducible random values</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s1">&#39;APP&#39;</span><span class="p">,</span> <span class="s1">&#39;SVC&#39;</span><span class="p">,</span> <span class="s1">&#39;PRD&#39;</span><span class="p">,</span> <span class="s1">&#39;SYS&#39;</span><span class="p">])</span>
+</code></pre></div>
+<p><strong>This means:</strong>
+- Same input + same seed = <strong>same output</strong> (repeatable)
+- Different inputs = <strong>different outputs</strong> (unique)
+- Same datacenter always gets same anonymized name across all VMs
+- Custom fields get same random values with same seed
+- Relationships are preserved perfectly</p>
+<hr />
+<h2 id="summary-table">Summary Table<a class="headerlink" href="#summary-table" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Field Type</th>
+<th>Method</th>
+<th>Preserves</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VM Names</td>
+<td>Pattern + Sequential</td>
+<td>Environment prefix</td>
+<td><code>PROD-WEB-01</code> → <code>PROD-VM-001</code></td>
+</tr>
+<tr>
+<td>DNS Names</td>
+<td>Hash hostname, keep domain</td>
+<td>Domain structure</td>
+<td><code>web1.corp.com</code> → <code>host3f2a.corp.com</code></td>
+</tr>
+<tr>
+<td>IP Addresses</td>
+<td>Hash or subnet preserve</td>
+<td>Network topology</td>
+<td><code>192.168.1.50</code> → <code>192.168.142.73</code></td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td>Sequential</td>
+<td>Relationships</td>
+<td><code>NYC-DC</code> → <code>DC01</code></td>
+</tr>
+<tr>
+<td>Paths</td>
+<td>Hash components</td>
+<td>Hierarchy depth</td>
+<td><code>/Prod/Web</code> → <code>/folder3f/folder2a</code></td>
+</tr>
+<tr>
+<td>Networks</td>
+<td>Hash</td>
+<td>Network count</td>
+<td><code>VLAN-100</code> → <code>Network-3f2a8b</code></td>
+</tr>
+<tr>
+<td>Annotations</td>
+<td>Redact or sanitize</td>
+<td>Dates, non-PII</td>
+<td>Email/IP removed</td>
+</tr>
+<tr>
+<td>Custom Fields</td>
+<td>Random generation</td>
+<td>Format &amp; semantics</td>
+<td><code>CCX-PROD-01</code> → <code>APP-K7M-D3G</code></td>
+</tr>
+<tr>
+<td>UUIDs/IDs</td>
+<td>Hash</td>
+<td>Uniqueness</td>
+<td>→ <code>uuid-3f2a8b45</code></td>
+</tr>
+<tr>
+<td>Metrics</td>
+<td><strong>Not anonymized</strong></td>
+<td>Everything</td>
+<td><code>4 CPUs</code> → <code>4 CPUs</code></td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 2, 2025 11:37:34 UTC">November 2, 2025</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 2, 2025 11:37:34 UTC">November 2, 2025</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

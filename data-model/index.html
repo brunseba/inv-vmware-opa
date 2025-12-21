@@ -1,0 +1,3508 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="VMware inventory management CLI tool with migration planning">
+      
+      
+        <meta name="author" content="brun_s">
+      
+      
+      
+        <link rel="prev" href="../development/TEST_COVERAGE_REPORT/">
+      
+      
+        <link rel="next" href="../design/labelling-schema-review/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Data Model - VMware Inventory OPA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-model" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="VMware Inventory OPA" class="md-header__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            VMware Inventory OPA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data Model
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../user-guide/cli-commands/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../features/DASHBOARD/" class="md-tabs__link">
+          
+  
+  
+  Features
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/DOCKER/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../migration/MIGRATION_NOTES/" class="md-tabs__link">
+          
+  
+  
+  Migration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../development/CONTRIBUTING/" class="md-tabs__link">
+          
+  
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="VMware Inventory OPA" class="md-nav__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    VMware Inventory OPA
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/QUICK_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/QUICK_START_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/cli-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visual Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/pdf-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Backup & Restore
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Features
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/DASHBOARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/DASHBOARD_TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Testing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/UI_ENHANCEMENTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UI Enhancements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/PDF_EXPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/PDF_CHARTS_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Charts Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/PDF_ENHANCED_FEATURES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Enhanced Features
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/MULTI_TARGET_MIGRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-Target Migration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/FIXES_APPLIED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fixes Applied
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/DOCKER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/docker-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/docker-compose-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Compose Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/WEBASSEMBLY_EVALUATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WebAssembly Evaluation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Migration
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Migration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/MIGRATION_NOTES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/MIGRATION_NOTES_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/REPLICATION_DURATION_MITIGATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Replication Duration Plan
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/CHECK_SCHEMA_VERSION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/SCHEMA_CLI_COMMANDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/SCHEMA_CLI_UPDATE_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Updates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/SCHEMA_VERSION_CONSOLIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Consolidation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/docker-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/build-report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Build Report
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/TESTING_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Testing Summary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/TEST_COVERAGE_REPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Test Coverage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Data Model
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Model
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entity-relationship-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      Entity Relationship Diagram
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table Schemas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Table Schemas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#virtual_machines" class="md-nav__link">
+    <span class="md-ellipsis">
+      virtual_machines
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="virtual_machines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Information
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#power-and-timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Power and Timing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      Network
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Infrastructure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operating-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operating System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hardware
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#haft-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      HA/FT Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boot-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boot Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Identifiers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Fields
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      Metadata
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm_labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm_labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder_labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_labels
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#indexes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indexes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Indexes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#virtual_machines_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      virtual_machines
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm_labels_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm_labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder_labels_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_labels
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#query-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Query Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-all-vms-in-a-cluster-with-their-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get all VMs in a cluster with their labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-vms-with-a-specific-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get VMs with a specific label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-folder-labels-with-inheritance-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get folder labels with inheritance settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#count-vms-by-datacenter-and-power-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      Count VMs by datacenter and power state
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Integrity
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Integrity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#referential-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Referential Integrity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transaction-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transaction Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Considerations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#indexing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indexing Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Storage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration Path
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      See Also
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/labelling-schema-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Label System
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entity-relationship-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      Entity Relationship Diagram
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table Schemas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Table Schemas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#virtual_machines" class="md-nav__link">
+    <span class="md-ellipsis">
+      virtual_machines
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="virtual_machines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Information
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#power-and-timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Power and Timing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      Network
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Infrastructure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operating-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operating System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hardware
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#haft-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      HA/FT Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boot-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boot Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Identifiers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Fields
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      Metadata
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm_labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm_labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder_labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_labels
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#indexes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indexes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Indexes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#virtual_machines_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      virtual_machines
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm_labels_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      vm_labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder_labels_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_labels
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#query-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Query Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-all-vms-in-a-cluster-with-their-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get all VMs in a cluster with their labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-vms-with-a-specific-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get VMs with a specific label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-folder-labels-with-inheritance-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get folder labels with inheritance settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#count-vms-by-datacenter-and-power-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      Count VMs by datacenter and power state
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Integrity
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Integrity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#referential-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Referential Integrity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transaction-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transaction Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Considerations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#indexing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indexing Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Query Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Storage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration Path
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      See Also
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="data-model">Data Model<a class="headerlink" href="#data-model" title="Permanent link">&para;</a></h1>
+<p>This document describes the database schema and data model used by the VMware Inventory OPA application.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The application uses SQLAlchemy ORM with support for multiple database backends (SQLite, PostgreSQL, MySQL). The schema consists of four main tables:</p>
+<ul>
+<li><strong>virtual_machines</strong>: Core VM inventory data</li>
+<li><strong>labels</strong>: Label definitions (key-value pairs)</li>
+<li><strong>vm_labels</strong>: VM-to-Label assignments</li>
+<li><strong>folder_labels</strong>: Folder-to-Label assignments</li>
+</ul>
+<h2 id="entity-relationship-diagram">Entity Relationship Diagram<a class="headerlink" href="#entity-relationship-diagram" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>erDiagram
+    VIRTUAL_MACHINES ||--o{ VM_LABELS : "has"
+    LABELS ||--o{ VM_LABELS : "assigned to"
+    LABELS ||--o{ FOLDER_LABELS : "assigned to"
+
+    VIRTUAL_MACHINES {
+        int id PK
+        string vm
+        string powerstate
+        string datacenter
+        string cluster
+        string host
+        string folder
+        int cpus
+        int memory
+        datetime imported_at
+    }
+
+    LABELS {
+        int id PK
+        string key
+        string value
+        string description
+        string color
+        datetime created_at
+    }
+
+    VM_LABELS {
+        int id PK
+        int vm_id FK
+        int label_id FK
+        bool inherited_from_folder
+        string source_folder_path
+        datetime assigned_at
+    }
+
+    FOLDER_LABELS {
+        int id PK
+        string folder_path
+        int label_id FK
+        bool inherit_to_vms
+        bool inherit_to_subfolders
+        datetime assigned_at
+    }</code></pre>
+<h2 id="table-schemas">Table Schemas<a class="headerlink" href="#table-schemas" title="Permanent link">&para;</a></h2>
+<h3 id="virtual_machines">virtual_machines<a class="headerlink" href="#virtual_machines" title="Permanent link">&para;</a></h3>
+<p>The main table storing VMware virtual machine inventory data.</p>
+<h4 id="basic-information">Basic Information<a class="headerlink" href="#basic-information" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>INTEGER</td>
+<td>PK</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td><code>vm</code></td>
+<td>VARCHAR(255)</td>
+<td>✓</td>
+<td>VM name</td>
+</tr>
+<tr>
+<td><code>powerstate</code></td>
+<td>VARCHAR(50)</td>
+<td>✓</td>
+<td>Power state (poweredOn, poweredOff, suspended)</td>
+</tr>
+<tr>
+<td><code>template</code></td>
+<td>BOOLEAN</td>
+<td>✓</td>
+<td>Whether VM is a template</td>
+</tr>
+<tr>
+<td><code>dns_name</code></td>
+<td>VARCHAR(255)</td>
+<td></td>
+<td>DNS hostname</td>
+</tr>
+<tr>
+<td><code>connection_state</code></td>
+<td>VARCHAR(50)</td>
+<td></td>
+<td>Connection state</td>
+</tr>
+<tr>
+<td><code>guest_state</code></td>
+<td>VARCHAR(50)</td>
+<td></td>
+<td>Guest OS state</td>
+</tr>
+<tr>
+<td><code>heartbeat</code></td>
+<td>VARCHAR(50)</td>
+<td></td>
+<td>VMware Tools heartbeat status</td>
+</tr>
+</tbody>
+</table>
+<h4 id="power-and-timing">Power and Timing<a class="headerlink" href="#power-and-timing" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>poweron</code></td>
+<td>DATETIME</td>
+<td></td>
+<td>Last power-on time</td>
+</tr>
+<tr>
+<td><code>suspend_time</code></td>
+<td>DATETIME</td>
+<td></td>
+<td>Last suspend time</td>
+</tr>
+<tr>
+<td><code>creation_date</code></td>
+<td>DATETIME</td>
+<td>✓</td>
+<td>VM creation date</td>
+</tr>
+<tr>
+<td><code>change_version</code></td>
+<td>VARCHAR(50)</td>
+<td></td>
+<td>Configuration change version</td>
+</tr>
+</tbody>
+</table>
+<h4 id="resources">Resources<a class="headerlink" href="#resources" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cpus</code></td>
+<td>INTEGER</td>
+<td>Number of virtual CPUs</td>
+</tr>
+<tr>
+<td><code>memory</code></td>
+<td>INTEGER</td>
+<td>Memory in MiB</td>
+</tr>
+<tr>
+<td><code>nics</code></td>
+<td>INTEGER</td>
+<td>Number of network adapters</td>
+</tr>
+<tr>
+<td><code>disks</code></td>
+<td>INTEGER</td>
+<td>Number of virtual disks</td>
+</tr>
+</tbody>
+</table>
+<h4 id="network">Network<a class="headerlink" href="#network" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>primary_ip_address</code></td>
+<td>VARCHAR(50)</td>
+<td>Primary IP address</td>
+</tr>
+<tr>
+<td><code>network_1</code> to <code>network_8</code></td>
+<td>VARCHAR(255)</td>
+<td>Network adapter assignments</td>
+</tr>
+</tbody>
+</table>
+<h4 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provisioned_mib</code></td>
+<td>FLOAT</td>
+<td>Provisioned storage in MiB</td>
+</tr>
+<tr>
+<td><code>in_use_mib</code></td>
+<td>FLOAT</td>
+<td>Storage in use in MiB</td>
+</tr>
+<tr>
+<td><code>unshared_mib</code></td>
+<td>FLOAT</td>
+<td>Unshared storage in MiB</td>
+</tr>
+</tbody>
+</table>
+<h4 id="infrastructure">Infrastructure<a class="headerlink" href="#infrastructure" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>datacenter</code></td>
+<td>VARCHAR(255)</td>
+<td>✓</td>
+<td>Datacenter name</td>
+</tr>
+<tr>
+<td><code>cluster</code></td>
+<td>VARCHAR(255)</td>
+<td>✓</td>
+<td>Cluster name</td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td>VARCHAR(255)</td>
+<td>✓</td>
+<td>ESXi host name</td>
+</tr>
+<tr>
+<td><code>folder</code></td>
+<td>VARCHAR(500)</td>
+<td>✓</td>
+<td>Folder path</td>
+</tr>
+<tr>
+<td><code>resource_pool</code></td>
+<td>VARCHAR(255)</td>
+<td>✓</td>
+<td>Resource pool name</td>
+</tr>
+<tr>
+<td><code>vapp</code></td>
+<td>VARCHAR(255)</td>
+<td></td>
+<td>vApp name</td>
+</tr>
+</tbody>
+</table>
+<h4 id="operating-system">Operating System<a class="headerlink" href="#operating-system" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>os_config</code></td>
+<td>VARCHAR(255)</td>
+<td>✓</td>
+<td>OS configuration/type</td>
+</tr>
+<tr>
+<td><code>os_vmware_tools</code></td>
+<td>VARCHAR(255)</td>
+<td></td>
+<td>VMware Tools version</td>
+</tr>
+</tbody>
+</table>
+<h4 id="hardware">Hardware<a class="headerlink" href="#hardware" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>firmware</code></td>
+<td>VARCHAR(50)</td>
+<td>Firmware type (BIOS/EFI)</td>
+</tr>
+<tr>
+<td><code>hw_version</code></td>
+<td>VARCHAR(50)</td>
+<td>Virtual hardware version</td>
+</tr>
+<tr>
+<td><code>hw_upgrade_status</code></td>
+<td>VARCHAR(50)</td>
+<td>Hardware upgrade status</td>
+</tr>
+<tr>
+<td><code>hw_upgrade_policy</code></td>
+<td>VARCHAR(50)</td>
+<td>Upgrade policy</td>
+</tr>
+<tr>
+<td><code>num_monitors</code></td>
+<td>INTEGER</td>
+<td>Number of monitors</td>
+</tr>
+<tr>
+<td><code>video_ram_kib</code></td>
+<td>INTEGER</td>
+<td>Video RAM in KiB</td>
+</tr>
+</tbody>
+</table>
+<h4 id="haft-configuration">HA/FT Configuration<a class="headerlink" href="#haft-configuration" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>das_protection</code></td>
+<td>VARCHAR(50)</td>
+<td>vSphere HA protection status</td>
+</tr>
+<tr>
+<td><code>ft_state</code></td>
+<td>VARCHAR(50)</td>
+<td>Fault Tolerance state</td>
+</tr>
+<tr>
+<td><code>ft_latency</code></td>
+<td>FLOAT</td>
+<td>FT latency</td>
+</tr>
+<tr>
+<td><code>ha_restart_priority</code></td>
+<td>VARCHAR(50)</td>
+<td>HA restart priority</td>
+</tr>
+<tr>
+<td><code>ha_isolation_response</code></td>
+<td>VARCHAR(50)</td>
+<td>HA isolation response</td>
+</tr>
+<tr>
+<td><code>ha_vm_monitoring</code></td>
+<td>VARCHAR(50)</td>
+<td>HA VM monitoring status</td>
+</tr>
+<tr>
+<td><code>cluster_rules</code></td>
+<td>TEXT</td>
+<td>DRS/affinity rules</td>
+</tr>
+</tbody>
+</table>
+<h4 id="boot-configuration">Boot Configuration<a class="headerlink" href="#boot-configuration" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>boot_required</code></td>
+<td>BOOLEAN</td>
+<td>Boot required flag</td>
+</tr>
+<tr>
+<td><code>boot_delay</code></td>
+<td>INTEGER</td>
+<td>Boot delay in milliseconds</td>
+</tr>
+<tr>
+<td><code>boot_retry_enabled</code></td>
+<td>BOOLEAN</td>
+<td>Boot retry enabled</td>
+</tr>
+<tr>
+<td><code>boot_bios_setup</code></td>
+<td>BOOLEAN</td>
+<td>Enter BIOS setup on boot</td>
+</tr>
+</tbody>
+</table>
+<h4 id="identifiers">Identifiers<a class="headerlink" href="#identifiers" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vm_id</code></td>
+<td>VARCHAR(50)</td>
+<td>✓</td>
+<td>VMware internal VM ID</td>
+</tr>
+<tr>
+<td><code>vm_uuid</code></td>
+<td>VARCHAR(100)</td>
+<td>✓ (Unique)</td>
+<td>VM UUID</td>
+</tr>
+</tbody>
+</table>
+<h4 id="custom-fields">Custom Fields<a class="headerlink" href="#custom-fields" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>code_ccx</code></td>
+<td>VARCHAR(100)</td>
+<td></td>
+<td>Custom field: CCX code</td>
+</tr>
+<tr>
+<td><code>vm_nbu</code></td>
+<td>VARCHAR(100)</td>
+<td></td>
+<td>Custom field: NetBackup</td>
+</tr>
+<tr>
+<td><code>vm_orchid</code></td>
+<td>VARCHAR(100)</td>
+<td></td>
+<td>Custom field: Orchid</td>
+</tr>
+<tr>
+<td><code>licence_enforcement</code></td>
+<td>VARCHAR(50)</td>
+<td></td>
+<td>License enforcement</td>
+</tr>
+<tr>
+<td><code>env</code></td>
+<td>VARCHAR(50)</td>
+<td>✓</td>
+<td>Environment (prod, dev, test, etc.)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="metadata">Metadata<a class="headerlink" href="#metadata" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>imported_at</code></td>
+<td>DATETIME</td>
+<td>Timestamp when record was imported</td>
+</tr>
+<tr>
+<td><code>annotation</code></td>
+<td>TEXT</td>
+<td>VM annotations/notes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="labels">labels<a class="headerlink" href="#labels" title="Permanent link">&para;</a></h3>
+<p>Defines available labels (key-value pairs with optional metadata).</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>INTEGER</td>
+<td>PK</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td><code>key</code></td>
+<td>VARCHAR(100)</td>
+<td>✓</td>
+<td>Label key (e.g., "environment", "owner", "project")</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>VARCHAR(255)</td>
+<td>✓</td>
+<td>Label value (e.g., "production", "john.doe", "web-app")</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>VARCHAR(500)</td>
+<td></td>
+<td>Optional description</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td>VARCHAR(7)</td>
+<td></td>
+<td>Hex color code for UI display (#RRGGBB)</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>DATETIME</td>
+<td></td>
+<td>Creation timestamp</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>DATETIME</td>
+<td></td>
+<td>Last update timestamp</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Constraints:</strong>
+- UNIQUE constraint on (<code>key</code>, <code>value</code>) - prevents duplicate label definitions</p>
+<p><strong>Example Labels:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="p">(</span><span class="k">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">description</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="p">(</span><span class="s1">&#39;environment&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;production&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Production workloads&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;#dc3545&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="p">(</span><span class="s1">&#39;environment&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;staging&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Staging/pre-prod&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;#ffc107&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="p">(</span><span class="s1">&#39;environment&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;development&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Development/test&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;#28a745&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="p">(</span><span class="s1">&#39;owner&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;platform-team&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Platform team workloads&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;#007bff&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="p">(</span><span class="s1">&#39;compliance&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pci-dss&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;PCI-DSS compliance required&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;#6c757d&#39;</span><span class="p">);</span>
+</code></pre></div></p>
+<h3 id="vm_labels">vm_labels<a class="headerlink" href="#vm_labels" title="Permanent link">&para;</a></h3>
+<p>Many-to-many relationship between VMs and labels, with support for inherited labels.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>INTEGER</td>
+<td>PK</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td><code>vm_id</code></td>
+<td>INTEGER</td>
+<td>✓ FK</td>
+<td>Foreign key to virtual_machines.id</td>
+</tr>
+<tr>
+<td><code>label_id</code></td>
+<td>INTEGER</td>
+<td>✓ FK</td>
+<td>Foreign key to labels.id</td>
+</tr>
+<tr>
+<td><code>assigned_at</code></td>
+<td>DATETIME</td>
+<td></td>
+<td>Assignment timestamp</td>
+</tr>
+<tr>
+<td><code>assigned_by</code></td>
+<td>VARCHAR(100)</td>
+<td></td>
+<td>User who assigned the label</td>
+</tr>
+<tr>
+<td><code>inherited_from_folder</code></td>
+<td>BOOLEAN</td>
+<td>✓</td>
+<td>Whether label is inherited from folder</td>
+</tr>
+<tr>
+<td><code>source_folder_path</code></td>
+<td>VARCHAR(500)</td>
+<td></td>
+<td>Source folder path if inherited</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Constraints:</strong>
+- UNIQUE constraint on (<code>vm_id</code>, <code>label_id</code>) - prevents duplicate assignments
+- CASCADE delete on both foreign keys</p>
+<p><strong>Label Inheritance:</strong>
+- Labels can be assigned directly to VMs
+- Labels can also be inherited from folder assignments
+- <code>inherited_from_folder</code> = <code>true</code> indicates the label came from a folder
+- <code>source_folder_path</code> tracks which folder the label came from</p>
+<h3 id="folder_labels">folder_labels<a class="headerlink" href="#folder_labels" title="Permanent link">&para;</a></h3>
+<p>Assigns labels to folder paths with inheritance configuration.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Index</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>INTEGER</td>
+<td>PK</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td><code>folder_path</code></td>
+<td>VARCHAR(500)</td>
+<td>✓</td>
+<td>Folder path (e.g., "/datacenter1/vm/production")</td>
+</tr>
+<tr>
+<td><code>label_id</code></td>
+<td>INTEGER</td>
+<td>✓ FK</td>
+<td>Foreign key to labels.id</td>
+</tr>
+<tr>
+<td><code>assigned_at</code></td>
+<td>DATETIME</td>
+<td></td>
+<td>Assignment timestamp</td>
+</tr>
+<tr>
+<td><code>assigned_by</code></td>
+<td>VARCHAR(100)</td>
+<td></td>
+<td>User who assigned the label</td>
+</tr>
+<tr>
+<td><code>inherit_to_vms</code></td>
+<td>BOOLEAN</td>
+<td></td>
+<td>Whether to apply label to VMs in folder</td>
+</tr>
+<tr>
+<td><code>inherit_to_subfolders</code></td>
+<td>BOOLEAN</td>
+<td></td>
+<td>Whether to apply to subfolders recursively</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Constraints:</strong>
+- UNIQUE constraint on (<code>folder_path</code>, <code>label_id</code>) - prevents duplicate assignments
+- CASCADE delete on label_id foreign key</p>
+<p><strong>Inheritance Behavior:</strong>
+- When <code>inherit_to_vms</code> = <code>true</code>, label is applied to all VMs in the folder
+- When <code>inherit_to_subfolders</code> = <code>true</code>, label is applied recursively to all subfolders
+- Changes to folder labels can be synced to VMs using the sync operation</p>
+<h2 id="indexes">Indexes<a class="headerlink" href="#indexes" title="Permanent link">&para;</a></h2>
+<p>The following columns are indexed for query performance:</p>
+<h3 id="virtual_machines_1">virtual_machines<a class="headerlink" href="#virtual_machines_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>vm</code> - Frequent searches by VM name</li>
+<li><code>powerstate</code> - Common filter (powered on/off)</li>
+<li><code>template</code> - Common filter (exclude templates)</li>
+<li><code>datacenter</code> - Frequently grouped/filtered</li>
+<li><code>cluster</code> - Frequently grouped/filtered</li>
+<li><code>host</code> - Frequently grouped/filtered</li>
+<li><code>folder</code> - Frequently grouped/filtered</li>
+<li><code>resource_pool</code> - Frequently grouped</li>
+<li><code>os_config</code> - Frequently grouped</li>
+<li><code>env</code> - Common filter</li>
+<li><code>creation_date</code> - Used in date range queries</li>
+<li><code>vm_id</code> - Lookup by VMware ID</li>
+<li><code>vm_uuid</code> - UNIQUE index for UUID lookups</li>
+</ul>
+<h3 id="labels_1">labels<a class="headerlink" href="#labels_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>key</code> - Filter labels by key</li>
+<li><code>value</code> - Filter labels by value</li>
+<li>UNIQUE (<code>key</code>, <code>value</code>) - Prevent duplicates</li>
+</ul>
+<h3 id="vm_labels_1">vm_labels<a class="headerlink" href="#vm_labels_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>vm_id</code> - Lookup labels for a VM</li>
+<li><code>label_id</code> - Lookup VMs with a label</li>
+<li><code>inherited_from_folder</code> - Filter direct vs inherited</li>
+<li>UNIQUE (<code>vm_id</code>, <code>label_id</code>) - Prevent duplicates</li>
+</ul>
+<h3 id="folder_labels_1">folder_labels<a class="headerlink" href="#folder_labels_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>folder_path</code> - Lookup labels for a folder</li>
+<li><code>label_id</code> - Lookup folders with a label</li>
+<li>UNIQUE (<code>folder_path</code>, <code>label_id</code>) - Prevent duplicates</li>
+</ul>
+<h2 id="query-examples">Query Examples<a class="headerlink" href="#query-examples" title="Permanent link">&para;</a></h2>
+<h3 id="get-all-vms-in-a-cluster-with-their-labels">Get all VMs in a cluster with their labels<a class="headerlink" href="#get-all-vms-in-a-cluster-with-their-labels" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.orm</span><span class="w"> </span><span class="kn">import</span> <span class="n">sessionmaker</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">VirtualMachine</span><span class="p">,</span> <span class="n">VMLabel</span><span class="p">,</span> <span class="n">Label</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">vms</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">VirtualMachine</span><span class="p">,</span> <span class="n">Label</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">VMLabel</span><span class="p">,</span> <span class="n">VirtualMachine</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">VMLabel</span><span class="o">.</span><span class="n">vm_id</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">Label</span><span class="p">,</span> <span class="n">VMLabel</span><span class="o">.</span><span class="n">label_id</span> <span class="o">==</span> <span class="n">Label</span><span class="o">.</span><span class="n">id</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">VirtualMachine</span><span class="o">.</span><span class="n">cluster</span> <span class="o">==</span> <span class="s1">&#39;cluster-01&#39;</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="get-vms-with-a-specific-label">Get VMs with a specific label<a class="headerlink" href="#get-vms-with-a-specific-label" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">vms</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">VirtualMachine</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">VMLabel</span><span class="p">,</span> <span class="n">VirtualMachine</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">VMLabel</span><span class="o">.</span><span class="n">vm_id</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">Label</span><span class="p">,</span> <span class="n">VMLabel</span><span class="o">.</span><span class="n">label_id</span> <span class="o">==</span> <span class="n">Label</span><span class="o">.</span><span class="n">id</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">Label</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;environment&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">Label</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;production&#39;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="get-folder-labels-with-inheritance-settings">Get folder labels with inheritance settings<a class="headerlink" href="#get-folder-labels-with-inheritance-settings" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">FolderLabel</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">folder_labels</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">FolderLabel</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">FolderLabel</span><span class="p">,</span> <span class="n">Label</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">FolderLabel</span><span class="o">.</span><span class="n">label_id</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">FolderLabel</span><span class="o">.</span><span class="n">folder_path</span> <span class="o">==</span> <span class="s1">&#39;/datacenter1/vm/production&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">FolderLabel</span><span class="o">.</span><span class="n">inherit_to_vms</span> <span class="o">==</span> <span class="kc">True</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="count-vms-by-datacenter-and-power-state">Count VMs by datacenter and power state<a class="headerlink" href="#count-vms-by-datacenter-and-power-state" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="n">func</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">VirtualMachine</span><span class="o">.</span><span class="n">datacenter</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">VirtualMachine</span><span class="o">.</span><span class="n">powerstate</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">VirtualMachine</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="p">)</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">VirtualMachine</span><span class="o">.</span><span class="n">datacenter</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">VirtualMachine</span><span class="o">.</span><span class="n">powerstate</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="data-integrity">Data Integrity<a class="headerlink" href="#data-integrity" title="Permanent link">&para;</a></h2>
+<h3 id="constraints">Constraints<a class="headerlink" href="#constraints" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Primary keys on all tables</li>
+<li>Unique constraints on natural keys (vm_uuid, label key+value pairs)</li>
+<li>Foreign key constraints with CASCADE delete for label relationships</li>
+<li>NOT NULL constraints on critical fields</li>
+</ul>
+<h3 id="referential-integrity">Referential Integrity<a class="headerlink" href="#referential-integrity" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Deleting a VM cascades to vm_labels (removes label assignments)</li>
+<li>Deleting a Label cascades to both vm_labels and folder_labels</li>
+<li>Folder paths are strings (no foreign key) - folders are virtual organizational units</li>
+</ul>
+<h3 id="transaction-management">Transaction Management<a class="headerlink" href="#transaction-management" title="Permanent link">&para;</a></h3>
+<ul>
+<li>All write operations should use transactions</li>
+<li>Session rollback on errors to maintain consistency</li>
+<li>Duplicate label assignments are handled gracefully (UNIQUE constraints)</li>
+</ul>
+<h2 id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Permanent link">&para;</a></h2>
+<h3 id="indexing-strategy">Indexing Strategy<a class="headerlink" href="#indexing-strategy" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Indexes on frequently filtered/grouped columns</li>
+<li>Composite unique indexes for many-to-many relationships</li>
+<li>Avoid indexing rarely-queried or high-cardinality text fields</li>
+</ul>
+<h3 id="query-optimization">Query Optimization<a class="headerlink" href="#query-optimization" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use joins instead of multiple queries</li>
+<li>Limit result sets with pagination</li>
+<li>Use appropriate indexes for WHERE clauses</li>
+<li>Consider materialized views for complex aggregations</li>
+</ul>
+<h3 id="storage_1">Storage<a class="headerlink" href="#storage_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Text fields use appropriate lengths (255 for names, 500 for paths, TEXT for large content)</li>
+<li>Timestamps use DATETIME type</li>
+<li>Boolean fields for binary states</li>
+<li>Float for numeric measurements</li>
+</ul>
+<h2 id="migration-path">Migration Path<a class="headerlink" href="#migration-path" title="Permanent link">&para;</a></h2>
+<p>When extending the schema:</p>
+<ol>
+<li>Use Alembic for database migrations</li>
+<li>Add columns with NULL defaults for backward compatibility</li>
+<li>Create indexes after data population for large datasets</li>
+<li>Test migrations on a copy of production data</li>
+</ol>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../user-guide/cli-commands/">CLI Commands</a> - Using the data model via CLI</li>
+<li><a href="../user-guide/dashboard/">Dashboard</a> - Visualizing the data model</li>
+<li><a href="../design/labelling-schema-review/">Label Schema Design</a> - Label system design decisions</li>
+</ul>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 30, 2025 07:47:08 UTC">October 30, 2025</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 30, 2025 07:47:08 UTC">October 30, 2025</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

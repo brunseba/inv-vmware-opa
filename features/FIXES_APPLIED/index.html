@@ -1,0 +1,3229 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="VMware inventory management CLI tool with migration planning">
+      
+      
+        <meta name="author" content="brun_s">
+      
+      
+      
+        <link rel="prev" href="../MULTI_TARGET_MIGRATION/">
+      
+      
+        <link rel="next" href="../../architecture/DOCKER/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Fixes Applied - VMware Inventory OPA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#fixes-applied-session-summary" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="VMware Inventory OPA" class="md-header__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            VMware Inventory OPA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Fixes Applied
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/cli-commands/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../DASHBOARD/" class="md-tabs__link">
+          
+  
+  
+  Features
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/DOCKER/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../migration/MIGRATION_NOTES/" class="md-tabs__link">
+          
+  
+  
+  Migration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/CONTRIBUTING/" class="md-tabs__link">
+          
+  
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../data-model/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="VMware Inventory OPA" class="md-nav__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    VMware Inventory OPA
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/QUICK_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/QUICK_START_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/cli-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visual Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/pdf-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Backup & Restore
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Features
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DASHBOARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DASHBOARD_TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Testing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../UI_ENHANCEMENTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UI Enhancements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PDF_EXPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PDF_CHARTS_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Charts Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PDF_ENHANCED_FEATURES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Enhanced Features
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MULTI_TARGET_MIGRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-Target Migration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Fixes Applied
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fixes Applied
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-excel-data-loading-fix" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Excel Data Loading Fix
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Excel Data Loading Fix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issue
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-cause" class="md-nav__link">
+    <span class="md-ellipsis">
+      Root Cause
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-streamlit-deprecation-warning-use_container_width" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Streamlit Deprecation Warning (use_container_width)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Streamlit Deprecation Warning (use_container_width)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issue
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-cause_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Root Cause
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-plotly-chart-deprecation-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Plotly Chart Deprecation Warning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Plotly Chart Deprecation Warning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issue
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-cause_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Root Cause
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-pandas-settingwithcopywarning" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Pandas SettingWithCopyWarning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Pandas SettingWithCopyWarning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issue
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#location" class="md-nav__link">
+    <span class="md-ellipsis">
+      Location
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-cause_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Root Cause
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ui-enhancements-with-streamlit-extras" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. UI Enhancements with streamlit-extras
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. UI Enhancements with streamlit-extras">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      Package Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#components-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      Components Implemented
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Components Implemented">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-colored-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Colored Headers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-styled-metric-cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Styled Metric Cards
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-vertical-spacing" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Vertical Spacing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pages-enhanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pages Enhanced
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-storage-information-in-folder-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Storage Information in Folder Analysis
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Storage Information in Folder Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-features-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Features Added
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="New Features Added">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-storage-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 Storage Columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-new-storage-tab-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 New Storage Tab (💾 Storage)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-detailed-folder-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 Detailed Folder View
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-enhanced-sorting" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 Enhanced Sorting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verify-all-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Verify All Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expected-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Expected Results
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-pdf-report-export-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. PDF Report Export Feature
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. PDF Report Export Feature">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Functionality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      Files Created
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#report-sections-7-sections-total" class="md-nav__link">
+    <span class="md-ellipsis">
+      Report Sections (7 sections total)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charts-included-8-visualizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Charts Included (8+ visualizations)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-modified" class="md-nav__link">
+    <span class="md-ellipsis">
+      Files Modified
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Files Modified">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Functionality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-pages-all-enhanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dashboard Pages (All Enhanced)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commit-message-suggestion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commit Message Suggestion
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/DOCKER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-compose-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Compose Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/WEBASSEMBLY_EVALUATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WebAssembly Evaluation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Migration
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Migration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/MIGRATION_NOTES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/MIGRATION_NOTES_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/REPLICATION_DURATION_MITIGATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Replication Duration Plan
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/CHECK_SCHEMA_VERSION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_CLI_COMMANDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_CLI_UPDATE_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Updates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_VERSION_CONSOLIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Consolidation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/build-report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Build Report
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/TESTING_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Testing Summary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/TEST_COVERAGE_REPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Test Coverage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/labelling-schema-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Label System
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-excel-data-loading-fix" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Excel Data Loading Fix
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Excel Data Loading Fix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issue
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-cause" class="md-nav__link">
+    <span class="md-ellipsis">
+      Root Cause
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-streamlit-deprecation-warning-use_container_width" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Streamlit Deprecation Warning (use_container_width)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Streamlit Deprecation Warning (use_container_width)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issue
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-cause_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Root Cause
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-plotly-chart-deprecation-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Plotly Chart Deprecation Warning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Plotly Chart Deprecation Warning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issue
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-cause_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Root Cause
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-pandas-settingwithcopywarning" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Pandas SettingWithCopyWarning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Pandas SettingWithCopyWarning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issue
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#location" class="md-nav__link">
+    <span class="md-ellipsis">
+      Location
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-cause_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Root Cause
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ui-enhancements-with-streamlit-extras" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. UI Enhancements with streamlit-extras
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. UI Enhancements with streamlit-extras">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      Package Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#components-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      Components Implemented
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Components Implemented">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-colored-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Colored Headers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-styled-metric-cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Styled Metric Cards
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-vertical-spacing" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Vertical Spacing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pages-enhanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pages Enhanced
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-storage-information-in-folder-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Storage Information in Folder Analysis
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Storage Information in Folder Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-features-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Features Added
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="New Features Added">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-storage-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 Storage Columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-new-storage-tab-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 New Storage Tab (💾 Storage)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-detailed-folder-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 Detailed Folder View
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-enhanced-sorting" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 Enhanced Sorting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verify-all-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Verify All Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expected-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Expected Results
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-pdf-report-export-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. PDF Report Export Feature
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. PDF Report Export Feature">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Functionality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies Added
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      Files Created
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#report-sections-7-sections-total" class="md-nav__link">
+    <span class="md-ellipsis">
+      Report Sections (7 sections total)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charts-included-8-visualizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Charts Included (8+ visualizations)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-modified" class="md-nav__link">
+    <span class="md-ellipsis">
+      Files Modified
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Files Modified">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Functionality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-pages-all-enhanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dashboard Pages (All Enhanced)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commit-message-suggestion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commit Message Suggestion
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="fixes-applied-session-summary">Fixes Applied - Session Summary<a class="headerlink" href="#fixes-applied-session-summary" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>This document summarizes all fixes applied during this session to address data loading errors, deprecation warnings, and enhance the UI.</p>
+<h2 id="1-excel-data-loading-fix">1. Excel Data Loading Fix<a class="headerlink" href="#1-excel-data-loading-fix" title="Permanent link">&para;</a></h2>
+<h3 id="issue">Issue<a class="headerlink" href="#issue" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Error loading data: &#39;VM&#39;
+</code></pre></div>
+<h3 id="root-cause">Root Cause<a class="headerlink" href="#root-cause" title="Permanent link">&para;</a></h3>
+<p>The Excel file had an empty first row, causing the header to be on row 1 (index 1) instead of row 0.</p>
+<h3 id="solution">Solution<a class="headerlink" href="#solution" title="Permanent link">&para;</a></h3>
+<p>Modified <code>src/loader.py</code> to automatically detect and skip empty header rows:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Read Excel file</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">excel_path</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="n">sheet_name</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># If first row is all NaN, skip it and use second row as header</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">excel_path</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="n">sheet_name</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="result">Result<a class="headerlink" href="#result" title="Permanent link">&para;</a></h3>
+<p>✅ Successfully loaded 7,989 records from IAAS.xlsx</p>
+<hr />
+<h2 id="2-streamlit-deprecation-warning-use_container_width">2. Streamlit Deprecation Warning (use_container_width)<a class="headerlink" href="#2-streamlit-deprecation-warning-use_container_width" title="Permanent link">&para;</a></h2>
+<h3 id="issue_1">Issue<a class="headerlink" href="#issue_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Please replace `use_container_width` with `width`.
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>use_container_width will be removed after 2025-12-31.
+</code></pre></div>
+<h3 id="root-cause_1">Root Cause<a class="headerlink" href="#root-cause_1" title="Permanent link">&para;</a></h3>
+<p>Streamlit dataframes were using deprecated <code>use_container_width=True</code> parameter.</p>
+<h3 id="solution_1">Solution<a class="headerlink" href="#solution_1" title="Permanent link">&para;</a></h3>
+<p>Replaced all occurrences across dashboard pages:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"> </span><span class="s1">&#39;s/use_container_width=True/width=&quot;stretch&quot;/g&#39;</span><span class="w"> </span>src/dashboard/pages/*.py
+</code></pre></div></p>
+<p><strong>Files affected:</strong>
+- <code>folder_analysis.py</code>
+- <code>vm_explorer.py</code>
+- <code>data_quality.py</code>
+- <code>infrastructure.py</code>
+- <code>overview.py</code>
+- <code>analytics.py</code>
+- <code>comparison.py</code>
+- <code>resources.py</code></p>
+<h3 id="result_1">Result<a class="headerlink" href="#result_1" title="Permanent link">&para;</a></h3>
+<p>✅ All dataframe rendering uses new <code>width="stretch"</code> parameter</p>
+<hr />
+<h2 id="3-plotly-chart-deprecation-warning">3. Plotly Chart Deprecation Warning<a class="headerlink" href="#3-plotly-chart-deprecation-warning" title="Permanent link">&para;</a></h2>
+<h3 id="issue_2">Issue<a class="headerlink" href="#issue_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>The keyword arguments have been deprecated and will be removed in a future release. 
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Use `config` instead to specify Plotly configuration options.
+</code></pre></div>
+<h3 id="root-cause_2">Root Cause<a class="headerlink" href="#root-cause_2" title="Permanent link">&para;</a></h3>
+<p>Used <code>width="stretch"</code> for <code>st.plotly_chart()</code> which expects <code>use_container_width=True</code> (different from dataframes).</p>
+<h3 id="solution_2">Solution<a class="headerlink" href="#solution_2" title="Permanent link">&para;</a></h3>
+<p>Replaced incorrect parameter usage:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"> </span><span class="s1">&#39;s/st.plotly_chart(fig, width=&quot;stretch&quot;)/st.plotly_chart(fig, use_container_width=True)/g&#39;</span><span class="w"> </span>src/dashboard/pages/*.py
+</code></pre></div></p>
+<p><strong>Key Distinction:</strong>
+- <code>st.dataframe()</code> → uses <code>width="stretch"</code>
+- <code>st.plotly_chart()</code> → uses <code>use_container_width=True</code></p>
+<h3 id="result_2">Result<a class="headerlink" href="#result_2" title="Permanent link">&para;</a></h3>
+<p>✅ All Plotly charts now use correct parameter</p>
+<hr />
+<h2 id="4-pandas-settingwithcopywarning">4. Pandas SettingWithCopyWarning<a class="headerlink" href="#4-pandas-settingwithcopywarning" title="Permanent link">&para;</a></h2>
+<h3 id="issue_3">Issue<a class="headerlink" href="#issue_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame.
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>Try using .loc[row_indexer,col_indexer] = value instead
+</code></pre></div>
+<h3 id="location">Location<a class="headerlink" href="#location" title="Permanent link">&para;</a></h3>
+<p><code>folder_analysis.py:407</code></p>
+<h3 id="root-cause_3">Root Cause<a class="headerlink" href="#root-cause_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">df_top</span> <span class="o">=</span> <span class="n">df_filtered</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">df_top</span><span class="p">[</span><span class="s1">&#39;Storage_Efficiency_%&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># Modifying a slice</span>
+</code></pre></div>
+<h3 id="solution_3">Solution<a class="headerlink" href="#solution_3" title="Permanent link">&para;</a></h3>
+<p>Added <code>.copy()</code> to create an explicit copy:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">df_top</span> <span class="o">=</span> <span class="n">df_filtered</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">df_top</span><span class="p">[</span><span class="s1">&#39;Storage_Efficiency_%&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_top</span><span class="p">[</span><span class="s1">&#39;Total_In_Use_GB&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df_top</span><span class="p">[</span><span class="s1">&#39;Total_Provisioned_GB&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></p>
+<h3 id="result_3">Result<a class="headerlink" href="#result_3" title="Permanent link">&para;</a></h3>
+<p>✅ No more pandas warnings</p>
+<hr />
+<h2 id="5-ui-enhancements-with-streamlit-extras">5. UI Enhancements with streamlit-extras<a class="headerlink" href="#5-ui-enhancements-with-streamlit-extras" title="Permanent link">&para;</a></h2>
+<h3 id="package-added">Package Added<a class="headerlink" href="#package-added" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>uv<span class="w"> </span>add<span class="w"> </span>streamlit-extras
+</code></pre></div>
+<h3 id="components-implemented">Components Implemented<a class="headerlink" href="#components-implemented" title="Permanent link">&para;</a></h3>
+<h4 id="51-colored-headers">5.1 Colored Headers<a class="headerlink" href="#51-colored-headers" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">streamlit_extras.colored_header</span><span class="w"> </span><span class="kn">import</span> <span class="n">colored_header</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">colored_header</span><span class="p">(</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;📊 VMware Inventory Overview&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Comprehensive view of your virtual infrastructure&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">color_name</span><span class="o">=</span><span class="s2">&quot;blue-70&quot;</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="p">)</span>
+</code></pre></div>
+<p><strong>Color Scheme:</strong>
+- 🔵 Blue (<code>blue-70</code>) - Main headers, overview
+- 🟢 Green (<code>green-70</code>) - Summaries, aggregations
+- 🟠 Orange (<code>orange-70</code>) - Analysis, insights
+- 🔴 Red (<code>red-70</code>) - Details, drill-downs
+- 🟣 Violet (<code>violet-70</code>) - Infrastructure, storage</p>
+<h4 id="52-styled-metric-cards">5.2 Styled Metric Cards<a class="headerlink" href="#52-styled-metric-cards" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">streamlit_extras.metric_cards</span><span class="w"> </span><span class="kn">import</span> <span class="n">style_metric_cards</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">style_metric_cards</span><span class="p">(</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">background_color</span><span class="o">=</span><span class="s2">&quot;#1f1f1f&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">border_left_color</span><span class="o">=</span><span class="s2">&quot;#1f77b4&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">border_color</span><span class="o">=</span><span class="s2">&quot;#2e2e2e&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">box_shadow</span><span class="o">=</span><span class="s2">&quot;#1f1f1f&quot;</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="p">)</span>
+</code></pre></div>
+<h4 id="53-vertical-spacing">5.3 Vertical Spacing<a class="headerlink" href="#53-vertical-spacing" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">streamlit_extras.add_vertical_space</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_vertical_space</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">add_vertical_space</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Adds consistent spacing</span>
+</code></pre></div>
+<h3 id="pages-enhanced">Pages Enhanced<a class="headerlink" href="#pages-enhanced" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✅ <code>overview.py</code> - Complete redesign with colored sections</li>
+<li>✅ <code>folder_analysis.py</code> - Added storage info + beautiful headers</li>
+<li>✅ <code>resources.py</code> - Styled metrics and sections</li>
+<li>✅ <code>app.py</code> - Cleaner sidebar spacing</li>
+</ul>
+<hr />
+<h2 id="6-storage-information-in-folder-analysis">6. Storage Information in Folder Analysis<a class="headerlink" href="#6-storage-information-in-folder-analysis" title="Permanent link">&para;</a></h2>
+<h3 id="new-features-added">New Features Added<a class="headerlink" href="#new-features-added" title="Permanent link">&para;</a></h3>
+<h4 id="61-storage-columns">6.1 Storage Columns<a class="headerlink" href="#61-storage-columns" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Total Provisioned GB</li>
+<li>Total In Use GB</li>
+<li>Total Unshared GB</li>
+<li>Avg Provisioned GB per VM</li>
+<li>Avg In Use GB per VM</li>
+</ul>
+<h4 id="62-new-storage-tab-storage">6.2 New Storage Tab (💾 Storage)<a class="headerlink" href="#62-new-storage-tab-storage" title="Permanent link">&para;</a></h4>
+<p>Four interactive visualizations:
+1. <strong>Top 15 Folders by Provisioned Storage</strong> - Bar chart
+2. <strong>Storage Utilization</strong> - Provisioned vs In Use comparison
+3. <strong>Storage Efficiency Scatter</strong> - Shows efficiency percentage by folder
+4. <strong>Avg Storage per VM</strong> - Average provisioned storage per VM</p>
+<h4 id="63-detailed-folder-view">6.3 Detailed Folder View<a class="headerlink" href="#63-detailed-folder-view" title="Permanent link">&para;</a></h4>
+<p>Added storage metrics:
+- Provisioned Storage
+- In Use Storage
+- Storage Efficiency (%)</p>
+<h4 id="64-enhanced-sorting">6.4 Enhanced Sorting<a class="headerlink" href="#64-enhanced-sorting" title="Permanent link">&para;</a></h4>
+<p>Added sort options for:
+- Total Provisioned GB
+- Total In Use GB</p>
+<hr />
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<h3 id="verify-all-fixes">Verify All Fixes<a class="headerlink" href="#verify-all-fixes" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">cd</span><span class="w"> </span>/Users/brun_s/sandbox/inv-vmware-opa
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1"># Test data loading</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>vmware-inv<span class="w"> </span>load<span class="w"> </span><span class="nv">$HOME</span>/Downloads/IAAS.xlsx<span class="w"> </span>--sheet<span class="w"> </span>Feuil1
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="c1"># Test dashboard (no warnings should appear)</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>vmware-inv<span class="w"> </span>dashboard
+</code></pre></div>
+<h3 id="expected-results">Expected Results<a class="headerlink" href="#expected-results" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✅ No Excel loading errors</li>
+<li>✅ No Streamlit deprecation warnings</li>
+<li>✅ No Plotly deprecation warnings</li>
+<li>✅ No pandas SettingWithCopyWarnings</li>
+<li>✅ Beautiful UI with colored headers and styled metrics</li>
+<li>✅ Storage information visible in Folder Analysis page</li>
+</ul>
+<hr />
+<h2 id="7-pdf-report-export-feature">7. PDF Report Export Feature<a class="headerlink" href="#7-pdf-report-export-feature" title="Permanent link">&para;</a></h2>
+<h3 id="new-functionality">New Functionality<a class="headerlink" href="#new-functionality" title="Permanent link">&para;</a></h3>
+<p>Comprehensive PDF report generation with charts and tables.</p>
+<h3 id="dependencies-added">Dependencies Added<a class="headerlink" href="#dependencies-added" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>uv<span class="w"> </span>add<span class="w"> </span>reportlab<span class="w"> </span>pillow<span class="w"> </span>matplotlib<span class="w"> </span>watchdog
+</code></pre></div>
+<h3 id="files-created">Files Created<a class="headerlink" href="#files-created" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>src/report_generator.py</code> - PDF generation engine (580+ lines)</li>
+<li><code>src/dashboard/pages/pdf_export.py</code> - Export page (159 lines)</li>
+<li><code>docs/PDF_EXPORT.md</code> - Complete documentation (326 lines)</li>
+</ul>
+<h3 id="report-sections-7-sections-total">Report Sections (7 sections total)<a class="headerlink" href="#report-sections-7-sections-total" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Title Page</strong> - Professional cover</li>
+<li><strong>Executive Summary</strong> - Metrics + Power State pie chart</li>
+<li><strong>Infrastructure Overview</strong> - 3 charts (datacenters, clusters)</li>
+<li><strong>Resource Analysis</strong> - 2 charts (CPU, Memory distribution)</li>
+<li><strong>Storage Analysis</strong> - 2 charts (breakdown, efficiency)</li>
+<li><strong>Folder Analysis</strong> - 1 chart (top folders)</li>
+<li><strong>Data Quality</strong> - Completeness metrics</li>
+</ol>
+<h3 id="charts-included-8-visualizations">Charts Included (8+ visualizations)<a class="headerlink" href="#charts-included-8-visualizations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Power State Distribution (pie chart)</li>
+<li>VMs per Datacenter (horizontal bar)</li>
+<li>Top Clusters by VM Count (horizontal bar)</li>
+<li>vCPU Allocation by Cluster (horizontal bar)</li>
+<li>vCPU Distribution (bar chart)</li>
+<li>Memory Distribution (bar chart)</li>
+<li>Storage Breakdown (bar chart)</li>
+<li>Storage Efficiency (horizontal comparison)</li>
+<li>Top Folders by VM Count (horizontal bar)</li>
+</ul>
+<h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Format</strong>: PDF (Letter size, 8.5" × 11")</li>
+<li><strong>File Size</strong>: 100-400 KB (includes charts)</li>
+<li><strong>Generation Time</strong>: 2-45 seconds depending on VM count</li>
+<li><strong>Charts</strong>: High-quality PNG at 150 DPI</li>
+<li><strong>Styling</strong>: Professional color scheme matching dashboard</li>
+</ul>
+<h3 id="result_4">Result<a class="headerlink" href="#result_4" title="Permanent link">&para;</a></h3>
+<p>✅ Professional PDF reports for stakeholders, management, and archival</p>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Status</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Excel loading error</td>
+<td>✅ Fixed</td>
+<td>Can load data with empty header rows</td>
+</tr>
+<tr>
+<td>Streamlit dataframe deprecation</td>
+<td>✅ Fixed</td>
+<td>Future-proof for Streamlit 3.0</td>
+</tr>
+<tr>
+<td>Plotly chart deprecation</td>
+<td>✅ Fixed</td>
+<td>No more console warnings</td>
+</tr>
+<tr>
+<td>Pandas SettingWithCopyWarning</td>
+<td>✅ Fixed</td>
+<td>Cleaner code, no warnings</td>
+</tr>
+<tr>
+<td>UI Enhancement</td>
+<td>✅ Added</td>
+<td>Professional, beautiful interface</td>
+</tr>
+<tr>
+<td>Storage Analysis</td>
+<td>✅ Added</td>
+<td>Complete storage insights</td>
+</tr>
+<tr>
+<td>PDF Export</td>
+<td>✅ Added</td>
+<td>Comprehensive reports with 8+ charts</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="files-modified">Files Modified<a class="headerlink" href="#files-modified" title="Permanent link">&para;</a></h2>
+<h3 id="core-functionality">Core Functionality<a class="headerlink" href="#core-functionality" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>src/loader.py</code> - Excel header detection</li>
+<li><code>src/dashboard/app.py</code> - Sidebar spacing</li>
+</ul>
+<h3 id="dashboard-pages-all-enhanced">Dashboard Pages (All Enhanced)<a class="headerlink" href="#dashboard-pages-all-enhanced" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>src/dashboard/pages/overview.py</code></li>
+<li><code>src/dashboard/pages/folder_analysis.py</code></li>
+<li><code>src/dashboard/pages/resources.py</code></li>
+<li><code>src/dashboard/pages/infrastructure.py</code></li>
+<li><code>src/dashboard/pages/vm_explorer.py</code></li>
+<li><code>src/dashboard/pages/data_quality.py</code></li>
+<li><code>src/dashboard/pages/analytics.py</code></li>
+<li><code>src/dashboard/pages/comparison.py</code></li>
+</ul>
+<h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>docs/UI_ENHANCEMENTS.md</code> - UI enhancement guide</li>
+<li><code>docs/FIXES_APPLIED.md</code> - This document</li>
+</ul>
+<hr />
+<h2 id="commit-message-suggestion">Commit Message Suggestion<a class="headerlink" href="#commit-message-suggestion" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>feat: fix deprecation warnings and enhance UI
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>- Fix Excel loader to handle empty header rows
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>- Replace deprecated Streamlit parameters (use_container_width -&gt; width)
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>- Fix Plotly chart parameter usage (use_container_width=True)
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>- Resolve pandas SettingWithCopyWarning in folder analysis
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>- Add streamlit-extras for beautiful UI components
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>- Add storage information to folder analysis page
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>- Implement colored headers, styled metrics, and consistent spacing
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>- Successfully loaded 7,989 VMs from IAAS.xlsx
+</code></pre></div>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 1, 2025 11:45:33 UTC">November 1, 2025</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 27, 2025 11:58:23 UTC">October 27, 2025</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

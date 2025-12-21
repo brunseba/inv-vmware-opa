@@ -1,0 +1,3710 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="VMware inventory management CLI tool with migration planning">
+      
+      
+        <meta name="author" content="brun_s">
+      
+      
+      
+        <link rel="prev" href="../dashboard/">
+      
+      
+        <link rel="next" href="../pdf-export/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Visual Guide - VMware Inventory OPA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#visual-dashboard-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="VMware Inventory OPA" class="md-header__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            VMware Inventory OPA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Visual Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../cli-commands/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../features/DASHBOARD/" class="md-tabs__link">
+          
+  
+  
+  Features
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/DOCKER/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../migration/MIGRATION_NOTES/" class="md-tabs__link">
+          
+  
+  
+  Migration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/CONTRIBUTING/" class="md-tabs__link">
+          
+  
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../data-model/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="VMware Inventory OPA" class="md-nav__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    VMware Inventory OPA
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/QUICK_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/QUICK_START_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Visual Guide
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visual Guide
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Navigation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Started
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#launching-the-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Launching the Dashboard
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#navigation-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Navigation Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Main Navigation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Main Navigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      📊 Overview
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explore-analyze" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explore &amp; Analyze
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Explore &amp; Analyze">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-explorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔬 Data Explorer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-explorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔬 Advanced Explorer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm-explorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      🖥️ VM Explorer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔎 VM Search
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      📈 Analytics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚖️ Comparison
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      ✅ Data Quality
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Infrastructure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      💻 Resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infrastructure_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      🌐 Infrastructure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      📁 Folder Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder-labelling" class="md-nav__link">
+    <span class="md-ellipsis">
+      🏷️ Folder Labelling
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migration-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      🎯 Migration Targets
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strategy-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚙️ Strategy Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      📋 Migration Planning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 Migration Scenarios
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      📥 Data Import
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      💾 Database Backup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#export-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export &amp; Help
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Export &amp; Help">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pdf-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      📄 PDF Export
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#help" class="md-nav__link">
+    <span class="md-ellipsis">
+      📚 Help
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tips &amp; Best Practices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tips &amp; Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Navigation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-exploration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Exploration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reporting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keyboard-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard Shortcuts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Help
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdf-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Backup & Restore
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Features
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/DASHBOARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/DASHBOARD_TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Testing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/UI_ENHANCEMENTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UI Enhancements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/PDF_EXPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/PDF_CHARTS_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Charts Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/PDF_ENHANCED_FEATURES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Enhanced Features
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/MULTI_TARGET_MIGRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-Target Migration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/FIXES_APPLIED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fixes Applied
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/DOCKER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-compose-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Compose Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/WEBASSEMBLY_EVALUATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WebAssembly Evaluation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Migration
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Migration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/MIGRATION_NOTES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/MIGRATION_NOTES_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/REPLICATION_DURATION_MITIGATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Replication Duration Plan
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/CHECK_SCHEMA_VERSION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_CLI_COMMANDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_CLI_UPDATE_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Updates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_VERSION_CONSOLIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Consolidation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/build-report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Build Report
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/TESTING_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Testing Summary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/TEST_COVERAGE_REPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Test Coverage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/labelling-schema-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Label System
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Navigation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Started
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#launching-the-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Launching the Dashboard
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#navigation-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Navigation Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Main Navigation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Main Navigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      📊 Overview
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explore-analyze" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explore &amp; Analyze
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Explore &amp; Analyze">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-explorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔬 Data Explorer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-explorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔬 Advanced Explorer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm-explorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      🖥️ VM Explorer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vm-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔎 VM Search
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      📈 Analytics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚖️ Comparison
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      ✅ Data Quality
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Infrastructure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      💻 Resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infrastructure_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      🌐 Infrastructure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      📁 Folder Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#folder-labelling" class="md-nav__link">
+    <span class="md-ellipsis">
+      🏷️ Folder Labelling
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migration-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      🎯 Migration Targets
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strategy-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚙️ Strategy Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      📋 Migration Planning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 Migration Scenarios
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      📥 Data Import
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      💾 Database Backup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#export-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export &amp; Help
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Export &amp; Help">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pdf-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      📄 PDF Export
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#help" class="md-nav__link">
+    <span class="md-ellipsis">
+      📚 Help
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tips &amp; Best Practices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tips &amp; Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Navigation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-exploration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Exploration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reporting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keyboard-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard Shortcuts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Help
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="visual-dashboard-guide">Visual Dashboard Guide<a class="headerlink" href="#visual-dashboard-guide" title="Permanent link">&para;</a></h1>
+<p>A comprehensive visual tour of all 20 dashboard pages with screenshots and detailed usage instructions.</p>
+<h2 id="quick-navigation">Quick Navigation<a class="headerlink" href="#quick-navigation" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#main-navigation">Main Navigation</a></li>
+<li><a href="#explore--analyze">Explore &amp; Analyze</a> (7 pages)</li>
+<li><a href="#infrastructure">Infrastructure</a> (4 pages)</li>
+<li><a href="#migration">Migration</a> (4 pages)</li>
+<li><a href="#management">Management</a> (2 pages)</li>
+<li><a href="#export--help">Export &amp; Help</a> (2 pages)</li>
+</ul>
+<hr />
+<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
+<h3 id="launching-the-dashboard">Launching the Dashboard<a class="headerlink" href="#launching-the-dashboard" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Start the dashboard</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>streamlit<span class="w"> </span>run<span class="w"> </span>src/dashboard/app.py
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Or with the CLI</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>vmware-dashboard
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Custom port</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>streamlit<span class="w"> </span>run<span class="w"> </span>src/dashboard/app.py<span class="w"> </span>--server.port<span class="w"> </span><span class="m">8502</span>
+</code></pre></div>
+<p>The dashboard opens at <code>http://localhost:8501</code> by default.</p>
+<h3 id="navigation-methods">Navigation Methods<a class="headerlink" href="#navigation-methods" title="Permanent link">&para;</a></h3>
+<p><strong>1. Sidebar Menu</strong>
+- Click page buttons in the left sidebar
+- Pages are organized by category (collapsible sections)</p>
+<p><strong>2. Direct URL Access</strong>
+- Use query parameters: <code>http://localhost:8501/?page=Page_Name</code>
+- Example: <code>http://localhost:8501/?page=Data_Explorer</code>
+- Bookmark your favorite pages</p>
+<p><strong>3. Keyboard Shortcuts</strong>
+- Use sidebar navigation with keyboard
+- Tab through interface elements</p>
+<hr />
+<h2 id="main-navigation">Main Navigation<a class="headerlink" href="#main-navigation" title="Permanent link">&para;</a></h2>
+<h3 id="overview">📊 Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> High-level dashboard with key metrics and visualizations</p>
+<p><img alt="Overview Dashboard" src="../images/v0.7.0/overview_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Metrics Cards</strong>: Total VMs, powered on/off, vCPUs, memory
+- <strong>Power State Chart</strong>: Visual distribution of VM states
+- <strong>Datacenter Overview</strong>: VMs per datacenter
+- <strong>Cluster Analysis</strong>: Top clusters by VM count
+- <strong>OS Distribution</strong>: Most common operating systems</p>
+<p><strong>Best For:</strong>
+- Executive summaries
+- Quick infrastructure health checks
+- Identifying resource hotspots
+- Daily status monitoring</p>
+<p><strong>Quick Actions:</strong>
+- Click metrics to drill down
+- Hover over charts for details
+- Export charts as images
+- Filter by datacenter/cluster</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Overview</code></p>
+<hr />
+<h2 id="explore-analyze">Explore &amp; Analyze<a class="headerlink" href="#explore-analyze" title="Permanent link">&para;</a></h2>
+<h3 id="data-explorer">🔬 Data Explorer<a class="headerlink" href="#data-explorer" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> PyGWalker-based interactive data exploration with drag-and-drop analytics</p>
+<p><img alt="Data Explorer" src="../images/v0.7.0/data_explorer_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Drag &amp; Drop Interface</strong>: Build visualizations without code
+- <strong>Auto-Generated Charts</strong>: Intelligent chart recommendations
+- <strong>Data Transformation</strong>: Filter, sort, aggregate on the fly
+- <strong>Export Options</strong>: Save charts and datasets
+- <strong>Multiple Viz Types</strong>: Scatter, bar, line, pie, and more</p>
+<p><strong>Best For:</strong>
+- Ad-hoc data exploration
+- Custom visualization creation
+- Discovering data patterns
+- Interactive analysis sessions</p>
+<p><strong>How to Use:</strong>
+1. Drag fields from left panel to visualization areas
+2. Choose chart type from toolbar
+3. Apply filters using the filter panel
+4. Aggregate data using built-in functions
+5. Export results or save visualization</p>
+<p><strong>Tips:</strong>
+- Try different field combinations
+- Use color coding for categories
+- Apply multiple filters for detailed analysis
+- Save frequently used views</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Data_Explorer</code></p>
+<hr />
+<h3 id="advanced-explorer">🔬 Advanced Explorer<a class="headerlink" href="#advanced-explorer" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> SQL query interface with PyGWalker visualization</p>
+<p><img alt="Advanced Explorer" src="../images/v0.7.0/advanced_explorer_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>SQL Query Editor</strong>: Write custom SQL queries
+- <strong>Query Templates</strong>: Pre-built common queries
+- <strong>Result Visualization</strong>: Automatic chart generation from results
+- <strong>Export Results</strong>: Download as CSV or Excel
+- <strong>Query History</strong>: Access previously run queries</p>
+<p><strong>Best For:</strong>
+- Power users who know SQL
+- Complex data extraction
+- Custom reporting needs
+- Data validation queries</p>
+<p><strong>Example Queries:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">-- Find VMs with high CPU allocation</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">vm</span><span class="p">,</span><span class="w"> </span><span class="n">cpus</span><span class="p">,</span><span class="w"> </span><span class="n">memory</span><span class="p">,</span><span class="w"> </span><span class="k">cluster</span><span class="w"> </span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">FROM</span><span class="w"> </span><span class="n">vms</span><span class="w"> </span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">cpus</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">8</span><span class="w"> </span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">cpus</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1">-- Storage analysis by datacenter</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">datacenter</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">       </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">vm_count</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">       </span><span class="k">SUM</span><span class="p">(</span><span class="n">provisioned_mb</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">total_storage</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">FROM</span><span class="w"> </span><span class="n">vms</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">datacenter</span><span class="p">;</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1">-- OS distribution</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">os_config</span><span class="p">,</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="k">count</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="k">FROM</span><span class="w"> </span><span class="n">vms</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">os_config</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="k">count</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span>
+</code></pre></div></p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Advanced_Explorer</code></p>
+<hr />
+<h3 id="vm-explorer">🖥️ VM Explorer<a class="headerlink" href="#vm-explorer" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Detailed VM inspection and analysis with rich tabbed interface</p>
+<p><img alt="VM Explorer" src="../images/v0.7.0/vm_explorer_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Tabbed Interface</strong>: Organized by category
+  - General: Name, UUID, power state, tools version
+  - Resources: CPU, memory, storage allocation
+  - Network: IPs, DNS, MAC addresses, network adapters
+  - Infrastructure: Datacenter, cluster, host placement
+- <strong>Search Functionality</strong>: Find VMs by name, IP, or attribute
+- <strong>Detailed Metrics</strong>: Complete VM configuration
+- <strong>Quick Filters</strong>: By datacenter, cluster, power state</p>
+<p><strong>Best For:</strong>
+- Troubleshooting specific VMs
+- Configuration audits
+- Network mapping
+- Capacity validation</p>
+<p><strong>Navigation Tips:</strong>
+1. Use search bar for quick VM lookup
+2. Click tabs to see different aspects
+3. Hover over fields for descriptions
+4. Use filters to narrow results
+5. Paginate through large lists</p>
+<p><strong>Common Tasks:</strong>
+- <strong>Find by IP</strong>: Use IP search
+- <strong>Check Resources</strong>: Review Resources tab
+- <strong>Verify Network</strong>: Check Network tab
+- <strong>Location Info</strong>: See Infrastructure tab</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=VM_Explorer</code></p>
+<hr />
+<h3 id="vm-search">🔎 VM Search<a class="headerlink" href="#vm-search" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Advanced VM search and filtering capabilities</p>
+<p><img alt="VM Search" src="../images/v0.7.0/vm_search_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Multi-Criteria Search</strong>: Name, IP, DNS, cluster, folder
+- <strong>Advanced Filters</strong>: 
+  - Resource ranges (CPU, memory, storage)
+  - Power state
+  - Operating system
+  - Network configuration
+- <strong>Result Preview</strong>: Quick overview before export
+- <strong>Bulk Operations</strong>: Act on search results
+- <strong>Export Results</strong>: CSV download</p>
+<p><strong>Best For:</strong>
+- Finding groups of VMs matching criteria
+- Pre-migration VM selection
+- Compliance auditing
+- Inventory verification</p>
+<p><strong>Search Examples:</strong></p>
+<p><strong>By Resource Size:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>CPU: 4-8 vCPUs
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Memory: 16-32 GB
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Storage: &gt;500 GB
+</code></pre></div></p>
+<p><strong>By Location:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Datacenter: PROD-DC
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Cluster: Cluster-01
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Folder: /Production/WebServers
+</code></pre></div></p>
+<p><strong>By OS:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>OS contains: &quot;Windows Server 2019&quot;
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>OS contains: &quot;Ubuntu&quot;
+</code></pre></div></p>
+<p><strong>Tips:</strong>
+- Combine multiple filters for precision
+- Use wildcards in name search (%)
+- Save common searches as bookmarks
+- Export results for offline analysis</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=VM_Search</code></p>
+<hr />
+<h3 id="analytics">📈 Analytics<a class="headerlink" href="#analytics" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Resource allocation patterns and OS analysis</p>
+<p><img alt="Analytics" src="../images/v0.7.0/analytics_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Resource Patterns</strong>:
+  - CPU vs Memory correlation
+  - Top 10 configurations
+  - Resource distribution charts
+- <strong>OS Analysis</strong>:
+  - Treemap visualization
+  - Sunburst charts
+  - CPU allocation by OS
+- <strong>Cluster Efficiency</strong>:
+  - VMs per host ratios
+  - Resource balance metrics
+  - Utilization bubble charts
+- <strong>Environment Distribution</strong>: VM categorization</p>
+<p><strong>Best For:</strong>
+- Standardization initiatives
+- Rightsizing analysis
+- OS upgrade planning
+- Capacity planning</p>
+<p><strong>Insights to Look For:</strong>
+1. <strong>Over-provisioned VMs</strong>: High CPU/memory but low usage
+2. <strong>Standardization Gaps</strong>: Too many unique configurations
+3. <strong>OS Diversity</strong>: Outdated OS versions
+4. <strong>Cluster Imbalance</strong>: Uneven VM distribution</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Analytics</code></p>
+<hr />
+<h3 id="comparison">⚖️ Comparison<a class="headerlink" href="#comparison" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Side-by-side datacenter/cluster comparisons</p>
+<p><img alt="Comparison" src="../images/v0.7.0/comparison_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Datacenter Comparison</strong>:
+  - VM count comparison
+  - Resource allocation
+  - Radar charts
+  - Power state distribution
+- <strong>Cluster Comparison</strong>:
+  - Side-by-side metrics
+  - Resource profiles
+  - Efficiency ratios
+- <strong>Host Comparison</strong>:
+  - VM density
+  - Resource utilization
+  - Capacity metrics</p>
+<p><strong>Best For:</strong>
+- Site comparison and planning
+- Load balancing decisions
+- Migration target selection
+- Capacity alignment</p>
+<p><strong>How to Compare:</strong>
+1. Select first datacenter/cluster
+2. Select second datacenter/cluster
+3. Review comparison charts
+4. Export comparison report
+5. Make data-driven decisions</p>
+<p><strong>Comparison Metrics:</strong>
+- Total VMs and distribution
+- CPU and memory allocation
+- Storage provisioned vs. used
+- Power state ratios
+- Average VM size
+- Resource efficiency</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Comparison</code></p>
+<hr />
+<h3 id="data-quality">✅ Data Quality<a class="headerlink" href="#data-quality" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Field completeness and data quality analysis</p>
+<p><img alt="Data Quality" src="../images/v0.7.0/data_quality_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Completeness Scores</strong>: Percentage per field
+- <strong>Missing Data Heatmap</strong>: Visual gap identification
+- <strong>Recommendations</strong>: Actionable improvement suggestions
+- <strong>Field Analysis</strong>: 
+  - Required vs optional fields
+  - Critical missing data
+  - Data consistency checks
+- <strong>Quality Trends</strong>: Track improvement over time</p>
+<p><strong>Best For:</strong>
+- Data audit preparation
+- Improving inventory accuracy
+- Identifying collection gaps
+- Compliance verification</p>
+<p><strong>Common Issues:</strong>
+- Missing DNS names
+- Incomplete IP addresses
+- No folder assignments
+- Missing annotations
+- Unknown OS configurations</p>
+<p><strong>Action Items:</strong>
+1. Review red/yellow fields (low completeness)
+2. Follow recommendations
+3. Update collection scripts
+4. Re-import improved data
+5. Verify completeness improved</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Data_Quality</code></p>
+<hr />
+<h2 id="infrastructure">Infrastructure<a class="headerlink" href="#infrastructure" title="Permanent link">&para;</a></h2>
+<h3 id="resources">💻 Resources<a class="headerlink" href="#resources" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Resource metrics and allocation dashboard</p>
+<p><img alt="Resources" src="../images/v0.7.0/resources_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>CPU Distribution</strong>: vCPU patterns across VMs
+- <strong>Memory Analysis</strong>: 
+  - Allocation by size ranges
+  - Top consumers
+  - Distribution charts
+- <strong>Storage Metrics</strong>:
+  - Provisioned vs. in-use
+  - Thin provisioning savings
+  - Efficiency calculations
+- <strong>Top Consumers</strong>: Largest VMs by resource type
+- <strong>Interactive Filters</strong>: Datacenter, cluster, power state</p>
+<p><strong>Best For:</strong>
+- Resource optimization
+- Cost reduction initiatives
+- Capacity planning
+- Rightsizing projects</p>
+<p><strong>Key Metrics:</strong>
+- Total vCPUs allocated
+- Total memory (GB)
+- Storage provisioned (TB)
+- Storage in-use (TB)
+- Thin provisioning savings
+- Average VM size</p>
+<p><strong>Optimization Opportunities:</strong>
+- Over-provisioned VMs (high allocation, low usage)
+- Undersized VMs (resource constraints)
+- Storage waste (high provisioned, low used)
+- Standardization targets</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Resources</code></p>
+<hr />
+<h3 id="infrastructure_1">🌐 Infrastructure<a class="headerlink" href="#infrastructure_1" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Infrastructure topology and details</p>
+<p><img alt="Infrastructure" src="../images/v0.7.0/infrastructure_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Hierarchy View</strong>:
+  - Datacenter → Cluster → Host → VM
+  - Visual topology representation
+- <strong>Capacity Metrics</strong>:
+  - Per-datacenter totals
+  - Cluster capacity usage
+  - Host density metrics
+- <strong>Distribution Charts</strong>:
+  - VMs per cluster
+  - Hosts per datacenter
+  - Resource allocation tree
+- <strong>Drill-Down Navigation</strong>: Click to explore deeper</p>
+<p><strong>Best For:</strong>
+- Understanding infrastructure layout
+- Capacity planning
+- Datacenter consolidation
+- Migration planning</p>
+<p><strong>Views Available:</strong>
+1. <strong>Datacenter View</strong>: High-level site overview
+2. <strong>Cluster View</strong>: Cluster-level details
+3. <strong>Host View</strong>: Individual host metrics
+4. <strong>VM View</strong>: VM placement visualization</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Infrastructure</code></p>
+<hr />
+<h3 id="folder-analysis">📁 Folder Analysis<a class="headerlink" href="#folder-analysis" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Folder-level resource and storage analytics</p>
+<p><img alt="Folder Analysis" src="../images/v0.7.0/folder_analysis_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Folder Distribution</strong>: VM counts per folder
+- <strong>Resource Analysis</strong>:
+  - CPU allocation by folder
+  - Memory allocation by folder
+  - Average resource profiles
+- <strong>Storage Analysis</strong>:
+  - Provisioned storage by folder
+  - Used storage by folder
+  - Storage efficiency metrics
+- <strong>Aggregation Options</strong>:
+  - Hierarchy level selection
+  - Minimum VM threshold
+  - Custom sorting</p>
+<p><strong>Best For:</strong>
+- Application-based analysis
+- Department chargeback
+- Folder organization review
+- Resource allocation by team</p>
+<p><strong>Analysis Options:</strong>
+- Group by folder depth
+- Filter by minimum VM count
+- Sort by resource type
+- Export folder reports</p>
+<p><strong>Common Uses:</strong>
+- <strong>Cost Allocation</strong>: Resource usage by department
+- <strong>Capacity Planning</strong>: Growth trends by folder
+- <strong>Organization Audit</strong>: Folder structure review
+- <strong>Migration Grouping</strong>: Bundle VMs by folder</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Folder_Analysis</code></p>
+<hr />
+<h3 id="folder-labelling">🏷️ Folder Labelling<a class="headerlink" href="#folder-labelling" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Label management and assignment interface</p>
+<p><img alt="Folder Labelling" src="../images/v0.7.0/folder_labelling_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Label Management</strong>:
+  - Create key-value labels
+  - Color coding
+  - Descriptions
+  - Categories
+- <strong>Folder Labelling</strong>:
+  - Hierarchical assignment
+  - Inheritance options
+  - Batch operations
+- <strong>VM Labelling</strong>:
+  - Individual VM labels
+  - Inherited labels display
+  - Batch labelling by criteria
+- <strong>Search by Label</strong>: Find labelled items</p>
+<p><strong>Best For:</strong>
+- Migration wave organization
+- Cost center tracking
+- Application categorization
+- Compliance tagging</p>
+<p><strong>Label Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>migration-wave: 1, 2, 3
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>cost-center: IT-Ops, Development, QA
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>environment: Production, Development, Test
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>criticality: Critical, Standard, Low
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>compliance: PCI, HIPAA, SOX
+</code></pre></div></p>
+<p><strong>Batch Labelling:</strong>
+1. <strong>By OS Family</strong>: Windows, Linux, Unix
+2. <strong>By Resource Size</strong>: Small, Medium, Large, XLarge
+3. <strong>By Network</strong>: Simple, Standard, Complex
+4. <strong>By Storage</strong>: Simple, Standard, Complex</p>
+<p><strong>Workflow:</strong>
+1. Create labels
+2. Assign to folders (with inheritance)
+3. Or batch-assign to VMs by criteria
+4. Search/filter by labels
+5. Export labelled VM lists</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Folder_Labelling</code></p>
+<hr />
+<h2 id="migration">Migration<a class="headerlink" href="#migration" title="Permanent link">&para;</a></h2>
+<h3 id="migration-targets">🎯 Migration Targets<a class="headerlink" href="#migration-targets" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Define and manage migration targets</p>
+<p><img alt="Migration Targets" src="../images/v0.7.0/migration_targets_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Target Definition</strong>:
+  - Name and description
+  - Target infrastructure
+  - Capacity constraints
+  - Compatibility rules
+- <strong>Target Management</strong>:
+  - Create multiple targets
+  - Edit existing targets
+  - Delete targets
+  - Clone configurations
+- <strong>Capacity Planning</strong>:
+  - CPU capacity
+  - Memory capacity
+  - Storage capacity
+  - Network requirements</p>
+<p><strong>Best For:</strong>
+- Multi-cloud migration planning
+- Datacenter consolidation
+- Platform upgrades
+- Disaster recovery planning</p>
+<p><strong>Target Types:</strong>
+- <strong>Cloud Providers</strong>: AWS, Azure, GCP
+- <strong>On-Premises</strong>: New vSphere clusters
+- <strong>Hybrid</strong>: Combined cloud + on-prem
+- <strong>Edge</strong>: Remote sites</p>
+<p><strong>Configuration Fields:</strong>
+- Target name and description
+- vCPU capacity (total available)
+- Memory capacity (GB)
+- Storage capacity (TB)
+- Network bandwidth
+- Compatibility notes
+- Cost estimates</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Migration_Targets</code></p>
+<hr />
+<h3 id="strategy-configuration">⚙️ Strategy Configuration<a class="headerlink" href="#strategy-configuration" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Configure migration strategies</p>
+<p><img alt="Strategy Configuration" src="../images/v0.7.0/strategy_configuration_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Strategy Types</strong>:
+  - Lift &amp; Shift (rehost)
+  - Replatform
+  - Refactor
+  - Retire
+  - Retain
+- <strong>Rules Configuration</strong>:
+  - VM selection criteria
+  - Priority ordering
+  - Resource requirements
+  - Dependencies
+- <strong>Wave Definition</strong>:
+  - Wave size
+  - Wave duration
+  - Wave dependencies
+  - Rollback plans</p>
+<p><strong>Best For:</strong>
+- Complex migration planning
+- Phased migrations
+- Risk mitigation
+- Dependency management</p>
+<p><strong>Strategy Options:</strong></p>
+<p><strong>Lift &amp; Shift:</strong>
+- Minimal changes
+- Quick migration
+- Lower risk
+- Like-for-like</p>
+<p><strong>Replatform:</strong>
+- Minor optimizations
+- Platform modernization
+- Moderate changes
+- Improved efficiency</p>
+<p><strong>Refactor:</strong>
+- Significant changes
+- Cloud-native features
+- Application updates
+- Maximum optimization</p>
+<p><strong>Criteria Examples:</strong>
+- OS compatibility
+- Application type
+- Resource size
+- Network complexity
+- Storage requirements
+- Downtime tolerance</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Strategy_Configuration</code></p>
+<hr />
+<h3 id="migration-planning">📋 Migration Planning<a class="headerlink" href="#migration-planning" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Plan and schedule migrations</p>
+<p><img alt="Migration Planning" src="../images/v0.7.0/migration_planning_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Wave Planning</strong>:
+  - Create migration waves
+  - Assign VMs to waves
+  - Set timelines
+  - Define dependencies
+- <strong>Resource Validation</strong>:
+  - Check target capacity
+  - Verify compatibility
+  - Identify conflicts
+- <strong>Timeline View</strong>:
+  - Gantt chart visualization
+  - Critical path analysis
+  - Milestone tracking
+- <strong>Risk Assessment</strong>:
+  - Dependency risks
+  - Capacity risks
+  - Timeline risks</p>
+<p><strong>Best For:</strong>
+- Detailed migration scheduling
+- Resource allocation
+- Timeline management
+- Stakeholder communication</p>
+<p><strong>Planning Steps:</strong>
+1. <strong>Define Waves</strong>: Group VMs logically
+2. <strong>Assign VMs</strong>: Allocate VMs to waves
+3. <strong>Set Dates</strong>: Schedule migration windows
+4. <strong>Validate</strong>: Check capacity and compatibility
+5. <strong>Review</strong>: Assess risks
+6. <strong>Approve</strong>: Get stakeholder sign-off
+7. <strong>Execute</strong>: Follow the plan</p>
+<p><strong>Wave Attributes:</strong>
+- Wave number/name
+- Start date
+- End date
+- VM count
+- Total resources (CPU, memory, storage)
+- Dependencies
+- Assigned team
+- Status</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Migration_Planning</code></p>
+<hr />
+<h3 id="migration-scenarios">🔄 Migration Scenarios<a class="headerlink" href="#migration-scenarios" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Create and analyze migration scenarios</p>
+<p><img alt="Migration Scenarios" src="../images/v0.7.0/migration_scenarios_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Scenario Creation</strong>:
+  - Define multiple "what-if" scenarios
+  - Compare different approaches
+  - Test various strategies
+- <strong>Analysis Tools</strong>:
+  - Cost comparison
+  - Risk assessment
+  - Timeline comparison
+  - Resource utilization
+- <strong>Scenario Comparison</strong>:
+  - Side-by-side metrics
+  - Visual comparisons
+  - ROI calculations
+- <strong>Export Scenarios</strong>: Save for presentations</p>
+<p><strong>Best For:</strong>
+- Strategic planning
+- Budget justification
+- Risk analysis
+- Decision support</p>
+<p><strong>Scenario Types:</strong></p>
+<p><strong>Conservative:</strong>
+- Longer timeline
+- Smaller waves
+- More testing
+- Lower risk
+- Higher cost</p>
+<p><strong>Aggressive:</strong>
+- Shorter timeline
+- Larger waves
+- Minimal testing
+- Higher risk
+- Lower cost</p>
+<p><strong>Hybrid:</strong>
+- Balanced approach
+- Moderate timeline
+- Mixed wave sizes
+- Managed risk
+- Optimized cost</p>
+<p><strong>Comparison Metrics:</strong>
+- Total duration
+- Total cost
+- Risk score
+- Resource efficiency
+- Downtime impact
+- Complexity score</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Migration_Scenarios</code></p>
+<hr />
+<h2 id="management">Management<a class="headerlink" href="#management" title="Permanent link">&para;</a></h2>
+<h3 id="data-import">📥 Data Import<a class="headerlink" href="#data-import" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Import data from Excel files</p>
+<p><img alt="Data Import" src="../images/v0.7.0/data_import_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>File Upload</strong>:
+  - Drag &amp; drop interface
+  - Browse for files
+  - Support for .xlsx, .xls
+- <strong>Sheet Selection</strong>: Choose from workbook sheets
+- <strong>Import Modes</strong>:
+  - Replace (clear existing data)
+  - Append (add to existing)
+- <strong>Data Preview</strong>: Review before import
+- <strong>Progress Tracking</strong>: Real-time status
+- <strong>Validation</strong>: Automatic checks
+- <strong>Error Reporting</strong>: Detailed feedback</p>
+<p><strong>Best For:</strong>
+- Initial data loading
+- Regular data updates
+- Bulk imports
+- Data migration</p>
+<p><strong>Supported Formats:</strong>
+- RVTools vInfo exports (recommended)
+- PowerCLI exports
+- Custom VMware exports</p>
+<p><strong>Required Columns:</strong>
+- VM (name)
+- Powerstate
+- CPUs
+- Memory
+- Datacenter
+- Cluster</p>
+<p><strong>Import Process:</strong>
+1. Click "Browse files" or drag &amp; drop
+2. Select Excel file
+3. Choose sheet (usually "vInfo")
+4. Select import mode
+5. Preview data structure
+6. Click "Import"
+7. Monitor progress
+8. Verify import success</p>
+<p><strong>Tips:</strong>
+- Backup database before import
+- Use "Replace" for clean slate
+- Verify column mapping
+- Check row count after import</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Data_Import</code></p>
+<hr />
+<h3 id="database-backup">💾 Database Backup<a class="headerlink" href="#database-backup" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Backup and restore database</p>
+<p><img alt="Database Backup" src="../images/v0.7.0/database_backup_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Backup Operations</strong>:
+  - Create full database backup
+  - Scheduled backups
+  - Incremental backups
+  - Compressed backups
+- <strong>Restore Operations</strong>:
+  - Restore from backup
+  - Point-in-time restore
+  - Selective restore
+  - Validation before restore
+- <strong>Backup Management</strong>:
+  - List available backups
+  - Delete old backups
+  - Verify backup integrity
+  - Backup metadata
+- <strong>Database Info</strong>:
+  - Connection status
+  - Database size
+  - Table statistics
+  - Last backup time</p>
+<p><strong>Best For:</strong>
+- Data protection
+- Before major changes
+- Disaster recovery
+- Version control</p>
+<p><strong>Backup Strategies:</strong></p>
+<p><strong>Before Import:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>1. Create backup
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>2. Import new data
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>3. Verify import
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>4. Delete old backup or keep for rollback
+</code></pre></div></p>
+<p><strong>Regular Schedule:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Daily: Automated backup
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Weekly: Full backup with verify
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>Monthly: Archive backup
+</code></pre></div></p>
+<p><strong>Before Major Changes:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>1. Backup
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>2. Make changes
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>3. Test
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>4. Keep backup for 30 days
+</code></pre></div></p>
+<p><strong>Restore Process:</strong>
+1. Select backup file
+2. Preview backup info
+3. Confirm restore
+4. Wait for completion
+5. Verify data
+6. Test functionality</p>
+<p><strong>Backup Locations:</strong>
+- Local filesystem
+- Network share (recommended)
+- Cloud storage (S3, Azure Blob)
+- External drive</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Database_Backup</code></p>
+<hr />
+<h2 id="export-help">Export &amp; Help<a class="headerlink" href="#export-help" title="Permanent link">&para;</a></h2>
+<h3 id="pdf-export">📄 PDF Export<a class="headerlink" href="#pdf-export" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Generate professional PDF reports</p>
+<p><img alt="PDF Export" src="../images/v0.7.0/pdf_export_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Report Types</strong>:
+  - <strong>Standard</strong>: 6-8 key charts
+  - <strong>Extended</strong>: 20+ comprehensive charts
+  - <strong>Summary</strong>: Tables only, no charts
+- <strong>Configuration</strong>:
+  - Page size (Letter, A4)
+  - Chart quality (100-300 DPI)
+  - Color scheme
+  - Logo inclusion
+- <strong>Content Sections</strong>:
+  - Executive summary
+  - Infrastructure overview
+  - Resource analysis
+  - Storage analysis
+  - Folder analysis
+  - Data quality report
+- <strong>Export Options</strong>:
+  - Download PDF
+  - Email report
+  - Schedule generation</p>
+<p><strong>Best For:</strong>
+- Executive presentations
+- Stakeholder reports
+- Compliance documentation
+- Offline analysis</p>
+<p><strong>Report Contents:</strong></p>
+<p><strong>Standard Report (~10 pages):</strong>
+- Executive summary
+- Key metrics
+- Top 6-8 charts
+- Critical tables</p>
+<p><strong>Extended Report (~30 pages):</strong>
+- Everything in Standard
+- Detailed analytics (20+ charts)
+- Infrastructure comparison
+- Extended folder analytics
+- Comprehensive tables</p>
+<p><strong>Summary Report (~5 pages):</strong>
+- Tables only
+- No charts
+- Quick reference
+- Data export</p>
+<p><strong>Generation Steps:</strong>
+1. Select report type
+2. Configure options
+3. Click "Generate PDF"
+4. Wait for generation (30-60s)
+5. Download PDF
+6. Review and distribute</p>
+<p><strong>Tips:</strong>
+- Use Standard for executives
+- Use Extended for technical teams
+- Use Summary for data export
+- Higher DPI = larger files
+- Letter size for US, A4 for international</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=PDF_Export</code></p>
+<hr />
+<h3 id="help">📚 Help<a class="headerlink" href="#help" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Built-in help and documentation</p>
+<p><img alt="Help" src="../images/v0.7.0/help_light.png" /></p>
+<p><strong>Key Features:</strong>
+- <strong>Quick Start Guide</strong>: Get started quickly
+- <strong>Page Documentation</strong>: Help for each page
+- <strong>Search Functionality</strong>: Find specific topics
+- <strong>Video Tutorials</strong>: Step-by-step guides
+- <strong>FAQ</strong>: Common questions answered
+- <strong>Troubleshooting</strong>: Problem resolution
+- <strong>API Reference</strong>: For developers
+- <strong>Keyboard Shortcuts</strong>: Productivity tips
+- <strong>What's New</strong>: Latest features
+- <strong>Contact Support</strong>: Get help</p>
+<p><strong>Best For:</strong>
+- Learning the dashboard
+- Troubleshooting issues
+- Finding features
+- Understanding data</p>
+<p><strong>Help Sections:</strong></p>
+<p><strong>Getting Started:</strong>
+- Installation
+- First import
+- Navigation basics
+- Configuration</p>
+<p><strong>Features:</strong>
+- Page-by-page guides
+- Feature tutorials
+- Best practices
+- Tips &amp; tricks</p>
+<p><strong>Troubleshooting:</strong>
+- Common issues
+- Error messages
+- Performance tips
+- Data quality</p>
+<p><strong>Reference:</strong>
+- CLI commands
+- API documentation
+- Configuration options
+- Database schema</p>
+<p><strong>Search Tips:</strong>
+- Use keywords
+- Try different terms
+- Check related topics
+- Use table of contents</p>
+<p><strong>URL:</strong> <code>http://localhost:8501/?page=Help</code></p>
+<hr />
+<h2 id="tips-best-practices">Tips &amp; Best Practices<a class="headerlink" href="#tips-best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="navigation">Navigation<a class="headerlink" href="#navigation" title="Permanent link">&para;</a></h3>
+<p><strong>Sidebar Menu:</strong>
+- Main categories are always visible
+- Sub-categories can be collapsed
+- Current page is highlighted
+- Click to navigate instantly</p>
+<p><strong>Direct URLs:</strong>
+- Bookmark frequently used pages
+- Share specific pages with team
+- Use query parameters for automation</p>
+<h3 id="data-exploration">Data Exploration<a class="headerlink" href="#data-exploration" title="Permanent link">&para;</a></h3>
+<p><strong>Progressive Discovery:</strong>
+1. <strong>Overview</strong> - Start here for big picture
+2. <strong>Resources</strong> - Understand resource allocation
+3. <strong>Infrastructure</strong> - See topology and hierarchy
+4. <strong>VM Explorer</strong> - Drill into specific VMs
+5. <strong>Analytics</strong> - Deep dive into patterns</p>
+<h3 id="visualization">Visualization<a class="headerlink" href="#visualization" title="Permanent link">&para;</a></h3>
+<p><strong>Chart Interactions:</strong>
+- Hover: Show detailed tooltips
+- Click: Select/filter data
+- Zoom: Click and drag area
+- Pan: Hold Shift + drag
+- Reset: Double-click chart
+- Export: Camera icon</p>
+<p><strong>Chart Types:</strong>
+- Bar charts: Comparisons
+- Line charts: Trends
+- Pie charts: Proportions
+- Scatter plots: Correlations
+- Heatmaps: Patterns
+- Treemaps: Hierarchies</p>
+<h3 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h3>
+<p><strong>For Large Datasets:</strong>
+- Use filters to reduce data
+- Apply datacenter/cluster filters
+- Increase pagination size
+- Use PostgreSQL instead of SQLite
+- Add database indexes</p>
+<p><strong>Refresh Data:</strong>
+1. Import new data
+2. Refresh browser (F5)
+3. Data automatically updates</p>
+<h3 id="reporting">Reporting<a class="headerlink" href="#reporting" title="Permanent link">&para;</a></h3>
+<p><strong>Export Options:</strong>
+- <strong>PDF Reports</strong>: Comprehensive formatted reports
+- <strong>CSV Exports</strong>: Raw data for analysis
+- <strong>Chart Images</strong>: Individual visualizations
+- <strong>Screenshots</strong>: Full page captures</p>
+<p><strong>Best Practices:</strong>
+- Generate PDF for presentations
+- Export CSV for Excel analysis
+- Save chart images for documents
+- Take screenshots for training</p>
+<hr />
+<h2 id="keyboard-shortcuts">Keyboard Shortcuts<a class="headerlink" href="#keyboard-shortcuts" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Tab</code></td>
+<td>Navigate between elements</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>Activate button/link</td>
+</tr>
+<tr>
+<td><code>Space</code></td>
+<td>Toggle checkbox</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Close dialog/modal</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd + F</code></td>
+<td>Search page</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd + R</code></td>
+<td>Refresh page</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd + P</code></td>
+<td>Print/PDF</td>
+</tr>
+<tr>
+<td><code>Ctrl/Cmd + S</code></td>
+<td>Save (if applicable)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="common-issues">Common Issues<a class="headerlink" href="#common-issues" title="Permanent link">&para;</a></h3>
+<p><strong>No Data Displayed:</strong>
+- Check database connection in sidebar
+- Verify data import was successful
+- Run: <code>vmware-inv stats</code> to verify data</p>
+<p><strong>Charts Not Loading:</strong>
+- Refresh browser (F5)
+- Clear browser cache
+- Check browser console for errors</p>
+<p><strong>Performance Slow:</strong>
+- Apply filters to reduce data
+- Use PostgreSQL for large datasets
+- Close unused browser tabs
+- Increase browser memory</p>
+<p><strong>Import Fails:</strong>
+- Check Excel file format
+- Verify column names match
+- Check for empty required fields
+- Review error messages</p>
+<h3 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Check <strong>Help</strong> page in dashboard</li>
+<li>Review <a href="../dashboard/">Dashboard Guide</a></li>
+<li>Check <a href="../faq.md">FAQ</a></li>
+<li>Open GitHub issue</li>
+<li>Contact support</li>
+</ol>
+<hr />
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../dashboard/">Dashboard Guide</a> - Detailed feature documentation</li>
+<li><a href="../cli-commands/">CLI Commands</a> - Command-line reference</li>
+<li><a href="../pdf-export/">PDF Export Guide</a> - Report generation</li>
+<li><a href="../api/reference.md">API Reference</a> - Programmatic access</li>
+</ul>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<p>The VMware Inventory Dashboard provides <strong>20 specialized pages</strong> for comprehensive infrastructure analysis:</p>
+<ul>
+<li><strong>7 Exploration pages</strong> for data discovery and analysis</li>
+<li><strong>4 Infrastructure pages</strong> for topology and resource management</li>
+<li><strong>4 Migration pages</strong> for planning and execution</li>
+<li><strong>2 Management pages</strong> for data and backup operations</li>
+<li><strong>2 Export &amp; Help pages</strong> for reporting and assistance</li>
+</ul>
+<p>Each page is designed for specific tasks and workflows, with visual interfaces and interactive charts to make VMware inventory management efficient and insightful.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 2, 2025 16:22:51 UTC">November 2, 2025</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 2, 2025 16:22:51 UTC">November 2, 2025</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

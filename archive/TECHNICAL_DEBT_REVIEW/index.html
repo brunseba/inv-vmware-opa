@@ -1,0 +1,2751 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="VMware inventory management CLI tool with migration planning">
+      
+      
+        <meta name="author" content="brun_s">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Technical Debt & pyproject.toml Review - VMware Inventory OPA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#technical-debt-pyprojecttoml-review" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="VMware Inventory OPA" class="md-header__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            VMware Inventory OPA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Technical Debt &amp; pyproject.toml Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/cli-commands/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../features/DASHBOARD/" class="md-tabs__link">
+          
+  
+  
+  Features
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/DOCKER/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../migration/MIGRATION_NOTES/" class="md-tabs__link">
+          
+  
+  
+  Migration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/CONTRIBUTING/" class="md-tabs__link">
+          
+  
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../data-model/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="VMware Inventory OPA" class="md-nav__button md-logo" aria-label="VMware Inventory OPA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    VMware Inventory OPA
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/brun_s/inv-vmware-opa" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    inv-vmware-opa
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/QUICK_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/QUICK_START_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/cli-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visual Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/pdf-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Backup & Restore
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Features
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/DASHBOARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/DASHBOARD_TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard Testing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/UI_ENHANCEMENTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UI Enhancements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/PDF_EXPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/PDF_CHARTS_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Charts Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/PDF_ENHANCED_FEATURES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PDF Enhanced Features
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/MULTI_TARGET_MIGRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-Target Migration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/FIXES_APPLIED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fixes Applied
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/DOCKER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-compose-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Compose Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/WEBASSEMBLY_EVALUATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WebAssembly Evaluation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Migration
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Migration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/MIGRATION_NOTES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/MIGRATION_NOTES_v1_4_0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migration Notes v1.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/REPLICATION_DURATION_MITIGATION_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Replication Duration Plan
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/CHECK_SCHEMA_VERSION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_CLI_COMMANDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema CLI Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_CLI_UPDATE_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Updates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration/SCHEMA_VERSION_CONSOLIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schema Consolidation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/docker-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docker Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/build-report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Build Report
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/TESTING_SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Testing Summary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/TEST_COVERAGE_REPORT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Test Coverage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/labelling-schema-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Label System
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      📋 Executive Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyprojecttoml-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔍 pyproject.toml Analysis
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 pyproject.toml Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-good" class="md-nav__link">
+    <span class="md-ellipsis">
+      ✅ What's Good
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issues-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚠️ Issues &amp; Recommendations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Issues &amp; Recommendations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-missing-dependency-version-constraints-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Missing Dependency Version Constraints ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-missing-optional-dependencies-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Missing Optional Dependencies ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-missing-faker-in-dev-dependencies-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Missing Faker in Dev Dependencies ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-missing-project-metadata-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Missing Project Metadata ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-pytest-configuration-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. pytest Configuration ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-coverage-configuration-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Coverage Configuration ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-blackruff-configuration-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Black/Ruff Configuration ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-debt-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      🐛 Technical Debt Inventory
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐛 Technical Debt Inventory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-priority-2-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      High Priority (2 items)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="High Priority (2 items)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-dashboard-ui-code-untested-0-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Dashboard UI Code Untested (0% coverage)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-report-generator-untested-0-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Report Generator Untested (0% coverage)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-missing-dependency-version-locks-fully-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Missing Dependency Version Locks ✅ FULLY RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medium-priority-2-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      Medium Priority (2 items)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Medium Priority (2 items)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-cli-main-entry-point-451-lines-0-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. CLI Main Entry Point (451 lines, 0% coverage)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-incomplete-cli-label-commands-42-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Incomplete CLI Label Commands (42% coverage)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-loader-integration-tests-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Loader Integration Tests Missing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-missing-contributingmd-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Missing CONTRIBUTING.md ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-no-cicd-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. No CI/CD Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-docker-configuration-deployment-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Docker Configuration &amp; Deployment ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-priority-1-item" class="md-nav__link">
+    <span class="md-ellipsis">
+      Low Priority (1 item)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Low Priority (1 item)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-missing-type-hints-in-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Missing Type Hints (IN PROGRESS)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-no-security-scanning-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. No Security Scanning ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-documentation-gaps-improved" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Documentation Gaps ✅ IMPROVED
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-no-performance-tests-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. No Performance Tests ✅ RESOLVED
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependency-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      📊 Dependency Analysis
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Dependency Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-dependencies-11-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      Current Dependencies (11 production)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recommendations:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔒 Security Considerations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔒 Security Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      Current State
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendations_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recommendations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-action-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      🚀 Recommended Action Plan
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Recommended Action Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-quick-wins-1-2-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 1: Quick Wins (1-2 days)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-testing-2-3-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 2: Testing (2-3 days)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-infrastructure-1-2-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 3: Infrastructure (1-2 days)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-quality-2-3-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 4: Quality (2-3 days)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metrics-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      📈 Metrics &amp; Goals
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📈 Metrics &amp; Goals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state-v061" class="md-nav__link">
+    <span class="md-ellipsis">
+      Current State (v0.6.1)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target-state-3-6-months" class="md-nav__link">
+    <span class="md-ellipsis">
+      Target State (3-6 months)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      🎯 Priority Matrix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      💡 Conclusion
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Conclusion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recent-improvements-v061" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recent Improvements (v0.6.1)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="technical-debt-pyprojecttoml-review">Technical Debt &amp; pyproject.toml Review<a class="headerlink" href="#technical-debt-pyprojecttoml-review" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2025-10-30<br />
+<strong>Project:</strong> inv-vmware-opa v0.6.1<br />
+<strong>Python:</strong> &gt;=3.10</p>
+<h2 id="executive-summary">📋 Executive Summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
+<p><strong>Overall Health:</strong> 🟢 Good<br />
+<strong>Critical Issues:</strong> 0<br />
+<strong>High Priority:</strong> 2<br />
+<strong>Medium Priority:</strong> 2<br />
+<strong>Low Priority:</strong> 1</p>
+<p>The project is generally well-structured with modern Python tooling (uv, pytest, pre-commit). Recent improvements include Docker container fixes and comprehensive configuration management via .env files. Main areas for improvement are dependency management, missing documentation, and test coverage gaps.</p>
+<hr />
+<h2 id="pyprojecttoml-analysis">🔍 pyproject.toml Analysis<a class="headerlink" href="#pyprojecttoml-analysis" title="Permanent link">&para;</a></h2>
+<h3 id="whats-good">✅ What's Good<a class="headerlink" href="#whats-good" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Modern Python</strong> - Requires Python &gt;=3.10</li>
+<li><strong>Clear Dependencies</strong> - Well-defined dependency list</li>
+<li><strong>Build System</strong> - Uses modern setuptools</li>
+<li><strong>CLI Entry Point</strong> - Properly configured</li>
+<li><strong>Dev Dependencies</strong> - Separated dev tools</li>
+<li><strong>Package Structure</strong> - Correct package discovery</li>
+</ol>
+<h3 id="issues-recommendations">⚠️ Issues &amp; Recommendations<a class="headerlink" href="#issues-recommendations" title="Permanent link">&para;</a></h3>
+<h4 id="1-missing-dependency-version-constraints-resolved">1. Missing Dependency Version Constraints ✅ RESOLVED<a class="headerlink" href="#1-missing-dependency-version-constraints-resolved" title="Permanent link">&para;</a></h4>
+<p><strong>Status:</strong> ✅ Fully resolved</p>
+<p><strong>Current:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="s2">&quot;click&gt;=8.3.0,&lt;9.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="s2">&quot;pandas&gt;=2.3.3,&lt;3.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="s2">&quot;sqlalchemy&gt;=2.0.44,&lt;3.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="s2">&quot;xlsxwriter&gt;=3.2.0,&lt;4.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="s2">&quot;tabulate&gt;=0.9.0,&lt;1.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">]</span>
+</code></pre></div></p>
+<p><strong>Resolution:</strong> All dependencies now have upper bounds to prevent breaking changes from major version bumps.</p>
+<h4 id="2-missing-optional-dependencies-resolved">2. Missing Optional Dependencies ✅ RESOLVED<a class="headerlink" href="#2-missing-optional-dependencies-resolved" title="Permanent link">&para;</a></h4>
+<p><strong>Status:</strong> ✅ Fully resolved</p>
+<p><strong>Current:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">[project.optional-dependencies]</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">dashboard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="s2">&quot;streamlit&gt;=1.50.0,&lt;2.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="s2">&quot;plotly&gt;=5.24.0,&lt;6.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="s2">&quot;streamlit-extras&gt;=0.7.8,&lt;1.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="s2">&quot;watchdog&gt;=6.0.0,&lt;7.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">]</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">reports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="s2">&quot;reportlab&gt;=4.4.4,&lt;5.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="s2">&quot;pillow&gt;=11.3.0,&lt;12.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="s2">&quot;matplotlib&gt;=3.10.7,&lt;4.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">]</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">all</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;inv-vmware-opa[dashboard,reports]&quot;</span><span class="p">]</span>
+</code></pre></div></p>
+<p><strong>Benefits achieved:</strong>
+- ✅ CLI-only users don't need heavy UI dependencies
+- ✅ Faster installation for CI/CD
+- ✅ Better separation of concerns</p>
+<h4 id="3-missing-faker-in-dev-dependencies-resolved">3. Missing Faker in Dev Dependencies ✅ RESOLVED<a class="headerlink" href="#3-missing-faker-in-dev-dependencies-resolved" title="Permanent link">&para;</a></h4>
+<p><strong>Status:</strong> ✅ Resolved</p>
+<p><strong>Current:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">[dependency-groups]</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="s2">&quot;pytest&gt;=8.4.2,&lt;9.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="s2">&quot;pytest-cov&gt;=7.0.0,&lt;8.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="s2">&quot;pytest-faker&gt;=2.0.0,&lt;3.0.0&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1"># ✅ Added</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="s2">&quot;mkdocs&gt;=1.6.1,&lt;2.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="c1"># ...</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">]</span>
+</code></pre></div></p>
+<h4 id="4-missing-project-metadata-resolved">4. Missing Project Metadata ✅ RESOLVED<a class="headerlink" href="#4-missing-project-metadata-resolved" title="Permanent link">&para;</a></h4>
+<p><strong>Status:</strong> ✅ Fully resolved</p>
+<p><strong>Current:</strong> Complete metadata including:
+- ✅ Authors and maintainers
+- ✅ Keywords and classifiers
+- ✅ License information
+- ✅ Project URLs (Homepage, Documentation, Repository, Issues, Changelog)
+- ✅ Comprehensive Python version support (3.10, 3.11, 3.12)</p>
+<h4 id="5-pytest-configuration-resolved">5. pytest Configuration ✅ RESOLVED<a class="headerlink" href="#5-pytest-configuration-resolved" title="Permanent link">&para;</a></h4>
+<p><strong>Status:</strong> ✅ Fully resolved with comprehensive configuration</p>
+<p><strong>Current:</strong> Advanced pytest configuration including:
+- ✅ Multiple coverage report formats (term, html, json, lcov)
+- ✅ 13 test markers (integration, slow, unit, e2e, smoke, etc.)
+- ✅ Logging configuration
+- ✅ Warning filters
+- ✅ Benchmark configuration</p>
+<h4 id="6-coverage-configuration-resolved">6. Coverage Configuration ✅ RESOLVED<a class="headerlink" href="#6-coverage-configuration-resolved" title="Permanent link">&para;</a></h4>
+<p><strong>Status:</strong> ✅ Fully resolved</p>
+<p><strong>Current:</strong> Comprehensive coverage configuration including:
+- ✅ Branch coverage enabled
+- ✅ Parallel execution support
+- ✅ Multiple output formats (html, json, lcov)
+- ✅ Proper exclusions for UI code and tests
+- ✅ Detailed exclude_lines patterns</p>
+<h4 id="7-blackruff-configuration-resolved">7. Black/Ruff Configuration ✅ RESOLVED<a class="headerlink" href="#7-blackruff-configuration-resolved" title="Permanent link">&para;</a></h4>
+<p><strong>Status:</strong> ✅ Fully resolved with modern tooling</p>
+<p><strong>Current:</strong> Comprehensive linting configuration:
+- ✅ Black configured (line-length 120, py310/11/12 support)
+- ✅ Ruff as primary linter (replacing Flake8)
+- ✅ Mypy for type checking
+- ✅ Additional tools: bandit, vulture, interrogate
+- ✅ Consistent configuration across all tools</p>
+<hr />
+<h2 id="technical-debt-inventory">🐛 Technical Debt Inventory<a class="headerlink" href="#technical-debt-inventory" title="Permanent link">&para;</a></h2>
+<h3 id="high-priority-2-items">High Priority (2 items)<a class="headerlink" href="#high-priority-2-items" title="Permanent link">&para;</a></h3>
+<h4 id="1-dashboard-ui-code-untested-0-coverage">1. Dashboard UI Code Untested (0% coverage)<a class="headerlink" href="#1-dashboard-ui-code-untested-0-coverage" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Location:</strong> <code>src/dashboard/pages/*.py</code></li>
+<li><strong>Lines:</strong> ~2,500 lines</li>
+<li><strong>Impact:</strong> High - no validation of UI logic</li>
+<li><strong>Effort:</strong> Medium - requires Streamlit testing framework</li>
+<li><strong>Recommendation:</strong></li>
+<li>Add data processing tests (DONE ✅)</li>
+<li>Add integration tests with Streamlit testing</li>
+<li>Document manual testing procedures</li>
+</ul>
+<h4 id="2-report-generator-untested-0-coverage">2. Report Generator Untested (0% coverage)<a class="headerlink" href="#2-report-generator-untested-0-coverage" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Location:</strong> <code>src/report_generator.py</code></li>
+<li><strong>Lines:</strong> 594 lines</li>
+<li><strong>Impact:</strong> High - critical feature for users</li>
+<li><strong>Effort:</strong> Medium - mock PDF generation</li>
+<li><strong>Recommendation:</strong></li>
+<li>Test data aggregation logic</li>
+<li>Test chart data preparation</li>
+<li>Mock ReportLab calls</li>
+<li>Validate report structure</li>
+</ul>
+<h4 id="3-missing-dependency-version-locks-fully-resolved">3. Missing Dependency Version Locks ✅ FULLY RESOLVED<a class="headerlink" href="#3-missing-dependency-version-locks-fully-resolved" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Status:</strong> ✅ Fully resolved in v0.6.1</li>
+<li><strong>Resolution:</strong> </li>
+<li>Optional dependencies structure created with <code>[dashboard]</code> and <code>[reports]</code> groups</li>
+<li>Upper bounds added to ALL dependencies</li>
+<li>Comprehensive version constraints across production and dev dependencies</li>
+</ul>
+<h3 id="medium-priority-2-items">Medium Priority (2 items)<a class="headerlink" href="#medium-priority-2-items" title="Permanent link">&para;</a></h3>
+<h4 id="1-cli-main-entry-point-451-lines-0-coverage">1. CLI Main Entry Point (451 lines, 0% coverage)<a class="headerlink" href="#1-cli-main-entry-point-451-lines-0-coverage" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Location:</strong> <code>src/cli.py</code></li>
+<li><strong>Impact:</strong> Medium - main entry point</li>
+<li><strong>Effort:</strong> Low-Medium</li>
+<li><strong>Recommendation:</strong></li>
+<li>Test command registration</li>
+<li>Test option parsing</li>
+<li>Mock actual command execution</li>
+</ul>
+<h4 id="2-incomplete-cli-label-commands-42-coverage">2. Incomplete CLI Label Commands (42% coverage)<a class="headerlink" href="#2-incomplete-cli-label-commands-42-coverage" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Location:</strong> <code>src/commands/label.py</code></li>
+<li><strong>Lines Missing:</strong> 252 lines</li>
+<li><strong>Impact:</strong> Medium - folder operations untested</li>
+<li><strong>Effort:</strong> Low</li>
+<li><strong>Recommendation:</strong></li>
+<li>Add tests for folder label commands</li>
+<li>Add tests for bulk operations</li>
+<li>Add tests for sync commands</li>
+</ul>
+<h4 id="3-loader-integration-tests-missing">3. Loader Integration Tests Missing<a class="headerlink" href="#3-loader-integration-tests-missing" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Location:</strong> <code>src/loader.py</code></li>
+<li><strong>Coverage:</strong> 59% (31 lines missing)</li>
+<li><strong>Impact:</strong> Medium - data import reliability</li>
+<li><strong>Effort:</strong> Medium</li>
+<li><strong>Recommendation:</strong></li>
+<li>Add full Excel loading integration test</li>
+<li>Test error handling for malformed files</li>
+<li>Test large file handling</li>
+</ul>
+<h4 id="4-missing-contributingmd-resolved">4. Missing CONTRIBUTING.md ✅ RESOLVED<a class="headerlink" href="#4-missing-contributingmd-resolved" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Status:</strong> ✅ Resolved</li>
+<li><strong>Impact:</strong> Medium - contributor confusion</li>
+<li><strong>Resolution:</strong> CONTRIBUTING.md created with comprehensive guidelines</li>
+</ul>
+<h4 id="5-no-cicd-pipeline">5. No CI/CD Pipeline<a class="headerlink" href="#5-no-cicd-pipeline" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Impact:</strong> Medium - manual testing burden</li>
+<li><strong>Effort:</strong> Medium</li>
+<li><strong>Recommendation:</strong></li>
+<li>Add GitHub Actions workflow</li>
+<li>Run tests on PR</li>
+<li>Check coverage</li>
+<li>Lint and format check</li>
+</ul>
+<h4 id="6-docker-configuration-deployment-resolved">6. Docker Configuration &amp; Deployment ✅ RESOLVED<a class="headerlink" href="#6-docker-configuration-deployment-resolved" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Status:</strong> ✅ Resolved in v0.6.1</li>
+<li><strong>Resolution:</strong></li>
+<li>Fixed Streamlit permission errors in Docker container</li>
+<li>Added <code>.env</code> file support for docker-compose configuration</li>
+<li>Enhanced logging with rotation (50MB, 5 files) and compression</li>
+<li>Added persistent volume for container logs</li>
+<li>Improved security with proper directory ownership</li>
+<li>Created <code>.env.example</code> template</li>
+</ul>
+<h3 id="low-priority-1-item">Low Priority (1 item)<a class="headerlink" href="#low-priority-1-item" title="Permanent link">&para;</a></h3>
+<h4 id="1-missing-type-hints-in-progress">1. Missing Type Hints (IN PROGRESS)<a class="headerlink" href="#1-missing-type-hints-in-progress" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Location:</strong> Various files</li>
+<li><strong>Impact:</strong> Low - but improves IDE support</li>
+<li><strong>Effort:</strong> Medium</li>
+<li><strong>Status:</strong> </li>
+<li>✅ <code>mypy</code> added to dev dependencies</li>
+<li>✅ mypy configured in pyproject.toml</li>
+<li>⏳ Gradually adding type hints to codebase</li>
+</ul>
+<h4 id="2-no-security-scanning-resolved">2. No Security Scanning ✅ RESOLVED<a class="headerlink" href="#2-no-security-scanning-resolved" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Status:</strong> ✅ Fully resolved</li>
+<li><strong>Impact:</strong> Low - but important for production</li>
+<li><strong>Resolution:</strong></li>
+<li>✅ <code>bandit</code> configured in pyproject.toml</li>
+<li>✅ <code>safety</code> and <code>pip-audit</code> in security dependency group</li>
+<li>⏳ GitHub Dependabot (pending)</li>
+</ul>
+<h4 id="3-documentation-gaps-improved">3. Documentation Gaps ✅ IMPROVED<a class="headerlink" href="#3-documentation-gaps-improved" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Status:</strong> ✅ Significantly improved</li>
+<li><strong>Location:</strong> Various</li>
+<li><strong>Completed:</strong></li>
+<li>✅ MkDocs setup with Material theme</li>
+<li>✅ PDF export support</li>
+<li>✅ Mermaid diagram support</li>
+<li>✅ Git revision tracking</li>
+<li><strong>Remaining:</strong></li>
+<li>⏳ Complete API documentation</li>
+<li>⏳ Architecture diagrams</li>
+</ul>
+<h4 id="4-no-performance-tests-resolved">4. No Performance Tests ✅ RESOLVED<a class="headerlink" href="#4-no-performance-tests-resolved" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Status:</strong> ✅ Infrastructure ready</li>
+<li><strong>Impact:</strong> Low - but helpful for large inventories</li>
+<li><strong>Resolution:</strong></li>
+<li>✅ pytest-benchmark added and configured</li>
+<li>✅ Performance profiling tools (py-spy, memray, scalene) in dependency group</li>
+<li>⏳ Actual performance tests to be written</li>
+</ul>
+<hr />
+<h2 id="dependency-analysis">📊 Dependency Analysis<a class="headerlink" href="#dependency-analysis" title="Permanent link">&para;</a></h2>
+<h3 id="current-dependencies-11-production">Current Dependencies (11 production)<a class="headerlink" href="#current-dependencies-11-production" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Purpose</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>click</td>
+<td>&gt;=8.3.0</td>
+<td>CLI framework</td>
+<td>✅ Good</td>
+</tr>
+<tr>
+<td>openpyxl</td>
+<td>&gt;=3.1.5</td>
+<td>Excel reading</td>
+<td>✅ Good</td>
+</tr>
+<tr>
+<td>pandas</td>
+<td>&gt;=2.3.3</td>
+<td>Data analysis</td>
+<td>⚠️ Heavy</td>
+</tr>
+<tr>
+<td>sqlalchemy</td>
+<td>&gt;=2.0.44</td>
+<td>Database ORM</td>
+<td>✅ Good</td>
+</tr>
+<tr>
+<td>streamlit</td>
+<td>&gt;=1.40.0</td>
+<td>Dashboard UI</td>
+<td>⚠️ Heavy</td>
+</tr>
+<tr>
+<td>plotly</td>
+<td>&gt;=5.24.0</td>
+<td>Charts</td>
+<td>⚠️ Heavy</td>
+</tr>
+<tr>
+<td>xlsxwriter</td>
+<td>&gt;=3.2.0</td>
+<td>Excel writing</td>
+<td>✅ Good</td>
+</tr>
+<tr>
+<td>streamlit-extras</td>
+<td>&gt;=0.7.8</td>
+<td>UI components</td>
+<td>✅ Good</td>
+</tr>
+<tr>
+<td>watchdog</td>
+<td>&gt;=6.0.0</td>
+<td>File watching</td>
+<td>⚠️ Unused?</td>
+</tr>
+<tr>
+<td>reportlab</td>
+<td>&gt;=4.4.4</td>
+<td>PDF generation</td>
+<td>✅ Good</td>
+</tr>
+<tr>
+<td>pillow</td>
+<td>&gt;=11.3.0</td>
+<td>Image handling</td>
+<td>✅ Good</td>
+</tr>
+<tr>
+<td>matplotlib</td>
+<td>&gt;=3.10.7</td>
+<td>Charts for PDF</td>
+<td>✅ Good</td>
+</tr>
+<tr>
+<td>tabulate</td>
+<td>&gt;=0.9.0</td>
+<td>Table formatting</td>
+<td>✅ Good</td>
+</tr>
+</tbody>
+</table>
+<h3 id="recommendations">Recommendations:<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Make optional:</strong> streamlit, plotly, streamlit-extras (dashboard-only)</li>
+<li><strong>Make optional:</strong> reportlab, pillow, matplotlib (reports-only)</li>
+<li><strong>Consider removing:</strong> watchdog (if unused)</li>
+<li><strong>Add:</strong> python-dotenv (for configuration)</li>
+</ol>
+<hr />
+<h2 id="security-considerations">🔒 Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h2>
+<h3 id="current-state">Current State<a class="headerlink" href="#current-state" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✅ Pre-commit hook checks for private keys</li>
+<li>❌ No dependency vulnerability scanning</li>
+<li>❌ No security policy (SECURITY.md)</li>
+<li>❌ No input validation documentation</li>
+</ul>
+<h3 id="recommendations_1">Recommendations<a class="headerlink" href="#recommendations_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Add Security Scanning</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">[dependency-groups]</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">security</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="s2">&quot;bandit&gt;=1.7.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="s2">&quot;safety&gt;=3.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">]</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Add to pre-commit:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/PyCQA/bandit</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.7.7</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bandit</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">      </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;-c&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;pyproject.toml&#39;</span><span class="p p-Indicator">]</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Create SECURITY.md:</strong></p>
+</li>
+<li>Vulnerability reporting process</li>
+<li>Security best practices</li>
+<li>Database security recommendations</li>
+</ol>
+<hr />
+<h2 id="recommended-action-plan">🚀 Recommended Action Plan<a class="headerlink" href="#recommended-action-plan" title="Permanent link">&para;</a></h2>
+<h3 id="phase-1-quick-wins-1-2-days">Phase 1: Quick Wins (1-2 days)<a class="headerlink" href="#phase-1-quick-wins-1-2-days" title="Permanent link">&para;</a></h3>
+<ol>
+<li>⏳ Add dependency version upper bounds (partial - need upper bounds)</li>
+<li>✅ Add pytest configuration to pyproject.toml</li>
+<li>✅ Add coverage configuration</li>
+<li>✅ Create CONTRIBUTING.md</li>
+<li>✅ Add security scanning to pre-commit</li>
+<li>✅ Fix Docker permission issues (v0.6.1)</li>
+<li>✅ Add .env configuration management (v0.6.1)</li>
+</ol>
+<h3 id="phase-2-testing-2-3-days">Phase 2: Testing (2-3 days)<a class="headerlink" href="#phase-2-testing-2-3-days" title="Permanent link">&para;</a></h3>
+<ol>
+<li>⏳ Complete CLI command tests (folder operations)</li>
+<li>⏳ Add loader integration tests</li>
+<li>⏳ Add report generator tests (at least data preparation)</li>
+<li>⏳ Document manual testing procedures for dashboard</li>
+</ol>
+<h3 id="phase-3-infrastructure-1-2-days">Phase 3: Infrastructure (1-2 days)<a class="headerlink" href="#phase-3-infrastructure-1-2-days" title="Permanent link">&para;</a></h3>
+<ol>
+<li>⏳ Setup GitHub Actions CI/CD</li>
+<li>⏳ Add Dependabot configuration</li>
+<li>⏳ Setup coverage tracking (codecov.io)</li>
+<li>⏳ Add status badges to README</li>
+</ol>
+<h3 id="phase-4-quality-2-3-days">Phase 4: Quality (2-3 days)<a class="headerlink" href="#phase-4-quality-2-3-days" title="Permanent link">&para;</a></h3>
+<ol>
+<li>⏳ Add type hints to critical modules</li>
+<li>⏳ Setup mypy</li>
+<li>⏳ Add performance benchmarks</li>
+<li>⏳ Complete API documentation</li>
+</ol>
+<hr />
+<h2 id="metrics-goals">📈 Metrics &amp; Goals<a class="headerlink" href="#metrics-goals" title="Permanent link">&para;</a></h2>
+<h3 id="current-state-v061">Current State (v0.6.1)<a class="headerlink" href="#current-state-v061" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Test Coverage:</strong> 13% overall (98% for core services)</li>
+<li><strong>Test Count:</strong> 151 tests</li>
+<li><strong>Code Quality:</strong> Good (pre-commit hooks)</li>
+<li><strong>Documentation:</strong> Basic (README + MkDocs)</li>
+<li><strong>Docker:</strong> ✅ Production-ready with .env configuration</li>
+<li><strong>Logging:</strong> ✅ Comprehensive with rotation and persistence</li>
+</ul>
+<h3 id="target-state-3-6-months">Target State (3-6 months)<a class="headerlink" href="#target-state-3-6-months" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Test Coverage:</strong> 60-70% overall</li>
+<li><strong>Test Count:</strong> 200+ tests</li>
+<li><strong>Code Quality:</strong> Excellent (type hints + mypy)</li>
+<li><strong>Documentation:</strong> Comprehensive (API docs + guides)</li>
+<li><strong>CI/CD:</strong> Fully automated</li>
+<li><strong>Security:</strong> Vulnerability scanning active</li>
+</ul>
+<hr />
+<h2 id="priority-matrix">🎯 Priority Matrix<a class="headerlink" href="#priority-matrix" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>High Impact / Low Effort:
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>- Add dependency constraints ✅
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>- Add pytest config ✅
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>- Create CONTRIBUTING.md
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>- Setup CI/CD
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>High Impact / High Effort:
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>- Report generator tests
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>- Dashboard integration tests
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>- Type hints across codebase
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>Low Impact / Low Effort:
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>- Add security scanning
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>- Add status badges
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>- Update README
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>Low Impact / High Effort:
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>- Full UI testing with Streamlit
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>- Performance optimization
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>- Internationalization
+</code></pre></div>
+<hr />
+<h2 id="conclusion">💡 Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>The project is in <strong>good health</strong> with modern tooling and solid core test coverage (98% for services). Main technical debt is:</p>
+<ol>
+<li><strong>Missing test coverage</strong> for UI and report generation (acceptable for now)</li>
+<li><strong>Loose dependency constraints</strong> (partial - need upper bounds)</li>
+<li><strong>Missing CI/CD pipeline</strong> (important for scaling)</li>
+</ol>
+<h3 id="recent-improvements-v061">Recent Improvements (v0.6.1)<a class="headerlink" href="#recent-improvements-v061" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✅ Docker container issues resolved</li>
+<li>✅ Configuration management via .env files</li>
+<li>✅ Enhanced logging infrastructure</li>
+<li>✅ Improved container security</li>
+</ul>
+<p><strong>Recommendation:</strong> Focus on CI/CD pipeline setup and completing dependency version constraints, then prioritize based on user needs and team capacity.</p>
+<hr />
+<p><strong>Last Updated:</strong> 2025-10-30 (v0.6.1)<br />
+<strong>Next Review:</strong> 2025-12-30 or after v1.0.0 release</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 1, 2025 11:45:33 UTC">November 1, 2025</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 30, 2025 10:03:23 UTC">October 30, 2025</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>
