@@ -16,6 +16,7 @@ class NamingConvention(Base):
     """
 
     __tablename__ = "naming_conventions"
+    __table_args__ = {'extend_existing': True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
@@ -53,6 +54,10 @@ class NamingConventionField(Base):
     """
 
     __tablename__ = "naming_convention_fields"
+    __table_args__ = (
+        UniqueConstraint("convention_id", "field_name", name="_convention_field_name_uc"),
+        UniqueConstraint("convention_id", "position", name="_convention_field_position_uc"),
+        {'extend_existing': True})
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     convention_id: Mapped[int] = mapped_column(
@@ -70,11 +75,6 @@ class NamingConventionField(Base):
     # Relationships
     convention: Mapped["NamingConvention"] = relationship("NamingConvention", back_populates="fields")
 
-    __table_args__ = (
-        UniqueConstraint("convention_id", "field_name", name="_convention_field_name_uc"),
-        UniqueConstraint("convention_id", "position", name="_convention_field_position_uc"),
-    )
-
     def __repr__(self) -> str:
         return f"<NamingConventionField(name='{self.field_name}', position={self.position}, length={self.length})>"
 
@@ -87,6 +87,7 @@ class VMNamingAnalysis(Base):
     """
 
     __tablename__ = "vm_naming_analysis"
+    __table_args__ = (UniqueConstraint("vm_id", "convention_id", name="_vm_convention_analysis_uc"), {'extend_existing': True})
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     vm_id: Mapped[int] = mapped_column(
@@ -104,8 +105,6 @@ class VMNamingAnalysis(Base):
 
     # Relationships
     convention: Mapped["NamingConvention"] = relationship("NamingConvention", back_populates="analyses")
-
-    __table_args__ = (UniqueConstraint("vm_id", "convention_id", name="_vm_convention_analysis_uc"),)
 
     def __repr__(self) -> str:
         return (

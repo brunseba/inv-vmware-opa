@@ -12,6 +12,7 @@ class VirtualMachine(Base):
     """Model representing a VMware virtual machine."""
 
     __tablename__ = "virtual_machines"
+    __table_args__ = {'extend_existing': True}
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -143,6 +144,7 @@ class Label(Base):
     """Label definitions - master list of available labels."""
 
     __tablename__ = "labels"
+    __table_args__ = (UniqueConstraint("key", "value", name="_label_key_value_uc"), {'extend_existing': True})
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     key: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
@@ -154,8 +156,6 @@ class Label(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    __table_args__ = (UniqueConstraint("key", "value", name="_label_key_value_uc"),)
-
     def __repr__(self) -> str:
         return f"<Label(key='{self.key}', value='{self.value}', name='{self.name}')>"
 
@@ -164,6 +164,7 @@ class VMLabel(Base):
     """VM to Label assignment (many-to-many relationship)."""
 
     __tablename__ = "vm_labels"
+    __table_args__ = (UniqueConstraint("vm_id", "label_id", name="_vm_label_uc"), {'extend_existing': True})
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     vm_id: Mapped[int] = mapped_column(
@@ -187,8 +188,6 @@ class VMLabel(Base):
     source_field_name: Mapped[str | None] = mapped_column(String(100))  # Field name from naming convention
     auto_created: Mapped[bool] = mapped_column(Boolean, default=False, index=True)  # Whether label was auto-created
 
-    __table_args__ = (UniqueConstraint("vm_id", "label_id", name="_vm_label_uc"),)
-
     def __repr__(self) -> str:
         return f"<VMLabel(vm_id={self.vm_id}, label_id={self.label_id}, source={self.label_source})>"
 
@@ -197,6 +196,7 @@ class FolderLabel(Base):
     """Folder path to Label assignment."""
 
     __tablename__ = "folder_labels"
+    __table_args__ = (UniqueConstraint("folder_path", "label_id", name="_folder_label_uc"), {'extend_existing': True})
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     folder_path: Mapped[str] = mapped_column(String(500), nullable=False, index=True)
@@ -207,8 +207,6 @@ class FolderLabel(Base):
     assigned_by: Mapped[str | None] = mapped_column(String(100))
     inherit_to_vms: Mapped[bool] = mapped_column(Boolean, default=True)
     inherit_to_subfolders: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    __table_args__ = (UniqueConstraint("folder_path", "label_id", name="_folder_label_uc"),)
 
     def __repr__(self) -> str:
         return f"<FolderLabel(folder_path='{self.folder_path}', label_id={self.label_id})>"
@@ -222,6 +220,7 @@ class SchemaVersion(Base):
     """
 
     __tablename__ = "schema_versions"
+    __table_args__ = {'extend_existing': True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     version: Mapped[str] = mapped_column(String(50), nullable=False, unique=True, index=True)

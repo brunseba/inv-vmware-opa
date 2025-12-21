@@ -36,6 +36,7 @@ class MigrationTarget(Base):
     """Migration target configuration."""
 
     __tablename__ = "migration_targets"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, unique=True)
@@ -90,6 +91,7 @@ class MigrationScenario(Base):
     """Migration scenario combining VMs, targets, and strategies."""
 
     __tablename__ = "migration_scenarios"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
@@ -156,6 +158,7 @@ class MigrationStrategyConfig(Base):
     """Configuration parameters for migration strategies."""
 
     __tablename__ = "migration_strategy_configs"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     strategy = Column(Enum(MigrationStrategy), nullable=False, unique=True)
@@ -189,6 +192,7 @@ class MigrationWave(Base):
     """Migration wave for phased migration execution."""
 
     __tablename__ = "migration_waves"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     scenario_id = Column(Integer, ForeignKey("migration_scenarios.id"), nullable=False)
