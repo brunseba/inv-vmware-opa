@@ -267,7 +267,7 @@ def _render_detailed_report(session, columns, total_vms):
         )
 
         # Apply pagination
-        paginated_query = pagination.paginate_query(base_query, total_count=total_distinct)
+        paginated_query = pagination.paginate_query(base_query, total_distinct)
 
         value_counts = paginated_query.all()
 
@@ -474,7 +474,7 @@ def _render_label_quality_report(session, total_vms):
         )
 
         # Apply pagination
-        paginated_key_query = label_key_pagination.paginate_query(base_key_query, total_count=total_label_keys_count)
+        paginated_key_query = label_key_pagination.paginate_query(base_key_query, total_label_keys_count)
 
         key_stats = paginated_key_query.all()
 
@@ -651,7 +651,7 @@ def _render_label_quality_report(session, total_vms):
         )
 
         # Apply pagination
-        paginated_folder_query = folder_pagination.paginate_query(base_folder_query, total_count=total_folders)
+        paginated_folder_query = folder_pagination.paginate_query(base_folder_query, total_folders)
 
         folder_coverage = paginated_folder_query.all()
 

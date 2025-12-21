@@ -158,13 +158,8 @@ def render(db_url: str):
             # Prepare table data
             vm_data = []
             for vm in vms_to_show:
-                # Highlight matching pattern in VM name
-                vm_name = vm.vm
-                if vm_name:
-                    match = regex.search(vm_name)
-                    if match:
-                        # Mark matched portion (for display purposes)
-                        vm_name = vm_name
+                # Get VM name for display
+                vm_name = vm.vm or "N/A"
 
                 vm_data.append(
                     {
