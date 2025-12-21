@@ -609,7 +609,10 @@ def clusters(db_url: str, datacenter: str, cluster_filter: str):
     "--filter",
     "filters",
     multiple=True,
-    help="Filter columns by category (basic, resources, network, storage, hardware, infrastructure, os, custom, relationships)",
+    help=(
+        "Filter columns by category (basic, resources, network, storage, "
+        "hardware, infrastructure, os, custom, relationships)"
+    ),
 )
 @click.option(
     "--group-by",
@@ -993,7 +996,7 @@ def schema_version(db_url: str, history: bool):
             click.echo("Current migration: None (uninitialized)")
 
         expected_semver = schema_service.migration_to_semver(CURRENT_SCHEMA_VERSION)
-        click.echo(f"Expected migration: {CURRENT_SCHEMA_VERSION} (schema {expected_semver})")
+        click.echo(f"Expected version: {CURRENT_SCHEMA_VERSION} (schema {expected_semver})")
 
         # Compatibility status
         if compatibility["compatible"]:
